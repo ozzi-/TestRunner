@@ -276,8 +276,8 @@ function listResults(results,paramName) {
 		resultsSpan.innerHTML = "<i>This test has not been run yet.</i>";
 	}else{
 		
-		runLink.innerHTML = '<a style="text-decoration:none;" href="index.html?page=run&name='+results[0].result.testName+'"> Run Test &#9654;</a>';
-
+		runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+results[0].result.testName+'\')"> Run Test &#9654;</a>';
+			
 		
 		var table = new Tabulator("#resultsSpan", {
 		    layout:"fitDataFill",
