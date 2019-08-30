@@ -43,7 +43,7 @@ Example of a test config:
           },{
             "name":"task2",
             "path":"scripts/task2.sh",
-            "args":"--force",
+            "args":["--force"],
             "timeout": 2
           }]
         }
@@ -84,27 +84,28 @@ All configuration is saved as JSON files.
 
 ### Users
 Users are stored in basePath/users.json.
+If you run TR the first time, a users.json file will be automatically generated.
+Default login credentials are "admin" with the password "letmein".
+
 Example of two defined users:
 
 	[
 	  {
 		"username": "ozzi",
-		"password": "BBFA187429F9C089455B8195896DC9EB10FE07AC0BB09954BD23CFD0721E1207ECA457BCF1BBA350E96C42A21C8503B2D6006B731AFE177E84A61F088CD596F2",
-		"role": "rw"
+		"password": "6DA7851E78C929C04AF5D2750965E3D8A96E1F2F709B0FB9864D2A5C4703F43F58A5D0E17C6FC8578B41BD22373694791D3EFB053FD80830603D2B076DD7A9FA",
+                "salt" : "5ZuIIFgezD",
+		"role": "a"
 	  },{
 		"username": "read",
 		"password": "BBFA187429F9C089455B8195896DC9EB10FE07AC0BB09954BD23CFD0721E1207ECA457BCF1BBA350E96C42A21C8503B2D6006B731AFE177E84A61F088CD596F2",
+                "salt" : "JKbWLZo0IY",
 		"role": "r"
 	  }
 	]
 
 The role "r" can only view results, "rw" can additionally run the defined tests.
 The role "a" stands for admin, it includes "rw" rights as well as the possibility to administer users.
-Passwords are hashed using SHA512 with an prepended salt "TR_".
-You can use the form provided in the web interface to generate said password hashes.
-/TR/frontend/index.html?page=hash
 
-Users can be administered by users with the role "a" under the settings page in the frontend.
 ![settings page](https://i.imgur.com/g0dlXBv.png)
 
 ### Tests
@@ -124,12 +125,12 @@ Example of a test file called "windows.test". The test name is taken from the fi
 		  },{
 		  "name": "task2",
 		  "path": "script2.bat",
-                  "args": "--force",
+                  "args": ["--force"],
 		  "timeout": 3
 		  },{
 		  "name": "task3",
 		  "path": "script3.bat",
-                  "args": "--force --silent",
+                  "args": ["--force","--silent"],
 		  "timeout": 5
 		  }]
 	  } 
@@ -306,7 +307,7 @@ Returns the test configuration JSON file for the specific test.
 	      },{
 	      "name": "task2",
 	      "path": "script2.bat",
-              "args": "--force",
+              "args": ["--force"],
 	      "timeout": 1
 	      },{
 	      "name": "task3",
