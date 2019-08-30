@@ -7,6 +7,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import helpers.Log;
 import helpers.PathFinder;
+import service.GlobalExceptionHandler;
 import service.UserManagement;
 
 public class TestRunner extends ResourceConfig {
@@ -17,6 +18,7 @@ public class TestRunner extends ResourceConfig {
 		PathFinder.createFolderPath(logBasePath);
 		Log.setup(logBasePath+"testrunner.log");
 		Log.log(Level.INFO, "Starting Test Runner - "+version+" - meep meep");
+	    Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler());
 		
 		UserManagement.loadUsers();
 		packages("services");

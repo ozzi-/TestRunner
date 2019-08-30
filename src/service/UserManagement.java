@@ -1,5 +1,6 @@
 package service;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -10,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+import helpers.Crypto;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
@@ -17,7 +19,10 @@ import pojo.User;
 
 public class UserManagement {
 	public static ArrayList<User> users = new ArrayList<User>();
-	
+	private static final String defaultAdminUsername = "admin";
+	private static final String defaultAdminPassword = "letmein";
+	private static final int saltLength = 10;
+
 	public static User parseUserLoginJSON(String userJson) throws Exception {
 		JsonElement userJO;
 		try {
@@ -28,14 +33,14 @@ public class UserManagement {
 		User user = new User();
 		try {
 			user.setUsername(userJO.getAsJsonObject().get("username").getAsString());
-			user.setPassword(userJO.getAsJsonObject().get("password").getAsString());
+			user.setPasswordRaw(userJO.getAsJsonObject().get("password").getAsString());
 		}catch (Exception e) {
-			throw new Exception("Error parsing username / password - keys not found");
+			throw new Exception("Error parsing username / password - JSON keys not found");
 		}
 		return user;
 	}
 	
-	public static User parseUserJSON(String userJson) throws Exception {
+	public static User createUserObjByBodyJSON(String userJson) throws Exception {
 		JsonElement userJO;
 		try {
 			userJO =  new JsonParser().parse(userJson).getAsJsonObject();			
@@ -44,6 +49,7 @@ public class UserManagement {
 		}
 		User user = new User();
 		try {
+			user.setSalt(Crypto.createSalt(saltLength)); 
 			user.setUsername(userJO.getAsJsonObject().get("username").getAsString());
 			user.setPassword(userJO.getAsJsonObject().get("password").getAsString());
 			user.setRole(userJO.getAsJsonObject().get("role").getAsString());
@@ -59,6 +65,7 @@ public class UserManagement {
 		boolean changed = false;
 		for (User user : users) {
 			if(user.getUsername().equals(username)) {
+				user.setSalt(Crypto.createSalt(saltLength)); 
 				user.setPassword(password);
 				persistUsers();
 				changed=true;
@@ -101,25 +108,46 @@ public class UserManagement {
 		Log.log(Level.FINE, "Loading users");
 		String usersJson;
 		String usersFile = PathFinder.getBasePath()+"users.json";
-		try {
-			usersJson = Helpers.readFile(usersFile);
-		} catch (Exception e) {
-			Log.log(Level.SEVERE, "Cannot load users file");
-			throw new Exception("Cannot load users file "+usersFile);
-		}
-		JsonArray usersJA =  new JsonParser().parse(usersJson).getAsJsonArray();
-		for (JsonElement userJO : usersJA) {
-			User user = new User();
-			user.setUsername(userJO.getAsJsonObject().get("username").getAsString());
-			user.setPasswordHashed(userJO.getAsJsonObject().get("password").getAsString());
-			String role = userJO.getAsJsonObject().get("role").getAsString();
-			if(!role.equals("rw") && !role.equals("r") && !role.contentEquals("a")) {
-				Log.log(Level.WARNING, "Unknown role set for user '"+user.getUsername()+"'. Setting 'r'");
-				role="r";
+		File usersFileObj = new File(usersFile);
+		if(!usersFileObj.exists()) {
+			String adminUserJSON ="  {\r\n" + 
+					"        \"username\": \""+defaultAdminUsername+"\",\r\n" + 
+					"        \"password\": \""+defaultAdminPassword+"\",\r\n" + 
+					"        \"role\": \"a\"\r\n" + 
+					"  }";
+			
+			User adminUser = UserManagement.createUserObjByBodyJSON(adminUserJSON);
+			Log.log(Level.INFO,"users.json file does not exist, assuming first run. creating default user '"+defaultAdminUsername+"' with password '"+defaultAdminPassword+"'");
+			users.add(adminUser);
+			persistUsers();
+		}else {
+			try {
+				usersJson = Helpers.readFile(usersFile);
+			} catch (Exception e) {
+				Log.log(Level.SEVERE, "Cannot load users file");
+				throw new Exception("Cannot load users file "+usersFile);
 			}
-			user.setRole(role);
-			Log.log(Level.FINE, "Loaded user '"+user.getUsername()+"' with role '"+user.getRole()+"'");
-			users.add(user);
+			JsonArray usersJA =  new JsonParser().parse(usersJson).getAsJsonArray();
+			for (JsonElement userJO : usersJA) {
+				User user = new User();
+				String role = "";
+				try {
+					user.setUsername(userJO.getAsJsonObject().get("username").getAsString());
+					user.setPasswordHashed(userJO.getAsJsonObject().get("password").getAsString());
+					user.setSalt(userJO.getAsJsonObject().get("salt").getAsString());
+					role = userJO.getAsJsonObject().get("role").getAsString();
+				}catch (Exception e) {
+					Log.log(Level.SEVERE, "Error loading users - JSON missing keys");
+					System.exit(-1);
+				}
+				if(!role.equals("rw") && !role.equals("r") && !role.contentEquals("a")) {
+					Log.log(Level.WARNING, "Unknown role set for user '"+user.getUsername()+"'. Setting 'r'");
+					role="r";
+				}
+				user.setRole(role);
+				Log.log(Level.FINE, "Loaded user '"+user.getUsername()+"' with role '"+user.getRole()+"'");
+				users.add(user);
+			}
 		}
 	}
 
@@ -127,12 +155,15 @@ public class UserManagement {
 		for (User user : users) {
 			if(MessageDigest.isEqual(user.getUsername().getBytes(),loginUser.getUsername().getBytes())) {
 				Log.log(Level.FINE, "Username '"+loginUser.getUsername()+"' found.");
+				loginUser.setSalt(user.getSalt());
+				loginUser.setPassword(loginUser.getPasswordRaw());
 				if(MessageDigest.isEqual(user.getPassword().getBytes(),loginUser.getPassword().getBytes())) {
 					Log.log(Level.INFO, "Password for username '"+loginUser.getUsername()+"' matches.");
 					loginUser.setRole(user.getRole());
 					return loginUser;
 				}else {
 					Log.log(Level.WARNING, "Unsuccessful login attempt with username '"+loginUser.getUsername()+"' - wrong password.");	
+					return null;
 				}
 			}
 		}

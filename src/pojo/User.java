@@ -4,8 +4,10 @@ import helpers.Crypto;
 
 public class User {
 	private String username;
-	private String password;
-	private int pwLength;
+	private String passwordSaltedHashed;
+	private String passwordRaw;
+	private String salt;
+	private int passwordRawLength;
 	private String role;
 
 	public String toString() {
@@ -13,16 +15,16 @@ public class User {
 	}
 
 	public String getPassword() {
-		return password.toUpperCase();
+		return passwordSaltedHashed.toUpperCase();
 	}
 	
 	public void setPassword(String password) {
-		this.pwLength=password.length();
-		this.password = Crypto.saltHashString(password);
+		this.passwordRawLength=password.length();
+		this.passwordSaltedHashed = Crypto.saltHashString(this.salt,password);
 	}
 
-	public void setPasswordHashed(String password) {
-		this.password = password;
+	public void setPasswordHashed(String passwordSaltedHashed) {
+		this.passwordSaltedHashed = passwordSaltedHashed;
 	}
 
 	public String getRole() {
@@ -45,12 +47,29 @@ public class User {
 		return "{ "+System.lineSeparator()
 				+ "	\"username\" : \""+getUsername()+"\","+System.lineSeparator()
 				+ "	\"password\" : \""+getPassword()+"\","+System.lineSeparator()
+				+ "	\"salt\" : \""+getSalt()+"\","+System.lineSeparator()
 				+ "	\"role\" : \""+getRole()+"\""+System.lineSeparator()
 				+"}";
 	}
 
 	public int getPwLength() {
-		return pwLength;
+		return passwordRawLength;
+	}
+
+	public String getSalt() {
+		return salt;
+	}
+
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+
+	public String getPasswordRaw() {
+		return passwordRaw;
+	}
+
+	public void setPasswordRaw(String passwordRaw) {
+		this.passwordRaw = passwordRaw;
 	}
 
 }

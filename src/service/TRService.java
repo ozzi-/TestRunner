@@ -392,7 +392,7 @@ public class TRService {
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
-		User userToAdd = UserManagement.parseUserJSON(body);
+		User userToAdd = UserManagement.createUserObjByBodyJSON(body);
 		
 		if(userToAdd.getPwLength()<8) {
 			throw new Exception("Password length is 8 characters minimum");
@@ -405,7 +405,7 @@ public class TRService {
 		if( !userToAdd.getRole().equals("a") && !userToAdd.getRole().equals("rw") && !userToAdd.getRole().equals("r")) {
 			throw new Exception("Invalid role");
 		}
-		Log.log(Level.INFO, "'"+userName+"' is adding user '"+userToAdd.getUsername()+"'");
+		Log.log(Level.INFO, "'"+userName+"' is adding user '"+userToAdd.getUsername()+"' with role '"+userToAdd.getRole()+"'");
 		UserManagement.addUser(userToAdd);
 		try {
 			UserManagement.loadUsers();
