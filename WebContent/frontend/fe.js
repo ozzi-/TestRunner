@@ -345,11 +345,17 @@ function listTestContent(result){
 // * Network *
 // ***********
 
+window.errorReported=false;
+
 function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 	var request = new XMLHttpRequest();
 	request.timeout = 5000;
+	
 	request.ontimeout = function() {
-		alert("The request for " + url + " timed out.");
+		if(!window.errorReported){
+			window.errorReported=true;
+			alert("The request for " + url + " timed out.");
+		}
 	};
 
 	request.onreadystatechange = function() {
@@ -359,7 +365,10 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 					params = [request].concat(params);
 					callback.apply(this,params);
 				} catch (e) {
-					alert("Unknown error");
+					if(!window.errorReported){
+						window.errorReported=true;
+						alert("Unknown error");
+					}
 				}
 			}else if(request.status==403){
 				window.location.replace("index.html?page=login");
@@ -368,8 +377,11 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 				try { 
 					callback(request);
 				} catch (e) {
-					alert("Unknown error");
-					console.log(e);
+					if(!window.errorReported){
+						window.errorReported=true;
+						alert("Unknown error");
+						console.log(e);
+					}
 				}
 			}
 		}
@@ -386,12 +398,15 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 
 function doRequest(method, url, callback, params) {
 	var request = new XMLHttpRequest();
-
 	request.timeout = 5000;
+	
 	request.ontimeout = function() {
-		alert("The request for " + url + " timed out.");
+		if(!window.errorReported){
+			window.errorReported=true;
+			alert("The request for " + url + " timed out.");
+		}
 	};
-
+	
 	request.onreadystatechange = function() {
 		if (request.readyState == 4) {
 			if (request.status == 200) {
@@ -417,7 +432,10 @@ function doRequest(method, url, callback, params) {
 					if(request.status==404){
 						window.location.replace("index.html");
 					}else{
-						alert("Unknown error");						
+						if(!window.errorReported){
+							window.errorReported=true;
+							alert("Unknown error");	
+						}
 					}
 				}
 			}
