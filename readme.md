@@ -10,10 +10,10 @@ TR enables you to do all of this by giving you a unified way of running tests & 
 ![s](https://i.imgur.com/oronXja.png) meep meep
 
 ## Main Page
-![TR](https://i.imgur.com/HJAXeMl.png)
+![TR](https://i.imgur.com/RZEZDSJ.png)
 
 ## Results Page
-![TR](https://i.imgur.com/am3m9lU.png)
+![TR](https://i.imgur.com/fMDudfH.png)
 
 # TR Principles
 ## Tests
@@ -57,7 +57,7 @@ However there are different reasons why a task can fail:
 - The task returned a non zero exit code
 
 If one task failes, the whole test will be marked as failed.
-![example result](https://i.imgur.com/D7YzZ4q.png)
+![example result](https://i.imgur.com/iULtQ1A.png)
 
 
 ## Test Groups
@@ -135,7 +135,7 @@ Example of two defined users:
 The role "r" can only view results, "rw" can additionally run the defined tests.
 The role "a" stands for admin, it includes "rw" rights as well as the possibility to administer users.
 
-![settings page](https://i.imgur.com/g0dlXBv.png)
+![settings page](https://i.imgur.com/mAYKsU6.png)
 
 ## Tests
 All tests are stored in basePath/tests/. Each test is defined in its own file.
