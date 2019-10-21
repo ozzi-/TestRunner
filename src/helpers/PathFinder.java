@@ -37,7 +37,7 @@ public class PathFinder {
 		
 
 	/**
-	 * @return i.E: "C:\Users\HIN\Desktop\"
+	 * @return i.E: "C:\Users\TR\Desktop\"
 	 */
 	public static String getBasePath() throws Exception {
 		String basePath ="";
