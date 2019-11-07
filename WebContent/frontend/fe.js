@@ -349,7 +349,6 @@ window.errorReported=false;
 
 function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 	var request = new XMLHttpRequest();
-	request.timeout = 5000;
 	
 	request.ontimeout = function() {
 		if(!window.errorReported){
@@ -387,6 +386,8 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 		}
 	};
 	request.open(method, url);
+	request.timeout = 5000;
+
 	if(sendAuth){
 		request.setRequestHeader('X-TR-Session-ID', localStorage.getItem('TR_Token'));
 	}
@@ -398,7 +399,6 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 
 function doRequest(method, url, callback, params) {
 	var request = new XMLHttpRequest();
-	request.timeout = 5000;
 	
 	request.ontimeout = function() {
 		if(!window.errorReported){
@@ -442,6 +442,8 @@ function doRequest(method, url, callback, params) {
 		}
 	};
 	request.open(method, url);
+	request.timeout = 5000;
+
 	request.setRequestHeader('X-TR-Session-ID', localStorage.getItem('TR_Token'));
 	request.send();
 }
