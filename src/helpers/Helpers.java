@@ -126,7 +126,7 @@ public class Helpers {
 				if(task.has("args")) {
 					JSONArray args = task.getJSONArray("args");
 					for (Object argObj : args) {
-						taskElem.args.add((String)argObj);
+						taskElem.args.add(argObj.toString());
 					}
 				}
 				if (task.has("timeout")) {
@@ -138,7 +138,7 @@ public class Helpers {
 			if (e instanceof JSONException) {
 				throw new Exception("Could not load test due to JSON error: " + e.getMessage());
 			} else {
-				throw new Exception("Could not load settings and / or tests from test json");
+				throw new Exception("Could not load settings and / or tests from test json: " + e.getMessage());
 			}
 		}
 		return testElem;
