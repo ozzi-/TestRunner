@@ -1,3 +1,8 @@
+![build status](https://api.travis-ci.com/ozzi-/TestRunner.svg?branch=master)
+![licence](https://img.shields.io/github/license/ozzi-/TestRunner.svg)
+![open issues](https://img.shields.io/github/issues/ozzi-/TestRunner.svg)
+
+
 # TR - Test Runner
 Do you have a bunch of scripts that test applications / services during runtime?
 
