@@ -15,10 +15,10 @@ TR enables you to do all of this by giving you a unified way of running tests & 
 ![s](https://i.imgur.com/oronXja.png) meep meep
 
 ## Main Page
-![TR](https://i.imgur.com/RZEZDSJ.png)
+![TR](https://i.imgur.com/fxkVzg0.png)
 
 ## Results Page
-![TR](https://i.imgur.com/fMDudfH.png)
+![TR](https://i.imgur.com/1szWsK1.png)
 
 # TR Principles
 ## Tests
@@ -140,7 +140,7 @@ Example of two defined users:
 The role "r" can only view results, "rw" can additionally run the defined tests.
 The role "a" stands for admin, it includes "rw" rights as well as the possibility to administer users.
 
-![settings page](https://i.imgur.com/mAYKsU6.png)
+![settings page](https://i.imgur.com/i34HCAT.png)
 
 ## Tests
 All tests are stored in basePath/tests/. Each test is defined in its own file.
