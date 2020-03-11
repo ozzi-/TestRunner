@@ -211,9 +211,11 @@ This group contains the two tests "auth_sso" and "auth_mail".
 	{
 	  "description": "Grouping all auth tests",
 	  "tests": [{
-		"name": "auth_sso"
+		"test": "auth_sso",
+		"name": "SSO"
 	  },{
-		"name": "auth_mail"
+		"test": "auth_mail",
+		"name": "Mail"
 	  }]
 	}
 	
