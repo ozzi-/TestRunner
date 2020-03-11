@@ -251,17 +251,21 @@ Returns the base path where TR will look for the test file and will store result
 
        /var/lib/TR/
 
-## /TR/run/{testname}
+## /TR/run/{testname}/{tag:Optional}/{additionalArgs:Optional}
 Runs a test, returns a handle to the specific test run.
 Requires the 'rw' role.
 
       {"name":"example","handle":"1562594955560"}
+      
+Note: additional args will be split on white spaces.
 
-## /TR/runGroup/{groupname}
+## /TR/runGroup/{groupname}/{tag:Optional}/{additionalArgs:Optional}
 Runs a test group, returns a handle to the specific test run.
 Requires the 'rw' role.
 
       {"name":"examplegroup","handle":"1562594955561"}
+      
+Note: additional args will be split on white spaces.
 
 ## /TR/getResults/{testname}
 Returns all results for the specific test.
