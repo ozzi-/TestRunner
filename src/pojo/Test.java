@@ -8,4 +8,5 @@ public class Test {
 	public String description;
 	public String successHook;
 	public String failureHook;
+	public String tag;
 }

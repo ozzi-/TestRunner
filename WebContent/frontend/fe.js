@@ -1,6 +1,8 @@
 'use strict';
 var sun = "&#9728";
 var cloud = "&#127785;";
+var pageIndex=0;
+
 var htmlFormatter = function(cell, formatterParams){
     var data = cell.getData();
     return cell.getValue();
@@ -128,6 +130,23 @@ function doLogout() {
 // * Run *
 // *******
 
+function runCustomTest(){
+	var tag = document.getElementById("tag").value;
+	if(tag.length<1){
+		alert("Please provide string to tag this test run.");
+		return;
+	}
+	var args = document.getElementById("args").value;
+	
+	var name = getQueryParams(document.location.search).name;
+	if(name=="undefined" || name === undefined ){
+		name = getQueryParams(document.location.search).groupname;
+		location.assign('index.html?page=run&groupname='+name+"&tag="+encodeURIComponent(tag)+"&args="+encodeURIComponent(args));
+	}else{
+		location.assign('index.html?page=run&name='+name+"&tag="+encodeURIComponent(tag)+"&args="+encodeURIComponent(args));
+	}
+}
+
 function runTest(res,name,paramName) {
 	runInternal(res, name ,paramName, "getStatus");
 }
@@ -138,9 +157,14 @@ function runTestGroup(res,name,paramName) {
 
 function runInternal(res, name, paramName, call){
 	var pollTime = 1200;
-	var handle = res.handle;
+	var handle = res.handle;	
 	function doPoll() {
-		doRequest("GET", "../"+call+"/" + name + "/" + handle, poll, [name,paramName, poller, handle], true);
+		var tag = getQueryParams(document.location.search).tag;
+		var handleS = handle;
+		if(tag!="undefined" && tag!==undefined){
+			handleS = handleS+"_"+tag
+		}
+		doRequest("GET", "../"+call+"/" + name + "/" + handleS, poll, [name,paramName, poller, handleS], true);
 	}
 	doPoll();
 	var poller;
@@ -169,20 +193,23 @@ function listTests(tests) {
 
 	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
 		var table = new Tabulator("#testsTable", {
+			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    columns:[
-		    {title:"Test", field:"test", minWidth:170, formatter:htmlFormatter},
+		    {title:"Test", field:"test",  formatter:htmlFormatter},
 		    {title:"Run", field:"run",  minWidth:70, formatter:htmlFormatter},
+		    {title:"Custom", field:"runT",  minWidth:70, formatter:htmlFormatter},
 		    {title:"Status", field:"status", minWidth:70, formatter:htmlFormatter},
-		    {title:"Last Run", field:"lastRun" , minWidth:170},
+		    {title:"Last Run", field:"lastRun"},
 		    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});
 	}else{
 		var table = new Tabulator("#testsTable", {
-		    layout:"fitDataFill", 
+			layoutColumnsOnNewData:true,
+		    layout:"fitDataFill",
 		    columns:[
-		    {title:"Test", field:"test", minWidth:170, formatter:htmlFormatter},
+		    {title:"Test", field:"test", minWidth:300, formatter:htmlFormatter},
 		    {title:"Status", field:"status", minWidth:70, formatter:htmlFormatter},
 		    {title:"Last Run", field:"lastRun" , minWidth:170},
 		    {title:"Last Run Time", field:"lastRunTime"},
@@ -196,41 +223,48 @@ function listTests(tests) {
 	for (var i = 0; i < testCount; i++) {
 		var testLink = "<a href=\"index.html?page=results&name="+tests[i].name+"\">"+tests[i].name+"</a>";
 		var runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&name="+tests[i].name+"\"> &#9654; </a>";
+		var runTLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=custom&name="+tests[i].name+"\"> &#128221; </a>";
 		var runState = tests[i].lastRunPassed ? sun : cloud;
 		runState = tests[i].lastRunDate.length==0 ? "-" : runState;
 		var lastRunTime = timeConversion(tests[i].totalRunTimeInMS);
 		if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-			table.addRow([{test:testLink, run:runLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime}], false);
+			table.addRow([{test:testLink, run:runLink, runT:runTLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime}], false);
 		}else{
 			table.addRow([{test:testLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime}], false);			
 		}
 	}
+	table.redraw(true);
+
 }
 
 function listGroups(groups){
 	var groupCount = groups.length;
 	removeLoader();
-	
 	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
 		var table = new Tabulator("#testGroupsTable", {
+			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    columns:[
-		    {title:"Group", field:"group", minWidth:170, formatter:htmlFormatter},
-		    {title:"Tests", field:"tests"},
+		    {title:"Group", field:"group",  formatter:htmlFormatter},
+		    {title:"Description", field:"description", formatter:htmlFormatter},
+		    {title:"Tests", field:"tests", width:300},
 		    {title:"Run", field:"run", minWidth:70, formatter:htmlFormatter},
+		    {title:"Custom", field:"runT", minWidth:70, formatter:htmlFormatter},
 		    {title:"Status", field:"status", formatter:htmlFormatter},
-		    {title:"Last Run", field:"lastRun", minWidth:170},
+		    {title:"Last Run", field:"lastRun"},
 		    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});
 	}else{
 		var table = new Tabulator("#testGroupsTable", {
+			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    columns:[
-			    {title:"Group", field:"group", minWidth:170, formatter:htmlFormatter},
-			    {title:"Tests", field:"tests"},
+			    {title:"Group", field:"group", formatter:htmlFormatter},
+			    {title:"Description", field:"description", formatter:htmlFormatter},
+			    {title:"Tests", field:"tests",  width:300},
 			    {title:"Status", field:"status", formatter:htmlFormatter},
-			    {title:"Last Run", field:"lastRun" , minWidth:170},
+			    {title:"Last Run", field:"lastRun" },
 			    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});		
@@ -241,22 +275,69 @@ function listGroups(groups){
 	for (var i = 0; i < groupCount; i++) {
 		var tests ="";
 		for(var j = 0; j < groups[i].tests.length; j++){
-			tests+=groups[i].tests[j].name+",";
+			tests+=groups[i].tests[j].name+"("+groups[i].tests[j].test+") , ";
 		}
-		tests = tests.slice(0, -1);
+		tests = tests.slice(0, -2);
 		
 		var groupLink = "<a href=\"index.html?page=results&groupname="+groups[i].name+"\">"+groups[i].name+"</a>";
 		var runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&groupname="+groups[i].name+"\"> &#9654; </a>";
+		var runTLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=custom&groupname="+groups[i].name+"\"> &#128221; </a>";
 		var runState = groups[i].lastRunPassed ? sun : cloud;
+		var description = groups[i].description;
 		runState = groups[i].lastRunDate.length==0 ? "-" : runState;
 		var lastRunTime = timeConversion(groups[i].totalRunTimeInMS);
 		if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-			table.addRow([{group:groupLink, tests:tests, run:runLink, status:runState, lastRun: groups[i].lastRunDate, lastRunTime:lastRunTime}], false);
+			table.addRow([{group:groupLink, description:description, tests:tests, run:runLink, runT:runTLink, status:runState, lastRun: groups[i].lastRunDate, lastRunTime:lastRunTime}], false);
 		}else{
-			table.addRow([{group:groupLink, tests:tests, status:runState, lastRun: groups[i].lastRunDate, lastRunTime:lastRunTime}], false);			
+			table.addRow([{group:groupLink, description:description, tests:tests, status:runState, lastRun: groups[i].lastRunDate, lastRunTime:lastRunTime}], false);			
 		}
 	}
+	table.redraw(true);
 }
+
+function loadMore(){
+	var paramName;
+	pageIndex++
+	document.getElementById("loadmore").disabled = true;
+	
+	var name = getQueryParams(document.location.search).name;
+	if(name=="undefined" || name === undefined ){
+		name = getQueryParams(document.location.search).groupname;
+		paramName="groupname";
+		doRequest("GET", "../getGroupResults/"+name+"/"+pageIndex, addResults,[paramName]);
+	}else{
+		paramName="name";
+		doRequest("GET", "../getResults/" + name+"/"+pageIndex, addResults,[paramName]);
+	}
+}
+
+function addResults(results,paramName){
+	var resultCount = results.length;
+	
+	if(resultCount==0) {
+		document.getElementById("loadmore").disabled = true;
+		document.getElementById("loadmore").innerHTML = "no more results";
+		return;
+	}
+	
+	var table = document.getElementById("resultsSpan").tableHandle;
+	
+	for (var i = 0; i < resultCount; i++) {
+		var a = document.createElement("a");
+		var passed = true;
+		for (var j = 0; j < results[i].result.results.length; j++) {
+			passed = results[i].result.results[j].passed;
+			if(!passed){
+				break;
+			}
+		}
+		var status = (passed==true ? " "+sun: " "+cloud);
+		var lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
+		table.addRow([{status:status, lastRun: lastRun}], false);
+	}
+	document.getElementById("loadmore").disabled = false;
+}
+
 function listResults(results,paramName) {
 	removeLoader();
 	var testName = document.getElementById("testName");
@@ -283,16 +364,15 @@ function listResults(results,paramName) {
 			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+results[0].result.testName+'\')"> Run Test &#9654;</a>';			
 		}
 		
-			
-		
 		var table = new Tabulator("#resultsSpan", {
 		    layout:"fitDataFill",
 		    columns:[
 		    {title:"Status", field:"status", formatter:htmlFormatter},
 		    {title:"Last Run", field:"lastRun", formatter:htmlFormatter, minWidth:170},
+		    {title:"Tag", field:"tag"},
 		    ],
 		});
-		
+		document.getElementById("resultsSpan").tableHandle = table;
 		
 		for (var i = 0; i < resultCount; i++) {
 			var a = document.createElement("a");
@@ -304,9 +384,11 @@ function listResults(results,paramName) {
 				}
 			}
 			var status = (passed==true ? " "+sun: " "+cloud);
+			var tagS = results[i].tag !== undefined ? results[i].tag : "";
 			var lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
-			table.addRow([{status:status, lastRun: lastRun}], false);
+			table.addRow([{status:status, lastRun: lastRun, tag: tagS}], false);
 		}
+		table.redraw(true);
 	}
 }
 
@@ -328,8 +410,8 @@ function listResult(result) {
 	for (var i = 0; i < result.results.length; i++) {
 		resultsSpan.innerHTML += "<h3>"+result.results[i].name + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
 				+ "<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>"
-				+ "<b>Output:</b> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " 
-				+ "<b>Error Output:</b> " + escapeHtml(result.results[i].errorOutput) + "<br>"
+				+ "<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " 
+				+ "<b>Error Output:</b><br> " + escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />") + "<br>"
 				+ "<b>Runtime: </b> "+ escapeHtml(result.results[i].runTimeInMS) + " ms<br> "
 				+ "<br><hr><br>";
 	}
@@ -441,6 +523,15 @@ function doRequest(method, url, callback, params) {
 			}
 		}
 	};
+	
+	if(method.toUpperCase()==="GET"){
+		var cacheBusterStrng = "cacheBuster=";
+		if(!url.includes(cacheBusterStrng)){
+			var appendChar = url.includes("?") ? "&" : "?"; 
+			url = url + appendChar + cacheBusterStrng + (Math.random()*1000000);
+		}
+	}
+	
 	request.open(method, url);
 	request.timeout = 5000;
 

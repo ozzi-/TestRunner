@@ -22,6 +22,7 @@ public class UncaughtException extends Throwable implements ExceptionMapper<Thro
 		error.addProperty("error", exception.getMessage());
 		error.addProperty("method", resourceInfo.getResourceMethod().getName());
 		Log.log(Level.WARNING, "Uncaught Exception -  "+exception.getMessage());
+		exception.printStackTrace();
 		return Response.status(500).entity(error.toString()).type("application/json").build();
 	}
 }

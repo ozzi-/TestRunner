@@ -31,16 +31,16 @@ public class Persistence {
 			res.add("results", resultsArray);	
 		return res.toString();
 	}
-
 	
 	public static String persistAsJSONFile(Test test, Results results, boolean group, String userName) throws Exception {
 		String json = persistAsJSON(test, results, userName);
 		String handle = String.valueOf(test.start);
 		String fullPersistencePath;
+		String tag = test.tag.equals("")?"":"_"+test.tag;
 		if(group) {
-			fullPersistencePath = PathFinder.getSpecificTestGroupResultPath(test.name, String.valueOf(test.start),true);
+			fullPersistencePath = PathFinder.getSpecificTestGroupResultPath(test.name, String.valueOf(test.start)+tag,true);
 		}else {
-			fullPersistencePath = PathFinder.getSpecificTestResultPath(test.name, String.valueOf(test.start),true);			
+			fullPersistencePath = PathFinder.getSpecificTestResultPath(test.name, String.valueOf(test.start)+tag,true);			
 		}
 		Log.log(Level.FINE, "Trying to persist as json file");
         try {
@@ -50,11 +50,11 @@ public class Persistence {
 			System.err.println("Error while trying to persist results under '"+fullPersistencePath+"'. Reason: "+e.getClass().getCanonicalName());
 			System.exit(4);
 		}
-        String fullPersistencePathRunning;
+        String fullPersistencePathRunning; 
         if(group) {
-        	fullPersistencePathRunning = PathFinder.getSpecificTestGroupResultStatusPath(test.name, handle, true);        	
+        	fullPersistencePathRunning = PathFinder.getSpecificTestGroupResultStatusPath(test.name, handle+tag, true);        	
         }else {
-        	fullPersistencePathRunning = PathFinder.getSpecificTestResultStatusPath(test.name, handle, true);
+        	fullPersistencePathRunning = PathFinder.getSpecificTestResultStatusPath(test.name, handle+tag, true);
         }
 		File runningFile = new File(fullPersistencePathRunning);
 		Log.log(Level.FINE, "Deleting running file");

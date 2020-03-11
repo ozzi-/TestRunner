@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
 
@@ -19,7 +20,8 @@ import pojo.Test;
 public class Helpers {
 
 	private static final ArrayList<String> allowedChars = new ArrayList<String>();
-
+	private static final int pageSize = 20;
+	
 	public static ArrayList<String> getAllowedSessionChars() {
 		if (allowedChars.size() == 0) {
 			allowedChars.addAll(getASCIICharacters(48, 57)); // 0-9
@@ -48,7 +50,7 @@ public class Helpers {
 		return folder.listFiles();
 	}
 
-	public static ArrayList<String> getListOfFiles(String path, String endsWith) {
+	public static ArrayList<String> getListOfFiles(String path, String endsWith, int page) {
 		File folder = new File(path);
 		File[] listOfFiles = folder.listFiles();
 		ArrayList<String> listOfFilesFiltered = new ArrayList<String>();
@@ -59,9 +61,29 @@ public class Helpers {
 				}
 			}
 		}
-		return listOfFilesFiltered;
+
+		if(page ==-1) {
+			return listOfFilesFiltered;
+		}else {
+			Collections.sort(listOfFilesFiltered, Collections.reverseOrder());
+			ArrayList<String> result = new ArrayList<String>();
+			int i=0; 
+			int addedCount=0;
+			for (String name : listOfFilesFiltered) {
+				if(i>=(pageSize*page)) {
+					if(addedCount<pageSize) {
+						result.add(name);
+						addedCount++;
+					}					
+				}
+				i++;
+			}
+			return result;			
+		}
 	}
 
+
+	
 	public static String readFile(String path) throws Exception {
 		Log.log(Level.FINEST, "Reading file " + path);
 		byte[] encoded;
@@ -162,10 +184,12 @@ public class Helpers {
 	 */
 	public static void createRunningFile(Test test, boolean group) throws Exception {
 		String basePath;
+		String tag = test.tag.equals("")?"":"_"+test.tag;
+
 		if (group) {
-			basePath = PathFinder.getSpecificTestGroupResultStatusPath(test.name, String.valueOf(test.start), true);
+			basePath = PathFinder.getSpecificTestGroupResultStatusPath(test.name, String.valueOf(test.start)+tag, true);
 		} else {
-			basePath = PathFinder.getSpecificTestResultStatusPath(test.name, String.valueOf(test.start), true);
+			basePath = PathFinder.getSpecificTestResultStatusPath(test.name, String.valueOf(test.start)+tag, true);
 		}
 		File runningFile = new File(basePath);
 		try {

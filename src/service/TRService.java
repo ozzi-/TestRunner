@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.logging.Level;
 
 import javax.ws.rs.Consumes;
@@ -27,7 +28,9 @@ import com.google.gson.JsonParser;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
+import pojo.GroupTestAbstraction;
 import pojo.Session;
+import pojo.Task;
 import pojo.Test;
 import pojo.User;
 import testRunner.Testing;
@@ -35,6 +38,10 @@ import testRunner.Testing;
 @Path("/")
 public class TRService {
 	private static final String headerNameSessionID = "X-TR-Session-ID";
+	
+	// TODO refactor
+	// TODO debug additional args in script ? greoups add multiple times??
+	// TODO improved error handling (i.E. when parsing tests, it throws json parser error, but not which file it crashed . . )
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -47,7 +54,7 @@ public class TRService {
 			Session session = SessionManagement.createSession(user.getUsername(),user.getRole());
 			return Response.status(200).entity(session.toJSONObj().toString()).type("application/json").build();
 		}
-		return Response.status(401).entity("username or password wrong").build();
+		return Response.status(401).entity("Username or Password wrong").build();
 	}
 	
 	@GET
@@ -113,23 +120,39 @@ public class TRService {
 	}
 
 	@POST
+	@Path("/run/{testname}/{tag}/{args}")
+	public Response runTestByNameCustom(@PathParam("testname") String testName , @PathParam("tag") String tag, @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
+		String userName = checkLogin(headers,true,false);
+		if ( userName == null) {
+			return unauthorizedResponse();
+		}
+		JsonObject resp = runTestInternal(testName, userName,tag,args);
+
+		return Response.status(200).entity(resp.toString()).type("application/json").build();
+	}
+	
+	@POST
+	@Path("/run/{testname}/{tag}")
+	public Response runTestByNameTag(@PathParam("testname") String testName , @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
+		String userName = checkLogin(headers,true,false);
+		if ( userName == null) {
+			return unauthorizedResponse();
+		}
+		JsonObject resp = runTestInternal(testName, userName,tag,"");
+
+		return Response.status(200).entity(resp.toString()).type("application/json").build();
+	}
+
+
+	
+	@POST
 	@Path("/run/{testname}")
 	public Response runTestByName(@PathParam("testname") String testName, @Context HttpHeaders headers) throws Exception {
 		String userName = checkLogin(headers,true,false);
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
-		Log.log(Level.INFO, "User "+userName+" running test " + testName);
-		JSONObject obj = Helpers.loadConfig(PathFinder.getSpecificTestPath(testName));
-		Test test = Helpers.parseConfig(obj, testName);
-
-		test.start = System.currentTimeMillis();
-		Helpers.createRunningFile(test, false);
-		Testing.runTestInThread(test, false, userName);
-
-		JsonObject resp = new JsonObject();
-		resp.addProperty("name", test.name);
-		resp.addProperty("handle", String.valueOf(test.start));
+		JsonObject resp = runTestInternal(testName, userName,"","");
 
 		return Response.status(200).entity(resp.toString()).type("application/json").build();
 	}
@@ -141,7 +164,59 @@ public class TRService {
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
-		Log.log(Level.INFO, "User "+userName+" running group test " + groupName);
+		JsonObject resp = runGroupInternal(groupName, userName,"","");
+		return Response.status(200).entity(resp.toString()).type("application/json").build();
+	}
+	
+	@POST
+	@Path("/runGroup/{groupname}/{tag}")
+	public Response runTestGroupByNameTag(@PathParam("groupname") String groupName, @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
+		String userName = checkLogin(headers,true,false);
+		if ( userName == null) {
+			return unauthorizedResponse();
+		}
+		JsonObject resp = runGroupInternal(groupName, userName,tag,"");
+		return Response.status(200).entity(resp.toString()).type("application/json").build();
+	}
+	
+	@POST
+	@Path("/runGroup/{groupname}/{tag}/{args}")
+	public Response runTestGroupByNameCustom(@PathParam("groupname") String groupName, @PathParam("tag") String tag,  @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
+		String userName = checkLogin(headers,true,false);
+		if ( userName == null) {
+			return unauthorizedResponse();
+		}
+		JsonObject resp = runGroupInternal(groupName, userName,tag,args);
+		return Response.status(200).entity(resp.toString()).type("application/json").build();
+	}
+
+	
+	private JsonObject runTestInternal(String testName, String userName, String tag, String args) throws Exception {
+		Log.log(Level.INFO, "User "+userName+" running test " + testName+" with tag = "+tag+" and additional args = "+args);
+		JSONObject obj = Helpers.loadConfig(PathFinder.getSpecificTestPath(testName));
+		Test test = Helpers.parseConfig(obj, testName);
+		
+		ArrayList<Task> tasks = test.tasks;
+		for (Task task : tasks) { 
+			ArrayList<String> argsList = task.args;
+			Collections.addAll(argsList, args.split("\\s+"));
+			Log.log(Level.FINEST, "Added "+(Arrays.toString(args.split("\\s+")))+" command line args to test " + testName);
+		} 
+		test.tag = tag;
+		test.start = System.currentTimeMillis();
+		Helpers.createRunningFile(test, false);
+		Testing.runTestInThread(test, false, userName);
+
+		JsonObject resp = new JsonObject();
+		resp.addProperty("name", test.name);
+		resp.addProperty("handle", String.valueOf(test.start));
+
+		return resp;
+	}
+	
+	private JsonObject runGroupInternal(String groupName, String userName, String tag, String args) throws Exception {
+		Log.log(Level.INFO, "User "+userName+" running group test " + groupName+" with tag = "+tag+" and addtional args = "+args);
+
 		JSONObject group = Helpers.loadConfig(PathFinder.getSpecificGroupPath(groupName));
 		JSONArray tests = (JSONArray) group.get("tests");
 		long curMil = System.currentTimeMillis();
@@ -149,29 +224,38 @@ public class TRService {
 		Test test = new Test();
 		test.description = "Group Test '" + groupName + "' consisting of tests: ";
 		test.name = groupName;
+		test.tag = tag;
 		test.start = curMil;
 		// Merging Tests
 		mergeTestsToGroupTest(tests, test);
+		
+		ArrayList<Task> tasks = test.tasks;
+		for (Task task : tasks) { 
+			ArrayList<String> argsList = task.args;
+			Collections.addAll(argsList, args.split("\\s+"));
+			Log.log(Level.FINEST, "Added "+(Arrays.toString(args.split("\\s+")))+" command line args to test " + groupName);
+		} 
+		
 		Helpers.createRunningFile(test, true);
 		Testing.runTestInThread(test, true, userName);
 
 		JsonObject resp = new JsonObject();
 		resp.addProperty("name", groupName);
 		resp.addProperty("handle", handle);
-
-		return Response.status(200).entity(resp.toString()).type("application/json").build();
+		return resp;
 	}
 
 	@GET
-	@Path("/getResults/{testname}")
-	public Response getResultsByName(@PathParam("testname") String testName, @Context HttpHeaders headers) throws Exception {
+	@Path("/getResults/{testname}/{page}")
+	public Response getResultsByName(@PathParam("testname") String testName, @PathParam("page") int page, @Context HttpHeaders headers) throws Exception {
 		String userName = checkLogin(headers,false,false);
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
+		
 		JsonArray resultsArray = new JsonArray();
 		try {
-			ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName), PathFinder.getDataLabel());
+			ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName), PathFinder.getDataLabel(),page);
 			getResultsInternal(testName, resultsArray, listOfFiles, false);
 		} catch (Exception e) {
 			throw new Exception("Cannot load or parse test result");
@@ -180,16 +264,15 @@ public class TRService {
 	}
 
 	@GET
-	@Path("/getGroupResults/{groupname}")
-	public Response getGroupResultsByName(@PathParam("groupname") String groupName, @Context HttpHeaders headers) throws Exception {
+	@Path("/getGroupResults/{groupname}/{page}")
+	public Response getGroupResultsByName(@PathParam("groupname") String groupName, @PathParam("page") int page, @Context HttpHeaders headers) throws Exception {
 		String userName = checkLogin(headers,false,false);
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
 		JsonArray resultsArray = new JsonArray();
 		try {
-			ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName),
-					PathFinder.getDataLabel());
+			ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName), PathFinder.getDataLabel(), page);
 			getResultsInternal(groupName, resultsArray, listOfFiles, true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -205,8 +288,8 @@ public class TRService {
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
-		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName), PathFinder.getDataLabel());
-		long newest = getNewest(listOfFiles);
+		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName), PathFinder.getDataLabel(),-1);
+		String newest = getNewest(listOfFiles);
 		String handle = String.valueOf(newest);
 		String path = PathFinder.getSpecificTestResultPath(testName, handle, false);
 		return getResultInternal(path);
@@ -219,9 +302,8 @@ public class TRService {
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
-		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName),
-				PathFinder.getDataLabel());
-		long newest = getNewest(listOfFiles);
+		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName), PathFinder.getDataLabel(),-1);
+		String newest = getNewest(listOfFiles);
 		String handle = String.valueOf(newest);
 		String path = PathFinder.getSpecificTestGroupResultPath(groupName, handle, false);
 		return getResultInternal(path);
@@ -247,7 +329,7 @@ public class TRService {
 		}
 		JsonElement test = null;
 		try {
-			ArrayList<String> paths = getTestPathsOfGroupName(groupName);
+			ArrayList<GroupTestAbstraction> paths = getTestInfoByGroupName(groupName);
 			ArrayList<JsonElement> tests = getJsonElementsOfPath(paths);
 			test = mergeTests(tests,groupName);
 		} catch (IOException e) {
@@ -354,11 +436,11 @@ public class TRService {
 		}
 
 		JsonArray testsArray = new JsonArray();
-		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestsPath(), PathFinder.getTestLabel());
+		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestsPath(), PathFinder.getTestLabel(),-1);
 		for (String name : listOfFiles) {
 			JsonObject test = new JsonObject();
 			String testName = name.substring(0, name.length() - PathFinder.getTestLabel().length());
-			ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName), PathFinder.getDataLabel());
+			ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName), PathFinder.getDataLabel(),-1);
 			test.addProperty("name", testName);
 			enrichLastRunData(test, testName, listResults);
 			testsArray.add(test);
@@ -374,7 +456,7 @@ public class TRService {
 			return unauthorizedResponse();
 		}
 		JsonArray groupsArray = new JsonArray();
-		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupsPath(), PathFinder.getGroupLabel());
+		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupsPath(), PathFinder.getGroupLabel(),-1);
 		for (String name : listOfFiles) {
 			String testName = name.substring(0, name.length() - PathFinder.getGroupLabel().length());
 			String content = Helpers.readFile(PathFinder.getSpecificGroupPath(testName));
@@ -535,8 +617,7 @@ public class TRService {
 		return Response.status(200).entity(test.toString()).type("application/json").build();
 	}
 
-	private void getResultsInternal(String testName, JsonArray resultsArray, ArrayList<String> listOfFiles,
-			boolean group) throws Exception {
+	private void getResultsInternal(String testName, JsonArray resultsArray, ArrayList<String> listOfFiles, boolean group) throws Exception {
 		for (String handle : listOfFiles) {
 			handle = handle.substring(0, handle.length() - PathFinder.getDataLabel().length());
 			String resultPath;
@@ -545,7 +626,11 @@ public class TRService {
 			} else {
 				resultPath = PathFinder.getSpecificTestResultPath(testName, handle, false);
 			}
+			
 			JsonObject result = new JsonObject();
+			if(handle.contains("_")) {
+				result.addProperty("tag", handle.substring(handle.indexOf("_")+1));
+			}
 			JsonElement resultJson = new JsonParser().parse(Helpers.readFile(resultPath));
 			result.addProperty("handle", handle);
 
@@ -554,20 +639,34 @@ public class TRService {
 		}
 	}
 
+	private String getDescriptionOfGroup(String groupName) throws Exception {
+		String path = PathFinder.getSpecificGroupPath(groupName);
+		String result = Helpers.readFile(path);
+		JsonParser parser = new JsonParser();
+		JsonElement jsonElement = parser.parse(result);
+		return jsonElement.getAsJsonObject().get("description").getAsString();
+	}
+	
 	private JsonObject parseTestGroup(String name, String content) throws Exception {
 		JsonObject testGroup = new JsonObject();
 		JsonArray testGroupTests = new JsonArray();
-		JsonObject test = new JsonParser().parse(content).getAsJsonObject();
+		JsonObject test;
+		try {
+			test = new JsonParser().parse(content).getAsJsonObject();			
+		}catch (Exception e) {
+			throw new Exception("Error parsing test group \""+name+"\" - "+e.getMessage());
+		}
 		String groupName = name.substring(0, name.length() - PathFinder.getGroupLabel().length());
 		testGroup.addProperty("name", groupName);		
+		testGroup.addProperty("description", getDescriptionOfGroup(groupName));
 		
-		ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName), PathFinder.getDataLabel());
+		ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName), PathFinder.getDataLabel(),-1);
 		String lastRunDate = "";
 		boolean passed = true;
 		long totalRunTimeInMS = 0;
 		
 		if(listResults.size()>0) {
-			long newest = getNewest(listResults);
+			String newest = getNewest(listResults);
 			String handle = String.valueOf(newest);
 			String path = PathFinder.getSpecificTestGroupResultPath(groupName, handle, false);
 			String lastRun = Helpers.readFile(path);			
@@ -601,7 +700,7 @@ public class TRService {
 		long totalRunTimeInMS = 0;
 
 		if(listResults.size()>0) {
-			long newest = getNewest(listResults);
+			String newest = getNewest(listResults);
 			String handle = String.valueOf(newest);
 			String path = PathFinder.getSpecificTestResultPath(testName, handle, false);
 			String lastRun = Helpers.readFile(path);
@@ -621,31 +720,27 @@ public class TRService {
 		test.addProperty("lastRunPassed", passed);
 	}
 
-	private long getNewest(ArrayList<String> toSortAL) {
-		int elementCount = toSortAL.size();
-		if(elementCount==0) { 
-			return 0;
-		}
-		Long[] toSort = new Long[elementCount];
-		int i = 0;
-		for (String string : toSortAL) {
-			toSort[i++] = cutDataLabelFromString(string);
-		}
-		Arrays.parallelSort(toSort);
-		return toSort[elementCount-1];
+	private String getNewest(ArrayList<String> toSortAL) {
+		
+        for(int i = 0;i<toSortAL.size();i++) {
+        	toSortAL.set(i, cutDataLabelFromString(toSortAL.get(i)));
+        }
+
+		Collections.sort(toSortAL, Collections.reverseOrder());	
+		return toSortAL.get(0);
 	}
 
-	private Long cutDataLabelFromString(String strng) {
-		return Long.valueOf(strng.substring(0, strng.length() - PathFinder.getDataLabel().length()));
+	private String cutDataLabelFromString(String strng) {
+		return strng.substring(0, strng.length() - PathFinder.getDataLabel().length());
 	}
 	
-	private ArrayList<JsonElement> getJsonElementsOfPath(ArrayList<String> paths) throws Exception {
+	private ArrayList<JsonElement> getJsonElementsOfPath(ArrayList<GroupTestAbstraction> gta) throws Exception {
 		JsonParser parser = new JsonParser();
 		ArrayList<JsonElement> elements = new ArrayList<JsonElement>();
-		for (String path : paths) {
+		for (GroupTestAbstraction gtaObj : gta) {
 			String testContent;
 			try {
-				testContent = Helpers.readFile(path);
+				testContent = Helpers.readFile(gtaObj.getPath());
 			} catch (Exception e) {
 				throw new Exception("Cannot load group due to an error reading one of its test: "+e.getMessage());
 			}
@@ -655,19 +750,22 @@ public class TRService {
 		return elements;
 	}
 
-	private ArrayList<String> getTestPathsOfGroupName(String groupName) throws Exception {
+	private ArrayList<GroupTestAbstraction> getTestInfoByGroupName(String groupName) throws Exception {
 		String path = PathFinder.getSpecificGroupPath(groupName);
 		String result = Helpers.readFile(path);
-		ArrayList<String> paths = new ArrayList<String>();
+		ArrayList<GroupTestAbstraction> paths = new ArrayList<GroupTestAbstraction>();
 		
 		JsonParser parser = new JsonParser();
 		JsonElement jsonElement = parser.parse(result);
 		
 		JsonArray groupTestsArray = jsonElement.getAsJsonObject().get("tests").getAsJsonArray();
 		for (JsonElement testElement : groupTestsArray) {
-			String testName = testElement.getAsJsonObject().get("name").getAsString();
+			String testName = testElement.getAsJsonObject().get("test").getAsString();
+			String descriptiveName = testElement.getAsJsonObject().get("name").getAsString();
 			String testPath = PathFinder.getSpecificTestPath(testName);	
-			paths.add(testPath);
+			
+			GroupTestAbstraction gta = new GroupTestAbstraction(descriptiveName, testPath);
+			paths.add(gta);
 		}
 		return paths;
 	}
@@ -675,7 +773,7 @@ public class TRService {
 	private void mergeTestsToGroupTest(JSONArray tests, Test test) throws Exception {
 		for (Object testObj : tests) {
 			JSONObject testJObj = (JSONObject) testObj;
-			String testName = testJObj.getString("name");
+			String testName = testJObj.getString("test");
 			test.description += testName + ",";
 			JSONObject objd = Helpers.loadConfig(PathFinder.getSpecificTestPath(testName));
 			Test testD = Helpers.parseConfig(objd, testName);
