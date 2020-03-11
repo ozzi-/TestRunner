@@ -19,7 +19,6 @@ public class TestRunner extends ResourceConfig {
 		Log.setup(logBasePath+"testrunner.log");
 		Log.log(Level.INFO, "Starting Test Runner - "+version+" - meep meep - base path is \""+PathFinder.getBasePath()+"\"");
 	    Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler());
-		
 		UserManagement.loadUsers();
 		packages("services");
 	}
