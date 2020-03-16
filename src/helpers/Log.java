@@ -11,7 +11,8 @@ public class Log {
 	static Logger logger;
 	private static boolean pathSet = false;
 	private static ArrayList<LogEntry> backLog = new ArrayList<LogEntry>();
-
+	private static String testRunnerLogPrefix = "TestRunner";
+	
 	public static void setup(String path) {
 		pathSet = true; 
 		logger = Logger.getLogger(Log.class.getName());
@@ -51,9 +52,9 @@ public class Log {
 		if (pathSet) {
 			logger.log(level, log);
 			if (level.equals(Level.SEVERE)) {
-				System.err.println(level.getName() + ": " + log);
+				System.err.println(testRunnerLogPrefix+" - "+level.getName() + ": " + log);
 			} else {
-				System.out.println(level.getName() + ": " + log);
+				System.out.println(testRunnerLogPrefix+" - "+level.getName() + ": " + log);
 			}
 		} else {
 			backLog.add(new LogEntry(level, log));

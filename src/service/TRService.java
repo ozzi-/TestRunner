@@ -42,6 +42,8 @@ public class TRService {
 	// TODO refactor
 	// TODO debug additional args in script ? greoups add multiple times??
 	// TODO improved error handling (i.E. when parsing tests, it throws json parser error, but not which file it crashed . . )
+	// TODO test groups. . . 
+	
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
