@@ -50,7 +50,7 @@ public class Log {
 
 	public static void log(Level level, String log) {
 		if (pathSet) {
-			logger.log(level, log);
+			logger.log(level, testRunnerLogPrefix+" - "+log);
 			if (level.equals(Level.SEVERE)) {
 				System.err.println(testRunnerLogPrefix+" - "+level.getName() + ": " + log);
 			} else {
