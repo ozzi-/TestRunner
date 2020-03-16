@@ -448,7 +448,7 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 				} catch (e) {
 					if(!window.errorReported){
 						window.errorReported=true;
-						alert("Unknown error");
+						alert("Unknown error - could not run callback");
 					}
 				}
 			}else if(request.status==403){
@@ -460,7 +460,7 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 				} catch (e) {
 					if(!window.errorReported){
 						window.errorReported=true;
-						alert("Unknown error");
+						alert("Unknown error - HTTP code: "+request.status+" - Exception: "+e.message);
 						console.log(e);
 					}
 				}
