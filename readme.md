@@ -15,7 +15,7 @@ TR enables you to do all of this by giving you a unified way of running tests & 
 ![s](https://i.imgur.com/oronXja.png) meep meep
 
 ## Main Page
-![TR](https://i.imgur.com/fxkVzg0.png)
+![TR](https://i.imgur.com/kan52as.png)
 
 ## Results Page
 ![TR](https://i.imgur.com/1szWsK1.png)
@@ -201,6 +201,18 @@ Example: The group consists of three tests: "1", "2", "3".
 "3" defines a failure hook
 
 This means the used success hook is from "2" and the failure hook from "3".
+
+### Categories
+Categories allow to group tests on the main page, as seen in the screenshot (Mail and SAML), in order to keep the overview when many tests are configured. In order to create categories, create a file called test.categories in your tests folder.
+It follows the following syntax:
+```
+{
+	"Mail" : ["MAIL_Performance", "MAIL_Smoke_Test"],
+	"SAML": ["SAML_Preprod", "SAML_Prod", "SAML_Rebind"]
+}
+```
+All tests that are not mapped are automatically assigned to the category "-". Tests can only be part of one category.
+
 
 ## Groups
 Groups are stored in basePath/groups/. Every Group is defined in its own file.
