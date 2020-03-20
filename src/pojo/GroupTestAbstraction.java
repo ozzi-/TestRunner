@@ -23,6 +23,4 @@ public class GroupTestAbstraction {
 	public void setPath(String path) {
 		this.path = path;
 	}
-
-	
 }

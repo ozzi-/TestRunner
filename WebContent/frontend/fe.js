@@ -195,6 +195,7 @@ function listTests(tests) {
 		var table = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
+		    groupBy:"category",
 		    columns:[
 		    {title:"Test", field:"test",  formatter:htmlFormatter},
 		    {title:"Run", field:"run",  minWidth:70, formatter:htmlFormatter},
@@ -208,6 +209,7 @@ function listTests(tests) {
 		var table = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
+		    groupBy:"category",
 		    columns:[
 		    {title:"Test", field:"test", minWidth:300, formatter:htmlFormatter},
 		    {title:"Status", field:"status", minWidth:70, formatter:htmlFormatter},
@@ -216,7 +218,7 @@ function listTests(tests) {
 		    ],
 		});		
 	}
-	
+
 	if(testCount==0){
 		table.addRow([{test:"No tests defined yet", run:"", status:"", lastRun: "", lastRunTime:""}], false);
 	}
@@ -228,9 +230,9 @@ function listTests(tests) {
 		runState = tests[i].lastRunDate.length==0 ? "-" : runState;
 		var lastRunTime = timeConversion(tests[i].totalRunTimeInMS);
 		if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-			table.addRow([{test:testLink, run:runLink, runT:runTLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime}], false);
+			table.addRow([{test:testLink, run:runLink, runT:runTLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime, category:tests[i].category}], false);
 		}else{
-			table.addRow([{test:testLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime}], false);			
+			table.addRow([{test:testLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime,category:tests[i].category}], false);			
 		}
 	}
 	table.redraw(true);

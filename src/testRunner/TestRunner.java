@@ -13,7 +13,7 @@ import service.UserManagement;
 public class TestRunner extends ResourceConfig {
 	public TestRunner() throws Exception {
 		
-		final String version = "1.0";
+		final String version = "1.1";
 		String logBasePath = PathFinder.getBasePath()+File.separator+"logs"+File.separator;
 		PathFinder.createFolderPath(logBasePath);
 		Log.setup(logBasePath+"testrunner.log");

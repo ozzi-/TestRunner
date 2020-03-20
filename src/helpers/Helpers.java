@@ -30,6 +30,16 @@ public class Helpers {
 		}
 		return allowedChars;
 	}
+	
+	public static boolean fileExistsAndReadable(String path) {
+		File file = new File(path);
+		try {
+			if(file.isFile()) {
+				return true;
+			}			
+		}catch (Exception e) {}
+		return false;
+	}
 
 	private static ArrayList<String> getASCIICharacters(int from, int to) {
 		ArrayList<String> chars = new ArrayList<String>();

@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,6 +27,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.MalformedJsonException;
 
 import helpers.Helpers;
 import helpers.Log;
@@ -32,17 +36,18 @@ import pojo.GroupTestAbstraction;
 import pojo.Session;
 import pojo.Task;
 import pojo.Test;
+import pojo.TestCategoriesList;
 import pojo.User;
 import testRunner.Testing;
 
+@Singleton
 @Path("/")
 public class TRService {
 	private static final String headerNameSessionID = "X-TR-Session-ID";
 	
 	// TODO refactor
-	// TODO debug additional args in script ? greoups add multiple times??
+	// TODO debug additional args in script ? groups add the args multiple times or not?
 	// TODO improved error handling (i.E. when parsing tests, it throws json parser error, but not which file it crashed . . )
-	// TODO test groups. . . 
 	
 	
 	@POST
@@ -436,7 +441,9 @@ public class TRService {
 		if ( userName == null) {
 			return unauthorizedResponse();
 		}
-
+		
+		TestCategoriesList tcl = getTestCategories();
+		
 		JsonArray testsArray = new JsonArray();
 		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestsPath(), PathFinder.getTestLabel(),-1);
 		for (String name : listOfFiles) {
@@ -445,10 +452,38 @@ public class TRService {
 			ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName), PathFinder.getDataLabel(),-1);
 			test.addProperty("name", testName);
 			enrichLastRunData(test, testName, listResults);
+			String category = tcl.getCategoryOfTest(testName);
+			test.addProperty("category", category);
 			testsArray.add(test);
 		}
 		return Response.status(200).entity(testsArray.toString()).type("application/json").build();
 	}
+
+	private TestCategoriesList getTestCategories() throws Exception {
+		String categoriesPath = PathFinder.getTestsPath()+"test.categories";
+		TestCategoriesList tcl = new TestCategoriesList();
+		if(Helpers.fileExistsAndReadable(categoriesPath)) {
+			String file = Helpers.readFile(categoriesPath);
+			JsonObject categories;
+			try {
+				categories = new JsonParser().parse(file).getAsJsonObject();				
+			}catch (Exception e) {
+				throw new MalformedJsonException("Error parsing test.categories file - "+e.getMessage()+" - "+e.getCause());
+			}
+			Set<Map.Entry<String, JsonElement>> entries = categories.entrySet();
+			for (Map.Entry<String, JsonElement> entry: entries) {
+			    String categoryName = entry.getKey();
+			    JsonArray tests = entry.getValue().getAsJsonArray();
+			    for (JsonElement test : tests) {
+					String testName = test.getAsString();
+					tcl.addTestToCategory(testName, categoryName);
+				}
+			}
+		}
+		return tcl;
+	}
+
+
 
 	@GET
 	@Path("/getTestGroupList")
