@@ -3,6 +3,7 @@ import java.util.ArrayList;
 
 public class Test {
 	public String name;
+	public String testName;
 	public long start;
 	public ArrayList<Task> tasks = new ArrayList<Task>();
 	public String description;

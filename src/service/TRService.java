@@ -806,21 +806,22 @@ public class TRService {
 		return paths;
 	}
 	
-	private void mergeTestsToGroupTest(JSONArray tests, Test test) throws Exception {
+	private void mergeTestsToGroupTest(JSONArray testsToAdd, Test test) throws Exception {
 		boolean addedTest = false;
-		for (Object testObj : tests) {
-			JSONObject testJObj = (JSONObject) testObj;
-			String testName = testJObj.getString("test");
-			test.description += testName + ", ";
+		for (Object testObj : testsToAdd) {
+			JSONObject testToAdd = (JSONObject) testObj;
+			String testToAddName = testToAdd.getString("test");
+			test.description += testToAddName + ", ";
 			addedTest = true;
-			JSONObject objd = Helpers.loadConfig(PathFinder.getSpecificTestPath(testName));
-			Test testD = Helpers.parseConfig(objd, testName);
+			JSONObject objd = Helpers.loadConfig(PathFinder.getSpecificTestPath(testToAddName));
+			Test testD = Helpers.parseConfig(objd, testToAddName);
 			if(testD.successHook != null) {
 				test.successHook = testD.successHook;
 			}
 			if(testD.failureHook != null) {
 				test.failureHook = testD.failureHook;
 			}
+			testD.tasks.get(0).descriptiveName =  testToAdd.getString("name");
 			test.tasks.addAll(testD.tasks);
 		}
 		if(addedTest) {

@@ -10,6 +10,7 @@ public class Result {
 	
 	public String text;
 	public String name;
+	public String descriptiveName;
 	public String output;
 	public String errorOutput;
 	public int returnCode;
@@ -26,6 +27,7 @@ public class Result {
 	public JsonObject toJsonObject() {
 		JsonObject res = new JsonObject();
 		res.addProperty("name", name);
+		res.addProperty("descriptiveName", descriptiveName);
 		res.addProperty("passed", pass);
 		res.addProperty("description", text);
 		res.addProperty("output", output);

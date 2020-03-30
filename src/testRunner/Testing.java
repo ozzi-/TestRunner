@@ -113,8 +113,9 @@ public class Testing {
 		
 		endTime = System.nanoTime();
 		result.output = out.toString();
+		result.descriptiveName = task.descriptiveName;
 		result.errorOutput = errout.toString();
-		System.out.println("ERROR OUTPUT "+result.errorOutput);
+		System.out.println("ERROR OUTPUT :"+result.errorOutput+" .");
 		result.timestampEnd=System.currentTimeMillis();
 		long timeElapsed = (endTime - startTime) / 1000000;
 		result.runTimeInMS = timeElapsed;

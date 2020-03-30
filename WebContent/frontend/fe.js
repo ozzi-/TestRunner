@@ -410,7 +410,8 @@ function listResult(result) {
 
 	var resultsSpan = document.getElementById("results");
 	for (var i = 0; i < result.results.length; i++) {
-		resultsSpan.innerHTML += "<h3>"+result.results[i].name + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
+		console.log(result.results[i]);
+		resultsSpan.innerHTML += "<h3><b>"+result.results[i].descriptiveName+ "</b> - "+result.results[i].name + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
 				+ "<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>"
 				+ "<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " 
 				+ "<b>Error Output:</b><br> " + escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />") + "<br>"
