@@ -233,9 +233,8 @@ public class TRService {
 		test.name = groupName;
 		test.tag = tag;
 		test.start = curMil;
-		// Merging Tests
-		mergeTestsToGroupTest(tests, test);
 		
+		mergeTestsToGroupTest(tests, test);
 		ArrayList<Task> tasks = test.tasks;
 		for (Task task : tasks) { 
 			ArrayList<String> argsList = task.args;
@@ -808,10 +807,12 @@ public class TRService {
 	}
 	
 	private void mergeTestsToGroupTest(JSONArray tests, Test test) throws Exception {
+		boolean addedTest = false;
 		for (Object testObj : tests) {
 			JSONObject testJObj = (JSONObject) testObj;
 			String testName = testJObj.getString("test");
-			test.description += testName + ",";
+			test.description += testName + ", ";
+			addedTest = true;
 			JSONObject objd = Helpers.loadConfig(PathFinder.getSpecificTestPath(testName));
 			Test testD = Helpers.parseConfig(objd, testName);
 			if(testD.successHook != null) {
@@ -821,6 +822,9 @@ public class TRService {
 				test.failureHook = testD.failureHook;
 			}
 			test.tasks.addAll(testD.tasks);
+		}
+		if(addedTest) {
+			test.description = test.description.substring(0, test.description.length() - 2);			
 		}
 	}
 
