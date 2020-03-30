@@ -197,11 +197,11 @@ function listTests(tests) {
 		    layout:"fitDataFill",
 		    groupBy:"category",
 		    columns:[
-		    {title:"Test", field:"test",  formatter:htmlFormatter},
-		    {title:"Run", field:"run",  minWidth:70, formatter:htmlFormatter},
-		    {title:"Custom", field:"runT",  minWidth:70, formatter:htmlFormatter},
-		    {title:"Status", field:"status", minWidth:70, formatter:htmlFormatter},
-		    {title:"Last Run", field:"lastRun"},
+		    {title:"Test", field:"testLink",  formatter:htmlFormatter},
+		    {title:"Run", field:"runLink",  minWidth:70, formatter:htmlFormatter},
+		    {title:"Custom", field:"runTLink",  minWidth:70, formatter:htmlFormatter},
+		    {title:"Status", field:"runState", minWidth:70, formatter:htmlFormatter},
+		    {title:"Last Run", field:"lastRunDate"},
 		    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});
@@ -211,9 +211,9 @@ function listTests(tests) {
 		    layout:"fitDataFill",
 		    groupBy:"category",
 		    columns:[
-		    {title:"Test", field:"test", minWidth:300, formatter:htmlFormatter},
-		    {title:"Status", field:"status", minWidth:70, formatter:htmlFormatter},
-		    {title:"Last Run", field:"lastRun" , minWidth:170},
+		    {title:"Test", field:"testLink", minWidth:300, formatter:htmlFormatter},
+		    {title:"Status", field:"runState", minWidth:70, formatter:htmlFormatter},
+		    {title:"Last Run", field:"lastRunDate" , minWidth:170},
 		    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});		
@@ -223,20 +223,14 @@ function listTests(tests) {
 		table.addRow([{test:"No tests defined yet", run:"", status:"", lastRun: "", lastRunTime:""}], false);
 	}
 	for (var i = 0; i < testCount; i++) {
-		var testLink = "<a href=\"index.html?page=results&name="+tests[i].name+"\">"+tests[i].name+"</a>";
-		var runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&name="+tests[i].name+"\"> &#9654; </a>";
-		var runTLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=custom&name="+tests[i].name+"\"> &#128221; </a>";
-		var runState = tests[i].lastRunPassed ? sun : cloud;
-		runState = tests[i].lastRunDate.length==0 ? "-" : runState;
-		var lastRunTime = timeConversion(tests[i].totalRunTimeInMS);
-		if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-			table.addRow([{test:testLink, run:runLink, runT:runTLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime, category:tests[i].category}], false);
-		}else{
-			table.addRow([{test:testLink, status:runState, lastRun: tests[i].lastRunDate, lastRunTime:lastRunTime,category:tests[i].category}], false);			
-		}
+		tests[i].testLink = "<a href=\"index.html?page=results&name="+tests[i].name+"\">"+tests[i].name+"</a>";
+		tests[i].runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&name="+tests[i].name+"\"> &#9654; </a>";
+		tests[i].runTLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=custom&name="+tests[i].name+"\"> &#128221; </a>";
+		tests[i].runState = tests[i].lastRunPassed ? sun : cloud;
+		tests[i].runState = tests[i].lastRunDate.length==0 ? "-" : tests[i].runState;
+		tests[i].lastRunTime = timeConversion(tests[i].totalRunTimeInMS);
 	}
-	table.redraw(true);
-
+	table.setData(tests);
 }
 
 function listGroups(groups){
@@ -247,13 +241,13 @@ function listGroups(groups){
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    columns:[
-		    {title:"Group", field:"group",  formatter:htmlFormatter},
+		    {title:"Group", field:"groupLink",  formatter:htmlFormatter},
 		    {title:"Description", field:"description", formatter:htmlFormatter},
 		    {title:"Tests", field:"tests", width:300},
-		    {title:"Run", field:"run", minWidth:70, formatter:htmlFormatter},
-		    {title:"Custom", field:"runT", minWidth:70, formatter:htmlFormatter},
-		    {title:"Status", field:"status", formatter:htmlFormatter},
-		    {title:"Last Run", field:"lastRun"},
+		    {title:"Run", field:"runLink", minWidth:70, formatter:htmlFormatter},
+		    {title:"Custom", field:"runTLink", minWidth:70, formatter:htmlFormatter},
+		    {title:"Status", field:"runState", formatter:htmlFormatter},
+		    {title:"Last Run", field:"lastRunDate"},
 		    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});
@@ -262,11 +256,11 @@ function listGroups(groups){
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    columns:[
-			    {title:"Group", field:"group", formatter:htmlFormatter},
+			    {title:"Group", field:"groupLink", formatter:htmlFormatter},
 			    {title:"Description", field:"description", formatter:htmlFormatter},
 			    {title:"Tests", field:"tests",  width:300},
-			    {title:"Status", field:"status", formatter:htmlFormatter},
-			    {title:"Last Run", field:"lastRun" },
+			    {title:"Status", field:"runState", formatter:htmlFormatter},
+			    {title:"Last Run", field:"lastRunDate" },
 			    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});		
@@ -279,22 +273,17 @@ function listGroups(groups){
 		for(var j = 0; j < groups[i].tests.length; j++){
 			tests+=groups[i].tests[j].name+"("+groups[i].tests[j].test+") , ";
 		}
-		tests = tests.slice(0, -2);
+		groups[i].tests = tests.slice(0, -2);
 		
-		var groupLink = "<a href=\"index.html?page=results&groupname="+groups[i].name+"\">"+groups[i].name+"</a>";
-		var runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&groupname="+groups[i].name+"\"> &#9654; </a>";
-		var runTLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=custom&groupname="+groups[i].name+"\"> &#128221; </a>";
-		var runState = groups[i].lastRunPassed ? sun : cloud;
-		var description = groups[i].description;
-		runState = groups[i].lastRunDate.length==0 ? "-" : runState;
-		var lastRunTime = timeConversion(groups[i].totalRunTimeInMS);
-		if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-			table.addRow([{group:groupLink, description:description, tests:tests, run:runLink, runT:runTLink, status:runState, lastRun: groups[i].lastRunDate, lastRunTime:lastRunTime}], false);
-		}else{
-			table.addRow([{group:groupLink, description:description, tests:tests, status:runState, lastRun: groups[i].lastRunDate, lastRunTime:lastRunTime}], false);			
-		}
+		groups[i].groupLink = "<a href=\"index.html?page=results&groupname="+groups[i].name+"\">"+groups[i].name+"</a>";
+		groups[i].runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&groupname="+groups[i].name+"\"> &#9654; </a>";
+		groups[i].runTLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=custom&groupname="+groups[i].name+"\"> &#128221; </a>";
+		groups[i].runState = groups[i].lastRunPassed ? sun : cloud;
+		groups[i].description = groups[i].description;
+		groups[i].status = groups[i].lastRunDate.length==0 ? "-" : groups[i].runState;
+		groups[i].lastRunTime = timeConversion(groups[i].totalRunTimeInMS);
 	}
-	table.redraw(true);
+	table.setData(groups);
 }
 
 function loadMore(){
@@ -333,10 +322,10 @@ function addResults(results,paramName){
 				break;
 			}
 		}
-		var status = (passed==true ? " "+sun: " "+cloud);
-		var lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
-		table.addRow([{status:status, lastRun: lastRun}], false);
+		results[i].status = (passed==true ? " "+sun: " "+cloud);
+		results[i].lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
 	}
+	table.addData(results);
 	document.getElementById("loadmore").disabled = false;
 }
 
@@ -371,7 +360,7 @@ function listResults(results,paramName) {
 		    columns:[
 		    {title:"Status", field:"status", formatter:htmlFormatter},
 		    {title:"Last Run", field:"lastRun", formatter:htmlFormatter, minWidth:170},
-		    {title:"Tag", field:"tag"},
+		    {title:"Tag", field:"tagS", minWidth:50},
 		    ],
 		});
 		document.getElementById("resultsSpan").tableHandle = table;
@@ -385,12 +374,11 @@ function listResults(results,paramName) {
 					break;
 				}
 			}
-			var status = (passed==true ? " "+sun: " "+cloud);
-			var tagS = results[i].tag !== undefined ? results[i].tag : "";
-			var lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
-			table.addRow([{status:status, lastRun: lastRun, tag: tagS}], false);
+			results[i].status = (passed==true ? " "+sun: " "+cloud);
+			results[i].tagS = results[i].tag !== undefined ? results[i].tag : "";
+			results[i].lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
 		}
-		table.redraw(true);
+		table.setData(results);
 	}
 }
 
@@ -410,7 +398,6 @@ function listResult(result) {
 
 	var resultsSpan = document.getElementById("results");
 	for (var i = 0; i < result.results.length; i++) {
-		console.log(result.results[i]);
 		// tests in groups have a descriptive name
 		var descriptiveName =  result.results[i].descriptiveName==undefined?"":"<b>"+result.results[i].descriptiveName+ "</b> - ";
 		resultsSpan.innerHTML += "<h3>"+descriptiveName+result.results[i].name + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
