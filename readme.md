@@ -295,7 +295,7 @@ Example:
                   "results":[
                      {
                         "name":"task1",
-			"descriptiveName":"Functionality Test",
+                        "descriptiveName":"Functionality Test",
                         "passed": true,
                         "description":"Script executed successfully",
                         "output":"TASK 1!!\n",
@@ -308,7 +308,7 @@ Example:
                      },
                      {
                         "name":"task2",
-			"descriptiveName":"Performance Test",
+                        "descriptiveName":"Performance Test",
                         "passed":true,
                         "description":"Script executed successfully",
                         "output":"task 2\nnewline\n",
@@ -333,7 +333,7 @@ Example:
                   "results":[
                      {
                         "name":"task1",
-			"descriptiveName":"Functionality Test",
+                        "descriptiveName":"Functionality Test",
                         "passed":true,
                         "description":"Script executed successfully",
                          . . .
