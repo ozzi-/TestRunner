@@ -289,12 +289,13 @@ Example:
                "result":{
                   "testName":"example",
                   "testStartTimestamp":1560956995338,
-				  "testRunBy": "ozzi",
+		  "testRunBy": "ozzi",
                   "testStartString":"2019-06-19 17:09:55",
                   "description":"Example",
                   "results":[
                      {
                         "name":"task1",
+			"descriptiveName":"Functionality Test",
                         "passed": true,
                         "description":"Script executed successfully",
                         "output":"TASK 1!!\n",
@@ -307,6 +308,7 @@ Example:
                      },
                      {
                         "name":"task2",
+			"descriptiveName":"Performance Test",
                         "passed":true,
                         "description":"Script executed successfully",
                         "output":"task 2\nnewline\n",
@@ -325,12 +327,13 @@ Example:
                "result":{
                   "testName":"example",
                   "testStartTimestamp":1559312003986,
-				  "testRunBy": "ozzi",
+		   "testRunBy": "ozzi",
                   "testStartString":"2019-05-31 16:13:23",
                   "description":"Example",
                   "results":[
                      {
                         "name":"task1",
+			"descriptiveName":"Functionality Test",
                         "passed":true,
                         "description":"Script executed successfully",
                          . . .
@@ -410,6 +413,7 @@ Returns all results for the specific test group.
 			 "results":[
 				{
 				   "name":"task1",
+				   "descriptiveName":"Functionality Test",
 				   "passed":true,
 				   "description":"Script executed successfully",
 				   "output":"\r\nC:\\Users\\ozzi\\Desktop>echo D \r\nD\r\n",
@@ -423,6 +427,7 @@ Returns all results for the specific test group.
 				    . . . 
 				{
 				   "name":"task2",
+				   "descriptiveName":"Performance Test",
 				   "passed":false,
 				   "description":"Script returned non zero return code \"2\"",
 				   "output":"\r\nC:\\Users\\ozzi\\Desktop>echo D \r\nD\r\n\r\nC:\\Users\\ozzi\\Desktop>exit 2 \r\n",
@@ -452,6 +457,7 @@ Returns the latest result for the specific test.
 			"results": [
 				{
 					"name": "task1",
+					"descriptiveName":"Functionality Test",
 					"passed": true,
 					"description": "Script executed successfully",
 					"output": "\r\nC:\\WINDOWS\\system32>echo D \r\nD\r\n",
@@ -464,6 +470,7 @@ Returns the latest result for the specific test.
 				},
 				{
 					"name": "task2",
+					"descriptiveName":"Performance Test",
 					"passed": true,
 					"description": "Script executed successfully",
 					"output": "\r\nC:\\WINDOWS\\system32>echo foo \r\nfoo\r\n",
@@ -476,6 +483,7 @@ Returns the latest result for the specific test.
 				},
 				{
 					"name": "task3",
+					"descriptiveName":"Regression Test",
 					"passed": true,
 					"description": "Script executed successfully",
 					"output": "\r\nC:\\WINDOWS\\system32>echo foooo \r\nfoooo\r\n",
@@ -503,6 +511,7 @@ Returns the latest result for the specific test group.
 			 "results":[
 				{
 				   "name":"task1",
+				   "descriptiveName":"Functionality Test",
 				   "passed":true,
 				   "description":"Script executed successfully",
 				   "output":"\r\nC:\\Users\\ozzi\\Desktop>echo D \r\nD\r\n",
@@ -516,6 +525,7 @@ Returns the latest result for the specific test group.
 				    . . . 
 				{
 				   "name":"task2",
+				   "descriptiveName":"Performance Test",
 				   "passed":"false",
 				   "description":"Script returned non zero return code \"2\"",
 				   "output":"\r\nC:\\Users\\ozzi\\Desktop>echo D \r\nD\r\n\r\nC:\\Users\\ozzi\\Desktop>exit 2 \r\n",
@@ -542,6 +552,7 @@ Returns the test results for the specific test run.
 		   "results":[
 			  {
 				 "name":"task1",
+				 "descriptiveName":"Functionality Test",
 				 "passed":true,
 				 "description":"Script executed successfully",
 				 "output":"\r\nC:\\WINDOWS\\system32>echo D \r\nD\r\n",
@@ -554,6 +565,7 @@ Returns the test results for the specific test run.
 			  },
 			  {
 				 "name":"task2",
+				 "descriptiveName":"Performance Test",
 				 "passed":true,
 				 "description":"Script executed successfully",
 				 "output":"\r\nC:\\WINDOWS\\system32>echo foo \r\nfoo\r\n",
@@ -566,6 +578,7 @@ Returns the test results for the specific test run.
 			  },
 			  {
 				 "name":"task3",
+				 "descriptiveName":"Regression Test",
 				 "passed":true,
 				 "description":"Script executed successfully",
 				 "output":"\r\nC:\\WINDOWS\\system32>echo foooo \r\nfoooo\r\n",
@@ -591,6 +604,7 @@ Returns the test group results for the specific test run.
 	   "results":[
 		  {
 			 "name":"task1",
+			 "descriptiveName":"Functionality Test",
 			 "passed":true,
 			 "description":"Script executed successfully",
 			 "output":"\r\nC:\\WINDOWS\\system32>echo D \r\nD\r\n",
@@ -603,6 +617,7 @@ Returns the test group results for the specific test run.
 		  },
 		  {
 			 "name":"task2",
+			 "descriptiveName":"Performance Test",
 			 "passed":true,
 			 "description":"Script executed successfully",
 			 "output":"\r\nC:\\WINDOWS\\system32>echo fo \r\nfo\r\n",
@@ -615,6 +630,7 @@ Returns the test group results for the specific test run.
 		  },
 		  {
 			 "name":"task3",
+			 "descriptiveName":"Regression Test",
 			 "passed":true,
 			 "description":"Script executed successfully",
 			 "output":"\r\nC:\\WINDOWS\\system32>echo fooo \r\nfooo\r\n",
@@ -627,6 +643,7 @@ Returns the test group results for the specific test run.
 		  },
 		  {
 			 "name":"task1",
+			 "descriptiveName":"Functionality Test",
 			 "passed":false,
 			 "description":"Script execution longer than timeout",
 			 "output":"\r\nC:\\WINDOWS\\system32>echo fo \r\nfo\r\n\r\nC:\\WINDOWS\\system32>choice /t 10 /C JN /CS /D J \r\n[J,N]?",
@@ -639,6 +656,7 @@ Returns the test group results for the specific test run.
 		  },
 		  {
 			 "name":"task2",
+			 "descriptiveName":"Performance Test",
 			 "passed":false,
 			 "description":"Script returned non zero return code \"2\"",
 			 "output":"\r\nC:\\WINDOWS\\system32>echo D \r\nD\r\n\r\nC:\\WINDOWS\\system32>exit 2 \r\n",
