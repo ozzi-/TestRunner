@@ -5,10 +5,9 @@ import java.util.logging.Level;
 
 import org.glassfish.jersey.server.ResourceConfig;
 
+import auth.UserManagement;
 import helpers.Log;
 import helpers.PathFinder;
-import service.GlobalExceptionHandler;
-import service.UserManagement;
 
 public class TestRunner extends ResourceConfig {
 	public TestRunner() throws Exception {
@@ -18,7 +17,6 @@ public class TestRunner extends ResourceConfig {
 		PathFinder.createFolderPath(logBasePath);
 		Log.setup(logBasePath+"testrunner.log");
 		Log.log(Level.INFO, "Starting Test Runner - "+version+" - meep meep - base path is \""+PathFinder.getBasePath()+"\"");
-	    Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler());
 		UserManagement.loadUsers();
 		packages("services");
 	}

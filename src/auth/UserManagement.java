@@ -1,4 +1,4 @@
-package service;
+package auth;
 
 import java.io.File;
 import java.nio.file.Files;
