@@ -9,7 +9,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 
-import auth.Authenticate;
+import annotations.Authenticate;
 import auth.AuthenticationFilter;
 import auth.SessionManagement;
 import pojo.Session;

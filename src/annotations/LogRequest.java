@@ -1,4 +1,4 @@
-package helpers;
+package annotations;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
@@ -10,4 +10,4 @@ import javax.ws.rs.NameBinding;
 @NameBinding
 @Retention(RUNTIME)
 @Target({TYPE, METHOD})
-public @interface DoLog { }
+public @interface LogRequest { }

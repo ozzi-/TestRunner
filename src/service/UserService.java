@@ -15,11 +15,11 @@ import javax.ws.rs.core.Response;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import auth.Authenticate;
+import annotations.Authenticate;
+import annotations.LogRequest;
 import auth.AuthenticationFilter;
 import auth.SessionManagement;
 import auth.UserManagement;
-import helpers.DoLog;
 import helpers.Log;
 import pojo.Session;
 import pojo.User;
@@ -28,7 +28,7 @@ import pojo.User;
 @Path("/")
 public class UserService {
 	
-	@DoLog
+	@LogRequest
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/login")
@@ -42,7 +42,7 @@ public class UserService {
 		return Response.status(401).entity("Username or Password wrong").build();
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -60,7 +60,7 @@ public class UserService {
 		return Response.status(204).entity("").build();
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/testLogin")
@@ -68,7 +68,7 @@ public class UserService {
 		return Response.status(200).entity("OK").build();
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -94,7 +94,7 @@ public class UserService {
 		return Response.status(200).entity("{\"user\" : \"deleted\"}").type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -125,7 +125,7 @@ public class UserService {
 		return Response.status(200).entity("{\"password\" : \"changed\"}").type("application/json").build();
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -156,7 +156,7 @@ public class UserService {
 		return Response.status(200).entity("{\"user\" : \"created\"}").type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("WRITE")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)

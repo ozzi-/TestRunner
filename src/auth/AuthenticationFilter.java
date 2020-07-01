@@ -14,6 +14,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+import annotations.Authenticate;
 import helpers.Log;
 import pojo.Session;
 
@@ -37,26 +38,27 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			Log.log(Level.SEVERE, "Invalid annotation value '" + mode + "' used - defaulting to 'ADMIN'");
 			requiresAdminPrivilege = true;
 		}
-
-		MultivaluedMap<String, String> headers = requestContext.getHeaders();
 		
-		if (headers != null && headers.get(headerNameSessionID) != null && headers.get(headerNameSessionID).size() > 0) {
-			String sessionIdentifier = headers.get(headerNameSessionID).get(0);
+
+		String sessionIdentifier = requestContext.getHeaderString(headerNameSessionID);
+		
+		if (sessionIdentifier != null) {
 			Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);
 			if (session != null) {
+				String userName = session.getUsername();
 				if (requiresWritePrivilege && !session.getRole().equals("rw") && !session.getRole().equals("a")) {
-					abortWithAuthFailed(requestContext,headers.get(headerNameSessionID).toString(),"Login check failed - user " + session.getUsername() + " attempted to execute write API call which he does not have sufficient privileges for.");
+					abortWithAuthFailed(requestContext,userName,"Login check failed - user " + session.getUsername() + " attempted to execute write API call which he does not have sufficient privileges for.");
 				} else if (requiresAdminPrivilege && !session.getRole().equals("a")) {
-					abortWithAuthFailed(requestContext,headers.get(headerNameSessionID).toString(),"Login check failed - user " + session.getUsername() + " attempted to execute admin API call which he does not have sufficient privileges for.");
+					abortWithAuthFailed(requestContext,userName,"Login check failed - user " + session.getUsername() + " attempted to execute admin API call which he does not have sufficient privileges for.");
 				} else {
 					// all good
 					return;
 				}
 			} else {
-				abortWithAuthFailed(requestContext,headers.get(headerNameSessionID).toString(), "Login check failed due to session provided not found in session storage (hs)");
+				abortWithAuthFailed(requestContext,"", "Login check failed due to session provided not found in session storage (hs)");
 			}
 		} else {
-			abortWithAuthFailed(requestContext,headers.get(headerNameSessionID).toString(), "Login check failed due to missing header");
+			abortWithAuthFailed(requestContext,"", "Login check failed due to missing header");
 		}
 	}
 		

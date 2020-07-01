@@ -15,10 +15,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import auth.Authenticate;
+import annotations.Authenticate;
+import annotations.LogRequest;
 import auth.AuthenticationFilter;
 import auth.UserManagement;
-import helpers.DoLog;
 import helpers.Helpers;
 import helpers.PathFinder;
 import helpers.TRHelper;
@@ -34,7 +34,7 @@ public class TRService {
 	// TODO improved error handling (i.E. when parsing tests, it throws json parser error, but not which file it crashed . . )
 	
 	@Authenticate("ADMIN")
-	@DoLog
+	@LogRequest
 	@GET
 	@Path("/reload")
 	public Response reload(@Context HttpHeaders headers) throws Exception {
@@ -50,14 +50,14 @@ public class TRService {
 	}
 
 	@Authenticate("READ")
-	@DoLog
+	@LogRequest
 	@GET
 	@Path("/getBasePath") 
 	public Response getBasePath(@Context HttpHeaders headers) throws Exception {
 		return Response.status(200).entity(PathFinder.getBasePath()).build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/getResults/{testname}/{page}")
@@ -72,7 +72,7 @@ public class TRService {
 		return Response.status(200).entity(resultsArray.toString()).type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/getGroupResults/{groupname}/{page}")
@@ -88,7 +88,7 @@ public class TRService {
 		return Response.status(200).entity(resultsArray.toString()).type("application/json").build();
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/getLatestResult/{testname}")
@@ -100,7 +100,7 @@ public class TRService {
 		return TRHelper.getResultInternal(path);
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")	
 	@GET
 	@Path("/getLatestGroupResult/{groupname}")
@@ -112,7 +112,7 @@ public class TRService {
 		return TRHelper.getResultInternal(path);
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")	
 	@GET
 	@Path("/getTest/{testname}")
@@ -121,7 +121,7 @@ public class TRService {
 		return TRHelper.getResultInternal(path);
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/getGroup/{groupname}")
@@ -138,7 +138,7 @@ public class TRService {
 		return Response.status(200).entity(test.toString()).type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/getResult/{testname}/{handle}")
@@ -149,7 +149,7 @@ public class TRService {
 		return TRHelper.getResultInternal(path);
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")	
 	@GET
 	@Path("/getGroupResult/{groupname}/{handle}")
@@ -160,7 +160,7 @@ public class TRService {
 		return TRHelper.getResultInternal(path);
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")	
 	@GET
 	@Path("/getStatus/{testname}/{handle}")
@@ -173,7 +173,7 @@ public class TRService {
 		return TRHelper.getStatusInternal(path, pathRunning);
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")	
 	@GET
 	@Path("/getGroupStatus/{groupname}/{handle}")
@@ -186,7 +186,7 @@ public class TRService {
 		return TRHelper.getStatusInternal(path, pathRunning);
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")	
 	@GET
 	@Path("/getTestList")
@@ -209,7 +209,7 @@ public class TRService {
 		return Response.status(200).entity(testsArray.toString()).type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/getTestGroupList")

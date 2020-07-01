@@ -9,14 +9,14 @@ import javax.ws.rs.core.Response;
 
 import com.google.gson.JsonObject;
 
-import auth.Authenticate;
+import annotations.Authenticate;
+import annotations.LogRequest;
 import auth.AuthenticationFilter;
-import helpers.DoLog;
 import helpers.TRHelper;
 
 public class RunService {
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("WRITE")
 	@POST
 	@Path("/run/{testname}/{tag}/{args}")
@@ -28,7 +28,7 @@ public class RunService {
 		return Response.status(200).entity(resp.toString()).type("application/json").build();
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("WRITE")
 	@POST
 	@Path("/run/{testname}/{tag}")
@@ -40,7 +40,7 @@ public class RunService {
 		return Response.status(200).entity(resp.toString()).type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("WRITE")	
 	@POST
 	@Path("/run/{testname}")
@@ -52,7 +52,7 @@ public class RunService {
 		return Response.status(200).entity(resp.toString()).type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("WRITE")	
 	@POST
 	@Path("/runGroup/{groupname}")
@@ -63,7 +63,7 @@ public class RunService {
 		return Response.status(200).entity(resp.toString()).type("application/json").build();
 	}
 
-	@DoLog
+	@LogRequest
 	@Authenticate("WRITE")	
 	@POST
 	@Path("/runGroup/{groupname}/{tag}")
@@ -74,7 +74,7 @@ public class RunService {
 		return Response.status(200).entity(resp.toString()).type("application/json").build();
 	}
 	
-	@DoLog
+	@LogRequest
 	@Authenticate("WRITE")	
 	@POST
 	@Path("/runGroup/{groupname}/{tag}/{args}")
