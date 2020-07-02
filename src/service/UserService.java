@@ -1,5 +1,6 @@
 package service;
 
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.inject.Singleton;
@@ -37,7 +38,7 @@ public class UserService {
 		user = UserManagement.checkLogin(user);
 		if (user != null) {
 			Session session = SessionManagement.createSession(user.getUsername(),user.getRole());
-			return Response.status(200).entity(session.toJSONObj().toString()).type("application/json").build();
+			return Response.status(200).entity(session.toJSONObj().toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 		}
 		return Response.status(401).entity("Username or Password wrong").build();
 	}
@@ -48,17 +49,19 @@ public class UserService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/logout")
 	public Response doLogout(@Context HttpHeaders headers) throws Exception {
-		// TODO this
-		String userName = AuthenticationFilter.checkLogin(headers);
-		if (headers != null && headers.getRequestHeader(AuthenticationFilter.headerNameSessionID) != null && headers.getRequestHeader(AuthenticationFilter.headerNameSessionID).size() > 0) { 
-			String sessionIdentifier = headers.getRequestHeader(AuthenticationFilter.headerNameSessionID).get(0);
-			Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);
-			if (session != null) {
-				SessionManagement.destroySession(session);
+		if(headers!=null) {
+			List<String> sessionHeaders = headers.getRequestHeader(AuthenticationFilter.headerNameSessionID);
+			if (sessionHeaders != null && !sessionHeaders.isEmpty()) { 
+				String sessionIdentifier = sessionHeaders.get(0);
+				Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);
+				if (session != null) {
+					SessionManagement.destroySession(session);
+					Log.log(Level.FINE, "User "+session.getUsername()+" logged out");
+					return Response.status(204).entity("").build();
+				}
 			}
 		}
-		Log.log(Level.FINE, "User "+userName+" logged out");
-		return Response.status(204).entity("").build();
+		return Response.status(401).entity("").build();
 	}
 	
 	@LogRequest
@@ -75,7 +78,7 @@ public class UserService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/deleteUser")
 	public Response deleteUser(@Context HttpHeaders headers, String body) throws Exception {
-		String userName = AuthenticationFilter.checkLogin(headers);
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		String userNameToDelete = ""; 
 		JsonObject userJO;
@@ -92,7 +95,7 @@ public class UserService {
 
 		Log.log(Level.INFO, "'"+userName+"' is deleting  user '"+userNameToDelete+"'");
 		UserManagement.deleteUser(userNameToDelete);
-		return Response.status(200).entity("{\"user\" : \"deleted\"}").type("application/json").build();
+		return Response.status(200).entity("{\"user\" : \"deleted\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -101,7 +104,7 @@ public class UserService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/changePasswordForUser")
 	public Response changePasswordForUser(@Context HttpHeaders headers, String body) throws Exception {		
-		String userName = AuthenticationFilter.checkLogin(headers);
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		String userNameToChange = ""; 
 		String password = "";
@@ -123,7 +126,7 @@ public class UserService {
 		}
 		Log.log(Level.INFO, "'"+userName+"' is changing the password of user '"+userNameToChange+"'");
 		UserManagement.changePassword(userNameToChange, password);
-		return Response.status(200).entity("{\"password\" : \"changed\"}").type("application/json").build();
+		return Response.status(200).entity("{\"password\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
 	@LogRequest
@@ -132,7 +135,7 @@ public class UserService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/createUser")
 	public Response createUser(@Context HttpHeaders headers, String body) throws Exception {
-		String userName = AuthenticationFilter.checkLogin(headers);
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		User userToAdd = UserManagement.createUserObjByBodyJSON(body);
 		
@@ -154,7 +157,7 @@ public class UserService {
 		} catch (Exception e) {
 			throw new Exception("Cannot load users - "+e.getMessage());
 		}
-		return Response.status(200).entity("{\"user\" : \"created\"}").type("application/json").build();
+		return Response.status(200).entity("{\"user\" : \"created\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -163,7 +166,7 @@ public class UserService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/changePassword")
 	public Response changePassword(@Context HttpHeaders headers, String body) throws Exception {
-		String userName = AuthenticationFilter.checkLogin(headers);
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		String password = "";
 		JsonObject userJO;
@@ -184,7 +187,7 @@ public class UserService {
 		Log.log(Level.INFO, "'"+userName+"' is changing his password");
 
 		UserManagement.changePassword(userName, password);
-		return Response.status(200).entity("{\"password\" : \"changed\"}").type("application/json").build();
+		return Response.status(200).entity("{\"password\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
 }

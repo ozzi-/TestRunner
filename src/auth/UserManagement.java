@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 import com.google.gson.JsonArray;
@@ -18,10 +19,12 @@ import helpers.PathFinder;
 import pojo.User;
 
 public class UserManagement {
-	public static ArrayList<User> users = new ArrayList<User>();
-	private static final String defaultAdminUsername = "admin";
-	private static final String defaultAdminPassword = "letmein";
-	private static final int saltLength = 10;
+	
+	private UserManagement() {}	
+	public static List<User> users = new ArrayList<User>();
+	private static final String DEFAULT_ADMIN_USERNAME = "admin";
+	private static final String DEFAUKT_ADMIN_PASSWORD = "letmein";
+	private static final int SALT_LENGTH = 10;
 
 	public static User parseUserLoginJSON(String userJson) throws Exception {
 		JsonElement userJO;
@@ -49,7 +52,7 @@ public class UserManagement {
 		}
 		User user = new User();
 		try {
-			user.setSalt(Crypto.createSalt(saltLength)); 
+			user.setSalt(Crypto.createSalt(SALT_LENGTH)); 
 			user.setUsername(userJO.getAsJsonObject().get("username").getAsString());
 			user.setPassword(userJO.getAsJsonObject().get("password").getAsString());
 			user.setRole(userJO.getAsJsonObject().get("role").getAsString());
@@ -65,7 +68,7 @@ public class UserManagement {
 		boolean changed = false;
 		for (User user : users) {
 			if(user.getUsername().equals(username)) {
-				user.setSalt(Crypto.createSalt(saltLength)); 
+				user.setSalt(Crypto.createSalt(SALT_LENGTH)); 
 				user.setPassword(password);
 				persistUsers();
 				changed=true;
@@ -111,13 +114,13 @@ public class UserManagement {
 		File usersFileObj = new File(usersFile);
 		if(!usersFileObj.exists()) {
 			String adminUserJSON ="  {\r\n" + 
-					"        \"username\": \""+defaultAdminUsername+"\",\r\n" + 
-					"        \"password\": \""+defaultAdminPassword+"\",\r\n" + 
+					"        \"username\": \""+DEFAULT_ADMIN_USERNAME+"\",\r\n" + 
+					"        \"password\": \""+DEFAUKT_ADMIN_PASSWORD+"\",\r\n" + 
 					"        \"role\": \"a\"\r\n" + 
 					"  }";
 			
 			User adminUser = UserManagement.createUserObjByBodyJSON(adminUserJSON);
-			Log.log(Level.INFO,"users.json file does not exist, assuming first run. creating default user '"+defaultAdminUsername+"' with password '"+defaultAdminPassword+"'");
+			Log.log(Level.INFO,"users.json file does not exist, assuming first run. creating default user '"+DEFAULT_ADMIN_USERNAME+"' with password '"+DEFAUKT_ADMIN_PASSWORD+"'");
 			users.add(adminUser);
 			persistUsers();
 		}else {

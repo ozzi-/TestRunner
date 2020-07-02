@@ -1,6 +1,7 @@
 package auth;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.annotation.Priority;
@@ -66,12 +67,15 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 		requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("unauthorized").build());
 	}
 	
-	public static String checkLogin(HttpHeaders headers) {
-		if (headers != null && headers.getRequestHeader(headerNameSessionID) != null && headers.getRequestHeader(headerNameSessionID).size() > 0) { 
-			String sessionIdentifier = headers.getRequestHeader(headerNameSessionID).get(0);
-			Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);
-			if (session != null) {
-				return session.getUsername();					
+	public static String getUsernameOfSession(HttpHeaders headers) {
+		if (headers != null) {
+			List<String> sessionHeaders = headers.getRequestHeader(headerNameSessionID);
+			if(sessionHeaders != null && !sessionHeaders.isEmpty()) {
+				String sessionIdentifier = sessionHeaders.get(0);
+				Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);
+				if (session != null) {
+					return session.getUsername();					
+				}
 			}
 		}
 		return "<session failure>";
