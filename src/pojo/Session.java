@@ -25,6 +25,11 @@ public class Session {
         return false;
 	}
     
+    @Override
+    public int hashCode() {
+    	return sessionIdentifier.hashCode();
+    }
+    
 	public JsonObject toJSONObj() {
 		JsonObject session = new JsonObject();
 		session.addProperty("username", username);

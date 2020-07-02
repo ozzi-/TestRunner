@@ -183,29 +183,4 @@ public class Helpers {
 		}
 		return str;
 	}
-
-	/**
-	 * Creates a running file which indicates a test still being executed This file
-	 * is deleted as soon as the test is done, which creates a .data result file
-	 * 
-	 * @param test
-	 * @throws Exception
-	 * @throws IOException
-	 */
-	public static void createRunningFile(Test test, boolean group) throws Exception {
-		String basePath;
-		String tag = test.tag.equals("")?"":"_"+test.tag;
-
-		if (group) {
-			basePath = PathFinder.getSpecificTestGroupResultStatusPath(test.name, String.valueOf(test.start)+tag, true);
-		} else {
-			basePath = PathFinder.getSpecificTestResultStatusPath(test.name, String.valueOf(test.start)+tag, true);
-		}
-		File runningFile = new File(basePath);
-		try {
-			runningFile.createNewFile();
-		} catch (IOException e) {
-			throw new Exception("Could not create running file: " + e.getMessage() + " - " + basePath);
-		}
-	}
 }

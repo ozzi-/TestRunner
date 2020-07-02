@@ -44,12 +44,14 @@ public class User {
 	}
 	
 	public String toJSON() {
-		return "{ "+System.lineSeparator()
-				+ "	\"username\" : \""+getUsername()+"\","+System.lineSeparator()
-				+ "	\"password\" : \""+getPassword()+"\","+System.lineSeparator()
-				+ "	\"salt\" : \""+getSalt()+"\","+System.lineSeparator()
-				+ "	\"role\" : \""+getRole()+"\""+System.lineSeparator()
-				+"}";
+        StringBuilder str = new StringBuilder(); 
+        str.append("{ "+System.lineSeparator());
+        str.append("\t\"username\" : \""+getUsername()+"\","+System.lineSeparator());
+        str.append("\t\"password\" : \""+getPassword()+"\","+System.lineSeparator());
+        str.append("\t\"salt\" : \""+getSalt()+"\","+System.lineSeparator());
+        str.append("\t\"role\" : \""+getRole()+"\""+System.lineSeparator());
+        str.append("}");
+        return str.toString();
 	}
 
 	public int getPwLength() {

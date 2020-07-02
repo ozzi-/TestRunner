@@ -1,4 +1,4 @@
-package testRunner;
+package testrunner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.logging.Level;
@@ -20,6 +20,8 @@ import pojo.Test;
 
 public class Testing {
 	
+	private Testing() {}
+	
 	public static Results runTest(Test test) {
 		Results results = new Results();
 		results.test = test;
@@ -33,11 +35,12 @@ public class Testing {
 	
 	public static void runTestInThread(Test test, boolean group, String userName) throws Exception {
 		new Thread() {
+			@Override
 			public void run() {
 				Results results = Testing.runTest(test);
 				boolean allPassed = true;
 				for (Result result : results.results) {
-					System.out.println(result.toJSONString());
+					Log.log(Level.FINE,result.toJSONString());
 					if(!result.pass) {
 						allPassed=false;
 					}
@@ -51,7 +54,7 @@ public class Testing {
 					runPostHook(test.failureHook);
 				}
 				try {
-					Persistence.persistAsJSONFile(test, results, group, userName);
+					Persistence.persistTestRunAsJSONFile(test, results, group, userName);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -97,13 +100,15 @@ public class Testing {
 		long endTime = 0;
 
 		try {
-			ProcResult res = builder.run();
-			endTime = System.nanoTime();
-			result.returnCode = res.getExitValue();
-			result.text = "Script executed successfully";
-			result.pass = true;
+			if(builder!=null) {
+				ProcResult res = builder.run();				
+				result.returnCode = res.getExitValue();
+				result.text = "Script executed successfully";
+				result.pass = true;
+			}else {
+				Log.log(Level.WARNING, "ProcBuilder == null - cannot run test");
+			}
 		} catch (TimeoutException ex) {
-			endTime = System.nanoTime();
 			result.text = "Script execution longer than timeout";
 		} catch (StartupException ex) {
 			result.text = "StartupException: "+ex.getMessage();
@@ -115,7 +120,7 @@ public class Testing {
 		result.output = out.toString();
 		result.descriptiveName = task.descriptiveName;
 		result.errorOutput = errout.toString();
-		System.out.println("ERROR OUTPUT :"+result.errorOutput+" .");
+		Log.log(Level.INFO,"Test ERROR OUTPUT :"+result.errorOutput+" .");
 		result.timestampEnd=System.currentTimeMillis();
 		long timeElapsed = (endTime - startTime) / 1000000;
 		result.runTimeInMS = timeElapsed;

@@ -24,25 +24,26 @@ import pojo.GroupTestAbstraction;
 import pojo.Task;
 import pojo.Test;
 import pojo.TestCategoriesList;
-import testRunner.Testing;
+import testrunner.Testing;
 
 public class TRHelper {
+
 	public static TestCategoriesList getTestCategories() throws Exception {
-		String categoriesPath = PathFinder.getTestsPath()+"test.categories";
+		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
 		TestCategoriesList tcl = new TestCategoriesList();
-		if(Helpers.fileExistsAndReadable(categoriesPath)) {
+		if (Helpers.fileExistsAndReadable(categoriesPath)) {
 			String file = Helpers.readFile(categoriesPath);
 			JsonObject categories;
 			try {
-				categories = new JsonParser().parse(file).getAsJsonObject();				
-			}catch (Exception e) {
-				throw new MalformedJsonException("Error parsing test.categories file - "+e.getMessage()+" - "+e.getCause());
+				categories = new JsonParser().parse(file).getAsJsonObject();
+			} catch (Exception e) {
+				throw new MalformedJsonException("Error parsing test.categories file - " + e.getMessage() + " - " + e.getCause());
 			}
 			Set<Map.Entry<String, JsonElement>> entries = categories.entrySet();
-			for (Map.Entry<String, JsonElement> entry: entries) {
-			    String categoryName = entry.getKey();
-			    JsonArray tests = entry.getValue().getAsJsonArray();
-			    for (JsonElement test : tests) {
+			for (Map.Entry<String, JsonElement> entry : entries) {
+				String categoryName = entry.getKey();
+				JsonArray tests = entry.getValue().getAsJsonArray();
+				for (JsonElement test : tests) {
 					String testName = test.getAsString();
 					tcl.addTestToCategory(testName, categoryName);
 				}
@@ -50,21 +51,46 @@ public class TRHelper {
 		}
 		return tcl;
 	}
-	
+
+	/**
+	 * Creates a running file which indicates a test still being executed This file
+	 * is deleted as soon as the test is done, which creates a .data result file
+	 * 
+	 * @param test
+	 * @throws Exception
+	 * @throws IOException
+	 */
+	public static void createRunningFile(Test test, boolean group) throws Exception {
+		String basePath;
+		String tag = test.tag.equals("") ? "" : "_" + test.tag;
+
+		if (group) {
+			basePath = PathFinder.getSpecificTestGroupResultStatusPath(test.name, String.valueOf(test.start) + tag, true);
+		} else {
+			basePath = PathFinder.getSpecificTestResultStatusPath(test.name, String.valueOf(test.start) + tag, true);
+		}
+		File runningFile = new File(basePath);
+		try {
+			runningFile.createNewFile();
+		} catch (IOException e) {
+			throw new Exception("Could not create running file: " + e.getMessage() + " - " + basePath);
+		}
+	}
+
 	public static JsonObject runTestInternal(String testName, String userName, String tag, String args) throws Exception {
-		Log.log(Level.INFO, "User "+userName+" running test " + testName+" with tag = "+tag+" and additional args = "+args);
+		Log.log(Level.INFO, "User " + userName + " running test " + testName + " with tag = " + tag + " and additional args = " + args);
 		JSONObject obj = Helpers.loadConfig(PathFinder.getSpecificTestPath(testName));
 		Test test = Helpers.parseConfig(obj, testName);
-		
+
 		ArrayList<Task> tasks = test.tasks;
-		for (Task task : tasks) { 
+		for (Task task : tasks) {
 			ArrayList<String> argsList = task.args;
 			Collections.addAll(argsList, args.split("\\s+"));
-			Log.log(Level.FINEST, "Added "+(Arrays.toString(args.split("\\s+")))+" command line args to test " + testName);
-		} 
+			Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to test " + testName);
+		}
 		test.tag = tag;
 		test.start = System.currentTimeMillis();
-		Helpers.createRunningFile(test, false);
+		createRunningFile(test, false);
 		Testing.runTestInThread(test, false, userName);
 
 		JsonObject resp = new JsonObject();
@@ -73,9 +99,9 @@ public class TRHelper {
 
 		return resp;
 	}
-	
+
 	public static JsonObject runGroupInternal(String groupName, String userName, String tag, String args) throws Exception {
-		Log.log(Level.INFO, "User "+userName+" running group test " + groupName+" with tag = "+tag+" and addtional args = "+args);
+		Log.log(Level.INFO, "User " + userName + " running group test " + groupName + " with tag = " + tag + " and addtional args = " + args);
 
 		JSONObject group = Helpers.loadConfig(PathFinder.getSpecificGroupPath(groupName));
 		JSONArray tests = (JSONArray) group.get("tests");
@@ -86,16 +112,16 @@ public class TRHelper {
 		test.name = groupName;
 		test.tag = tag;
 		test.start = curMil;
-		
+
 		mergeTestsToGroupTest(tests, test);
 		ArrayList<Task> tasks = test.tasks;
-		for (Task task : tasks) { 
+		for (Task task : tasks) {
 			ArrayList<String> argsList = task.args;
 			Collections.addAll(argsList, args.split("\\s+"));
-			Log.log(Level.FINEST, "Added "+(Arrays.toString(args.split("\\s+")))+" command line args to test " + groupName);
-		} 
-		
-		Helpers.createRunningFile(test, true);
+			Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to test " + groupName);
+		}
+
+		createRunningFile(test, true);
 		Testing.runTestInThread(test, true, userName);
 
 		JsonObject resp = new JsonObject();
@@ -103,7 +129,7 @@ public class TRHelper {
 		resp.addProperty("handle", handle);
 		return resp;
 	}
-	
+
 	public static JsonElement mergeTests(ArrayList<JsonElement> tests, String groupName) {
 		JsonObject merged = new JsonObject();
 		JsonObject settingsObj = new JsonObject();
@@ -112,25 +138,25 @@ public class TRHelper {
 
 		JsonElement finalSuccessHook = null;
 		JsonElement finalFailureHook = null;
-		String description = "Group Test '"+groupName+"'";
+		String description = "Group Test '" + groupName + "'";
 		for (JsonElement test : tests) {
 			JsonElement successHook = test.getAsJsonObject().get("settings").getAsJsonObject().get("successhook");
 			JsonElement failureHook = test.getAsJsonObject().get("settings").getAsJsonObject().get("failurehook");
-			if(successHook!=null) {
-				finalSuccessHook=successHook;
+			if (successHook != null) {
+				finalSuccessHook = successHook;
 			}
-			if(failureHook!=null) {
-				finalFailureHook=failureHook;
+			if (failureHook != null) {
+				finalFailureHook = failureHook;
 			}
 			JsonArray tasks = test.getAsJsonObject().get("test").getAsJsonObject().get("tasks").getAsJsonArray();
 			for (JsonElement task : tasks) {
 				tasksArr.add(task);
 			}
 		}
-		if(finalSuccessHook != null) {
+		if (finalSuccessHook != null) {
 			settingsObj.add("successhook", finalSuccessHook);
 		}
-		if(finalFailureHook != null) {
+		if (finalFailureHook != null) {
 			settingsObj.add("failurehook", finalFailureHook);
 		}
 		testObj.addProperty("description", description);
@@ -162,7 +188,7 @@ public class TRHelper {
 		} else if (dataFile.exists()) {
 			state = "done";
 		} else {
-			throw new Exception("Could not find test!"); 
+			throw new Exception("Could not find test!");
 		}
 		JsonObject test = new JsonObject();
 		test.addProperty("state", state);
@@ -178,10 +204,10 @@ public class TRHelper {
 			} else {
 				resultPath = PathFinder.getSpecificTestResultPath(testName, handle, false);
 			}
-			
+
 			JsonObject result = new JsonObject();
-			if(handle.contains("_")) {
-				result.addProperty("tag", handle.substring(handle.indexOf("_")+1));
+			if (handle.contains("_")) {
+				result.addProperty("tag", handle.substring(handle.indexOf("_") + 1));
 			}
 			JsonElement resultJson = new JsonParser().parse(Helpers.readFile(resultPath));
 			result.addProperty("handle", handle);
@@ -198,37 +224,37 @@ public class TRHelper {
 		JsonElement jsonElement = parser.parse(result);
 		return jsonElement.getAsJsonObject().get("description").getAsString();
 	}
-	
+
 	public static JsonObject parseTestGroup(String name, String content) throws Exception {
 		JsonObject testGroup = new JsonObject();
 		JsonArray testGroupTests = new JsonArray();
 		JsonObject test;
 		try {
-			test = new JsonParser().parse(content).getAsJsonObject();			
-		}catch (Exception e) {
-			throw new Exception("Error parsing test group \""+name+"\" - "+e.getMessage());
+			test = new JsonParser().parse(content).getAsJsonObject();
+		} catch (Exception e) {
+			throw new Exception("Error parsing test group \"" + name + "\" - " + e.getMessage());
 		}
 		String groupName = name.substring(0, name.length() - PathFinder.getGroupLabel().length());
-		testGroup.addProperty("name", groupName);		
+		testGroup.addProperty("name", groupName);
 		testGroup.addProperty("description", getDescriptionOfGroup(groupName));
-		
-		ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName), PathFinder.getDataLabel(),-1);
+
+		ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName), PathFinder.getDataLabel(), -1);
 		String lastRunDate = "";
 		boolean passed = true;
 		long totalRunTimeInMS = 0;
-		
-		if(listResults.size()>0) {
+
+		if (listResults.size() > 0) {
 			String newest = getNewest(listResults);
 			String handle = String.valueOf(newest);
 			String path = PathFinder.getSpecificTestGroupResultPath(groupName, handle, false);
-			String lastRun = Helpers.readFile(path);			
+			String lastRun = Helpers.readFile(path);
 			JsonObject lastRunJO = new JsonParser().parse(lastRun).getAsJsonObject();
 			lastRunDate = lastRunJO.get("testStartString").getAsString();
 			JsonArray lastRunResults = lastRunJO.get("results").getAsJsonArray();
 			passed = true;
 			for (JsonElement lastRunResult : lastRunResults) {
 				totalRunTimeInMS += lastRunResult.getAsJsonObject().get("runTimeInMS").getAsLong();
-				if(lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
+				if (lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
 					passed = false;
 				}
 			}
@@ -244,14 +270,13 @@ public class TRHelper {
 		testGroup.add("tests", testGroupTests);
 		return testGroup;
 	}
-	
 
 	public static void enrichLastRunData(JsonObject test, String testName, ArrayList<String> listResults) throws Exception {
 		boolean passed = true;
 		String lastRunDate = "";
 		long totalRunTimeInMS = 0;
 
-		if(listResults.size()>0) {
+		if (listResults.size() > 0) {
 			String newest = getNewest(listResults);
 			String handle = String.valueOf(newest);
 			String path = PathFinder.getSpecificTestResultPath(testName, handle, false);
@@ -262,7 +287,7 @@ public class TRHelper {
 			passed = true;
 			for (JsonElement lastRunResult : lastRunResults) {
 				totalRunTimeInMS += lastRunResult.getAsJsonObject().get("runTimeInMS").getAsLong();
-				if(lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
+				if (lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
 					passed = false;
 				}
 			}
@@ -273,19 +298,19 @@ public class TRHelper {
 	}
 
 	public static String getNewest(ArrayList<String> toSortAL) {
-		
-        for(int i = 0;i<toSortAL.size();i++) {
-        	toSortAL.set(i, cutDataLabelFromString(toSortAL.get(i)));
-        }
 
-		Collections.sort(toSortAL, Collections.reverseOrder());	
+		for (int i = 0; i < toSortAL.size(); i++) {
+			toSortAL.set(i, cutDataLabelFromString(toSortAL.get(i)));
+		}
+
+		Collections.sort(toSortAL, Collections.reverseOrder());
 		return toSortAL.get(0);
 	}
 
 	private static String cutDataLabelFromString(String strng) {
 		return strng.substring(0, strng.length() - PathFinder.getDataLabel().length());
 	}
-	
+
 	public static ArrayList<JsonElement> getJsonElementsOfPath(ArrayList<GroupTestAbstraction> gta) throws Exception {
 		JsonParser parser = new JsonParser();
 		ArrayList<JsonElement> elements = new ArrayList<JsonElement>();
@@ -294,7 +319,7 @@ public class TRHelper {
 			try {
 				testContent = Helpers.readFile(gtaObj.getPath());
 			} catch (Exception e) {
-				throw new Exception("Cannot load group due to an error reading one of its test: "+e.getMessage());
+				throw new Exception("Cannot load group due to an error reading one of its test: " + e.getMessage());
 			}
 			JsonElement testContentJSON = parser.parse(testContent);
 			elements.add(testContentJSON);
@@ -306,22 +331,22 @@ public class TRHelper {
 		String path = PathFinder.getSpecificGroupPath(groupName);
 		String result = Helpers.readFile(path);
 		ArrayList<GroupTestAbstraction> paths = new ArrayList<GroupTestAbstraction>();
-		
+
 		JsonParser parser = new JsonParser();
 		JsonElement jsonElement = parser.parse(result);
-		
+
 		JsonArray groupTestsArray = jsonElement.getAsJsonObject().get("tests").getAsJsonArray();
 		for (JsonElement testElement : groupTestsArray) {
 			String testName = testElement.getAsJsonObject().get("test").getAsString();
 			String descriptiveName = testElement.getAsJsonObject().get("name").getAsString();
-			String testPath = PathFinder.getSpecificTestPath(testName);	
-			
+			String testPath = PathFinder.getSpecificTestPath(testName);
+
 			GroupTestAbstraction gta = new GroupTestAbstraction(descriptiveName, testPath);
 			paths.add(gta);
 		}
 		return paths;
 	}
-	
+
 	private static void mergeTestsToGroupTest(JSONArray testsToAdd, Test test) throws Exception {
 		boolean addedTest = false;
 		for (Object testObj : testsToAdd) {
@@ -331,17 +356,17 @@ public class TRHelper {
 			addedTest = true;
 			JSONObject objd = Helpers.loadConfig(PathFinder.getSpecificTestPath(testToAddName));
 			Test testD = Helpers.parseConfig(objd, testToAddName);
-			if(testD.successHook != null) {
+			if (testD.successHook != null) {
 				test.successHook = testD.successHook;
 			}
-			if(testD.failureHook != null) {
+			if (testD.failureHook != null) {
 				test.failureHook = testD.failureHook;
 			}
-			testD.tasks.get(0).descriptiveName =  testToAdd.getString("name");
+			testD.tasks.get(0).descriptiveName = testToAdd.getString("name");
 			test.tasks.addAll(testD.tasks);
 		}
-		if(addedTest) {
-			test.description = test.description.substring(0, test.description.length() - 2);			
+		if (addedTest) {
+			test.description = test.description.substring(0, test.description.length() - 2);
 		}
 	}
 }

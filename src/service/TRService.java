@@ -9,6 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.gson.JsonArray;
@@ -17,7 +18,6 @@ import com.google.gson.JsonObject;
 
 import annotations.Authenticate;
 import annotations.LogRequest;
-import auth.AuthenticationFilter;
 import auth.UserManagement;
 import helpers.Helpers;
 import helpers.PathFinder;
@@ -29,7 +29,6 @@ import pojo.TestCategoriesList;
 @Path("/")
 public class TRService {
 
-	// TODO refactor
 	// TODO debug additional args in script ? groups add the args multiple times or not?
 	// TODO improved error handling (i.E. when parsing tests, it throws json parser error, but not which file it crashed . . )
 	
@@ -38,8 +37,6 @@ public class TRService {
 	@GET
 	@Path("/reload")
 	public Response reload(@Context HttpHeaders headers) throws Exception {
-		String userName = AuthenticationFilter.checkLogin(headers);
-
 		try {
 			UserManagement.loadUsers();
 		} catch (Exception e) {
@@ -69,7 +66,7 @@ public class TRService {
 		} catch (Exception e) {
 			throw new Exception("Cannot load or parse test result");
 		}
-		return Response.status(200).entity(resultsArray.toString()).type("application/json").build();
+		return Response.status(200).entity(resultsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -85,7 +82,7 @@ public class TRService {
 			e.printStackTrace();
 			throw new Exception("Cannot load or parse test result - " + e.getMessage());
 		}
-		return Response.status(200).entity(resultsArray.toString()).type("application/json").build();
+		return Response.status(200).entity(resultsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
 	@LogRequest
@@ -135,7 +132,7 @@ public class TRService {
 			throw new Exception("Cannot find test result!");
 		}
 		
-		return Response.status(200).entity(test.toString()).type("application/json").build();
+		return Response.status(200).entity(test.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -206,7 +203,7 @@ public class TRService {
 			test.addProperty("category", category);
 			testsArray.add(test);
 		}
-		return Response.status(200).entity(testsArray.toString()).type("application/json").build();
+		return Response.status(200).entity(testsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -223,6 +220,6 @@ public class TRService {
 			JsonObject tests = TRHelper.parseTestGroup(name, content);			
 			groupsArray.add(tests);
 		}
-		return Response.status(200).entity(groupsArray.toString()).type("application/json").build();
+		return Response.status(200).entity(groupsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 }

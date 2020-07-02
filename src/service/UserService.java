@@ -48,6 +48,7 @@ public class UserService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/logout")
 	public Response doLogout(@Context HttpHeaders headers) throws Exception {
+		// TODO this
 		String userName = AuthenticationFilter.checkLogin(headers);
 		if (headers != null && headers.getRequestHeader(AuthenticationFilter.headerNameSessionID) != null && headers.getRequestHeader(AuthenticationFilter.headerNameSessionID).size() > 0) { 
 			String sessionIdentifier = headers.getRequestHeader(AuthenticationFilter.headerNameSessionID).get(0);

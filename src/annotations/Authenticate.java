@@ -12,5 +12,4 @@ import javax.ws.rs.NameBinding;
 @Target({ TYPE, METHOD })
 public @interface Authenticate {
 	public String value()  default "READ";
-
 }

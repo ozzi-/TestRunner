@@ -5,6 +5,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.google.gson.JsonObject;
@@ -24,8 +25,9 @@ public class RunService {
 		String userName = AuthenticationFilter.checkLogin(headers);
 
 		JsonObject resp = TRHelper.runTestInternal(testName, userName,tag,args);
+		
 
-		return Response.status(200).entity(resp.toString()).type("application/json").build();
+		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
 	@LogRequest
@@ -37,7 +39,7 @@ public class RunService {
 
 		JsonObject resp = TRHelper.runTestInternal(testName, userName,tag,"");
 
-		return Response.status(200).entity(resp.toString()).type("application/json").build();
+		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -49,7 +51,7 @@ public class RunService {
 
 		JsonObject resp = TRHelper.runTestInternal(testName, userName,"","");
 
-		return Response.status(200).entity(resp.toString()).type("application/json").build();
+		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -60,7 +62,7 @@ public class RunService {
 		String userName = AuthenticationFilter.checkLogin(headers);
 
 		JsonObject resp = TRHelper.runGroupInternal(groupName, userName,"","");
-		return Response.status(200).entity(resp.toString()).type("application/json").build();
+		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
 	@LogRequest
@@ -71,7 +73,7 @@ public class RunService {
 		String userName = AuthenticationFilter.checkLogin(headers);
 
 		JsonObject resp = TRHelper.runGroupInternal(groupName, userName,tag,"");
-		return Response.status(200).entity(resp.toString()).type("application/json").build();
+		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
 	@LogRequest
@@ -82,6 +84,6 @@ public class RunService {
 		String userName = AuthenticationFilter.checkLogin(headers);
 
 		JsonObject resp = TRHelper.runGroupInternal(groupName, userName,tag,args);
-		return Response.status(200).entity(resp.toString()).type("application/json").build();
+		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 }
