@@ -347,12 +347,13 @@ function listResults(results,paramName) {
 	if(resultCount==0){
 		resultsSpan.innerHTML = "<i>This test has not been run yet.</i>";
 	}else{
-		
 		var name = getQueryParams(document.location.search).name;
-		if(name === undefined || name == "undefined"){
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+results[0].result.testName+'\')"> Run Test Group &#9654;</a>';			
-		}else{
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+results[0].result.testName+'\')"> Run Test &#9654;</a>';			
+		if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
+			if(name === undefined || name == "undefined"){
+				runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+results[0].result.testName+'\')"> Run Test Group &#9654;</a>';			
+			}else{
+				runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+results[0].result.testName+'\')"> Run Test &#9654;</a>';			
+			}
 		}
 		
 		var table = new Tabulator("#resultsSpan", {
