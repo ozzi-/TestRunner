@@ -136,6 +136,12 @@ function runCustomTest(){
 		alert("Please provide string to tag this test run.");
 		return;
 	}
+	var tagValid = document.getElementById("tag").checkValidity();
+	if(!tagValid){
+		alert("Tags may only contain letters, numbers and underscores.");
+		//return;
+	}
+
 	var args = document.getElementById("args").value;
 	
 	var name = getQueryParams(document.location.search).name;
@@ -279,7 +285,6 @@ function listGroups(groups){
 		groups[i].runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&groupname="+groups[i].name+"\"> &#9654; </a>";
 		groups[i].runTLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=custom&groupname="+groups[i].name+"\"> &#128221; </a>";
 		groups[i].runState = groups[i].lastRunPassed ? sun : cloud;
-		groups[i].description = groups[i].description;
 		groups[i].status = groups[i].lastRunDate.length==0 ? "-" : groups[i].runState;
 		groups[i].lastRunTime = timeConversion(groups[i].totalRunTimeInMS);
 	}

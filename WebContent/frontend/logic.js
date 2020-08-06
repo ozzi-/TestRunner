@@ -77,14 +77,11 @@ function pageLogic (response){
 	}
 	if(page=="run"){
 		removeLoader();
-		var done=false;
 		var handle;
-		var poller;
 		var paramName;
 		
-		// TODO check tag / args
-		var tag = getQueryParams(document.location.search).tag;
-		var args = getQueryParams(document.location.search).args;
+		var tag = encodeURI(getQueryParams(document.location.search).tag);
+		var args = encodeURI(getQueryParams(document.location.search).args);
 		var additional="";
 		
 		if(tag != "undefined" && tag !== undefined && args !="undefined" && args !== undefined){

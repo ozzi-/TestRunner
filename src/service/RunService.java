@@ -1,5 +1,7 @@
 package service;
 
+import java.util.regex.Pattern;
+
 import javax.inject.Singleton;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -20,12 +22,17 @@ import helpers.TRHelper;
 @Path("/")
 public class RunService {
 	
+	private static String tagValidRegexp="[a-zA-Z0-9_]+";
+	
 	@LogRequest
 	@Authenticate("WRITE")
 	@POST
 	@Path("/run/{testname}/{tag}/{args}")
 	public Response runTestByNameCustom(@PathParam("testname") String testName , @PathParam("tag") String tag, @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		if(!Pattern.matches(tagValidRegexp, tag)) {
+			return Response.status(400).entity("invalid tag name").type(MediaType.APPLICATION_JSON_TYPE).build();
+		}
 
 		JsonObject resp = TRHelper.runTestInternal(testName, userName,tag,args);
 		
@@ -39,7 +46,10 @@ public class RunService {
 	@Path("/run/{testname}/{tag}")
 	public Response runTestByNameTag(@PathParam("testname") String testName , @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-
+		if(!Pattern.matches(tagValidRegexp, tag)) {
+			return Response.status(400).entity("invalid tag name").type(MediaType.APPLICATION_JSON_TYPE).build();
+		}
+		
 		JsonObject resp = TRHelper.runTestInternal(testName, userName,tag,"");
 
 		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -74,7 +84,10 @@ public class RunService {
 	@Path("/runGroup/{groupname}/{tag}")
 	public Response runTestGroupByNameTag(@PathParam("groupname") String groupName, @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-
+		if(!Pattern.matches(tagValidRegexp, tag)) {
+			return Response.status(400).entity("invalid tag name").type(MediaType.APPLICATION_JSON_TYPE).build();
+		}
+		
 		JsonObject resp = TRHelper.runGroupInternal(groupName, userName,tag,"");
 		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
@@ -85,7 +98,10 @@ public class RunService {
 	@Path("/runGroup/{groupname}/{tag}/{args}")
 	public Response runTestGroupByNameCustom(@PathParam("groupname") String groupName, @PathParam("tag") String tag,  @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-
+		if(!Pattern.matches(tagValidRegexp, tag)) {
+			return Response.status(400).entity("invalid tag name").type(MediaType.APPLICATION_JSON_TYPE).build();
+		}
+		
 		JsonObject resp = TRHelper.runGroupInternal(groupName, userName,tag,args);
 		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
