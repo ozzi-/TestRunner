@@ -339,14 +339,16 @@ function listResults(results,paramName) {
 	var testName = document.getElementById("testName");
 	var runLink = document.getElementById("runLink");
 
+	var isGroup=false;
 	var name = getQueryParams(document.location.search).name;
 	if(name === undefined || name == "undefined"){
 		name = getQueryParams(document.location.search).groupname;
+		isGroup=true;
 	}
 	testName.innerHTML = escapeHtml(name);
 	
 	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-		if(name === undefined || name == "undefined"){
+		if(isGroup){
 			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</a>';			
 		}else{
 			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+escapeHtml(name)+'\')"> Run Test &#9654;</a>';			
@@ -599,7 +601,9 @@ function basePath(basePath) {
 
 function createTestMask(json){
 	var maskSpan = document.createElement("span");
-	
+	if(json.settings==undefined){
+		json.settings={};
+	}
 	var successHook = createInput("Success Hook", json.settings.successhook, true);
 	maskSpan.append(successHook);
 	maskSpan.append(document.createElement("br"));
