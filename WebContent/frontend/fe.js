@@ -139,7 +139,7 @@ function runCustomTest(){
 	var tagValid = document.getElementById("tag").checkValidity();
 	if(!tagValid){
 		alert("Tags may only contain letters, numbers and underscores.");
-		//return;
+		return;
 	}
 
 	var args = document.getElementById("args").value;
