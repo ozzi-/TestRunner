@@ -172,7 +172,7 @@ function runInternal(res, name, paramName, call){
 }
 
 function poll(res,name,paramName, poller, handle) {
-	document.getElementById("state").innerHTML=res.state;
+	document.getElementById("state").textContent=res.state;
 	if(res.state=="done"){
 		removeLoader();
 		if(poller === undefined || poller == "undefined" || poller != null){
@@ -307,7 +307,7 @@ function addResults(results,paramName){
 	
 	if(resultCount==0) {
 		document.getElementById("loadmore").disabled = true;
-		document.getElementById("loadmore").innerHTML = "no more results";
+		document.getElementById("loadmore").textContent = "no more results";
 		return;
 	}
 	
@@ -342,9 +342,9 @@ function listResults(results,paramName) {
 	
 	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
 		if(name === undefined || name == "undefined"){
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+name+'\')"> Run Test Group &#9654;</a>';			
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</a>';			
 		}else{
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+name+'\')"> Run Test &#9654;</a>';			
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+escapeHtml(name)+'\')"> Run Test &#9654;</a>';			
 		}
 	}
 	
@@ -392,9 +392,9 @@ function listResult(result) {
 		}
 	}
 	var infoSpan = document.getElementById("info");
-	infoSpan.innerHTML = ("<h3"+style+">" + result.testName + " - "
+	infoSpan.innerHTML = ("<h3"+style+">" + escapeHtml(result.testName) + " - "
 			+ result.testStartString + "</h3>");
-	infoSpan.innerHTML += "<b>Run by</b>: "+result.testRunBy+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description) + "<br><hr>";
+	infoSpan.innerHTML += "<b>Run by</b>: "+escapeHtml(result.testRunBy)+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description) + "<br><hr>";
 
 	var resultsSpan = document.getElementById("results");
 	for (var i = 0; i < result.results.length; i++) {
@@ -583,7 +583,7 @@ function basePath(basePath) {
 	removeLoader();
 	var basePathSpans = document.getElementsByClassName("basePath");
 	for(let i = 0; i < basePathSpans.length; i++){
-		basePathSpans[i].innerHTML = basePath;
+		basePathSpans[i].textContent = basePath;
 	}		
 }
 
@@ -609,7 +609,7 @@ function createTestMask(json){
 	maskSpan.append(document.createElement("br"));
 
 	var tasksTitle = document.createElement("span");
-	tasksTitle.innerHTML = "Tasks";
+	tasksTitle.textContent = "Tasks";
 	maskSpan.append(tasksTitle);
 	maskSpan.append(document.createElement("br"));
 
@@ -653,7 +653,7 @@ function createInput(title, value, disabled){
 	var resultSpan = document.createElement("span");
 	
 	var descriptionSpan = document.createElement("span");
-	descriptionSpan.innerHTML = title;
+	descriptionSpan.textContent = title;
 	resultSpan.append(descriptionSpan);
 	
 	var descriptionBR = document.createElement("br");
