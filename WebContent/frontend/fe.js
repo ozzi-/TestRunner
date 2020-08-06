@@ -143,7 +143,7 @@ function runCustomTest(){
 	}
 
 	var args = document.getElementById("args").value;
-	
+	 
 	var name = getQueryParams(document.location.search).name;
 	if(name=="undefined" || name === undefined ){
 		name = getQueryParams(document.location.search).groupname;

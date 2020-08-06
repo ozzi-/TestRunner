@@ -28,8 +28,6 @@ import pojo.TestCategoriesList;
 @Singleton
 @Path("/")
 public class TRService {
-
-	// TODO debug additional args in script ? groups add the args multiple times or not?
 	
 	@Authenticate("ADMIN")
 	@LogRequest
