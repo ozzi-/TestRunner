@@ -30,7 +30,6 @@ import pojo.TestCategoriesList;
 public class TRService {
 
 	// TODO debug additional args in script ? groups add the args multiple times or not?
-	// TODO improved error handling (i.E. when parsing tests, it throws json parser error, but not which file it crashed . . )
 	
 	@Authenticate("ADMIN")
 	@LogRequest

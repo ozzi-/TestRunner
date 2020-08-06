@@ -173,6 +173,11 @@ public class TRHelper {
 		} catch (IOException e) {
 			throw new Exception("Cannot find test result!");
 		}
+		try {
+			new JSONObject(result);
+		} catch (Exception e) {
+			throw new Exception("Error parsing json file (" + path + ")   \"" + e.getMessage() + "\" in TRHelper");
+		}
 		return Response.status(200).entity(result).type("application/json").build();
 	}
 

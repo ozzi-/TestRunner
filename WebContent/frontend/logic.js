@@ -77,7 +77,6 @@ function pageLogic (response){
 	}
 	if(page=="run"){
 		removeLoader();
-		var handle;
 		var paramName;
 		
 		var tag = encodeURI(getQueryParams(document.location.search).tag);
