@@ -340,22 +340,21 @@ function listResults(results,paramName) {
 	}
 	testName.innerHTML = escapeHtml(name);
 	
-	results = results.sort((a, b) => (a.handle < b.handle) ? 1 : -1);
+	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
+		if(name === undefined || name == "undefined"){
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+name+'\')"> Run Test Group &#9654;</a>';			
+		}else{
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+name+'\')"> Run Test &#9654;</a>';			
+		}
+	}
 	
 	var resultCount = results.length;
 	var resultsSpan = document.getElementById("resultsSpan");
 	if(resultCount==0){
 		resultsSpan.innerHTML = "<i>This test has not been run yet.</i>";
-	}else{
-		var name = getQueryParams(document.location.search).name;
-		if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-			if(name === undefined || name == "undefined"){
-				runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+results[0].result.testName+'\')"> Run Test Group &#9654;</a>';			
-			}else{
-				runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+results[0].result.testName+'\')"> Run Test &#9654;</a>';			
-			}
-		}
-		
+	}else{	
+		results = results.sort((a, b) => (a.handle < b.handle) ? 1 : -1);
+
 		var table = new Tabulator("#resultsSpan", {
 		    layout:"fitDataFill",
 		    columns:[

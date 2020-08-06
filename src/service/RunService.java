@@ -1,5 +1,6 @@
 package service;
 
+import javax.inject.Singleton;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -15,6 +16,8 @@ import annotations.LogRequest;
 import auth.AuthenticationFilter;
 import helpers.TRHelper;
 
+@Singleton
+@Path("/")
 public class RunService {
 	
 	@LogRequest
