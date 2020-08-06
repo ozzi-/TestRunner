@@ -1,6 +1,9 @@
 'use strict';
 var sun = "&#9728";
 var cloud = "&#127785;";
+var trToken = "TR_Token";
+var trRole = "TR_Role";
+var sessionHeaderName ="X-TR-Session-ID";
 var pageIndex=0;
 
 var htmlFormatter = function(cell, formatterParams){
@@ -55,7 +58,7 @@ function proccessPasswordChange(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
 	}else{
-		alert("Password changed, you will be logged out");
+		alert("Password changed successfully - for security reasons, you will be logged out");
 		doLogout();
 	}
 }
@@ -106,8 +109,8 @@ function processLoginResult(response){
 		document.getElementById("password").value="";
 	}else{
 		var session = JSON.parse(response.responseText);
-		localStorage.setItem('TR_Token',session.sessionIdentifier);
-		localStorage.setItem('TR_Role',session.role);
+		localStorage.setItem(trToken,session.sessionIdentifier);
+		localStorage.setItem(trRole,session.role);
 		window.location.replace("index.html");
 	}
 }
@@ -116,13 +119,13 @@ function doLogout() {
 	var request = new XMLHttpRequest();
 	request.onreadystatechange = function() {
 		if (request.readyState == 4) {
-			localStorage.removeItem("TR_Token");
-			localStorage.removeItem("TR_Role");
+			localStorage.removeItem(trToken);
+			localStorage.removeItem(trRole);
 			window.location.replace("index.html?page=login");
 		}
 	};
 	request.open("POST", "../logout");
-	request.setRequestHeader('X-TR-Session-ID', localStorage.getItem('TR_Token'));
+	request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
 	request.send();
 }
 
@@ -170,7 +173,7 @@ function runInternal(res, name, paramName, call){
 		if(tag!="undefined" && tag!==undefined){
 			handleS = handleS+"_"+tag
 		}
-		doRequest("GET", "../"+call+"/" + name + "/" + handleS, poll, [name,paramName, poller, handleS], true);
+		doRequest("GET", "../"+call+"/" + name + "/" + handleS, poll, [name,paramName, poller, handleS]);
 	}
 	doPoll();
 	var poller;
@@ -196,9 +199,9 @@ function poll(res,name,paramName, poller, handle) {
 function listTests(tests) {
 	var testCount = tests.length;
 	removeLoader();
-
-	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-		var table = new Tabulator("#testsTable", {
+	var table;
+	if(localStorage.getItem(trRole)==="rw" || localStorage.getItem(trRole)==="a"){
+		table = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
@@ -212,7 +215,7 @@ function listTests(tests) {
 		    ],
 		});
 	}else{
-		var table = new Tabulator("#testsTable", {
+		table = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
@@ -242,8 +245,9 @@ function listTests(tests) {
 function listGroups(groups){
 	var groupCount = groups.length;
 	removeLoader();
-	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
-		var table = new Tabulator("#testGroupsTable", {
+	var table;
+	if(localStorage.getItem(trRole)==="rw" || localStorage.getItem(trRole)==="a"){
+		table = new Tabulator("#testGroupsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    columns:[
@@ -258,7 +262,7 @@ function listGroups(groups){
 		    ],
 		});
 	}else{
-		var table = new Tabulator("#testGroupsTable", {
+		table = new Tabulator("#testGroupsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    columns:[
@@ -279,7 +283,7 @@ function listGroups(groups){
 		for(var j = 0; j < groups[i].tests.length; j++){
 			tests+=groups[i].tests[j].name+"("+groups[i].tests[j].test+") , ";
 		}
-		groups[i].tests = tests.slice(0, -2);
+		groups[i].tests = tests.slice(0, -2); // remove trailing ,_
 		
 		groups[i].groupLink = "<a href=\"index.html?page=results&groupname="+groups[i].name+"\">"+groups[i].name+"</a>";
 		groups[i].runLink = "<a style=\"text-decoration:none;\" href=\"index.html?page=run&groupname="+groups[i].name+"\"> &#9654; </a>";
@@ -293,12 +297,17 @@ function listGroups(groups){
 
 function loadMore(){
 	var paramName;
-	pageIndex++
+	pageIndex++;
 	document.getElementById("loadmore").disabled = true;
 	
+	var isGroup=false;
 	var name = getQueryParams(document.location.search).name;
 	if(name=="undefined" || name === undefined ){
+		isGroup=true;
 		name = getQueryParams(document.location.search).groupname;
+	}
+	
+	if(isGroup){
 		paramName="groupname";
 		doRequest("GET", "../getGroupResults/"+name+"/"+pageIndex, addResults,[paramName]);
 	}else{
@@ -312,7 +321,7 @@ function addResults(results,paramName){
 	
 	if(resultCount==0) {
 		document.getElementById("loadmore").disabled = true;
-		document.getElementById("loadmore").textContent = "no more results";
+		document.getElementById("loadmore").textContent = "no further results";
 		return;
 	}
 	
@@ -347,7 +356,7 @@ function listResults(results,paramName) {
 	}
 	testName.innerHTML = escapeHtml(name);
 	
-	if(localStorage.getItem('TR_Role')==="rw" || localStorage.getItem('TR_Role')==="a"){
+	if(localStorage.getItem(trRole)==="rw" || localStorage.getItem(trRole)==="a"){
 		if(isGroup){
 			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</a>';			
 		}else{
@@ -470,13 +479,11 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 	request.timeout = 5000;
 
 	if(sendAuth){
-		request.setRequestHeader('X-TR-Session-ID', localStorage.getItem('TR_Token'));
+		request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
 	}
 	request.setRequestHeader("Content-Type", type);
 	request.send(data);
 }
-
-
 
 function doRequest(method, url, callback, params) {
 	var request = new XMLHttpRequest();
@@ -534,7 +541,7 @@ function doRequest(method, url, callback, params) {
 	request.open(method, url);
 	request.timeout = 5000;
 
-	request.setRequestHeader('X-TR-Session-ID', localStorage.getItem('TR_Token'));
+	request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
 	request.send();
 }
 
@@ -586,11 +593,11 @@ function back(){
 	window.location.href='index.html?page=results&'+param+'='+name;
 }
 
-function basePath(basePath) { 
+function basePath(path) { 
 	removeLoader();
 	var basePathSpans = document.getElementsByClassName("basePath");
 	for(let i = 0; i < basePathSpans.length; i++){
-		basePathSpans[i].textContent = basePath;
+		basePathSpans[i].textContent = path;
 	}		
 }
 
@@ -612,8 +619,8 @@ function createTestMask(json){
 	maskSpan.append(failureHook);
 	maskSpan.append(document.createElement("br"));
 
-	var failureHook = createInput("Description", json.test.description, true);
-	maskSpan.append(failureHook);
+	var description = createInput("Description", json.test.description, true);
+	maskSpan.append(description);
 	maskSpan.append(document.createElement("br"));
 	maskSpan.append(document.createElement("br"));
 
@@ -621,7 +628,6 @@ function createTestMask(json){
 	tasksTitle.textContent = "Tasks";
 	maskSpan.append(tasksTitle);
 	maskSpan.append(document.createElement("br"));
-
 
 	for (var i = 0; i < json.test.tasks.length ; i++) {
 		var task = json.test.tasks[i];
@@ -633,14 +639,14 @@ function createTestMask(json){
 }
 
 function displaySettings(){
-	if(localStorage.getItem('TR_Role')!=="a"){
+	if(localStorage.getItem(trRole)!=="a"){
 		document.getElementById("settingsAdmin").remove();		
 	}
 }
 
 function createTaskDiv(task){
 	var tasksDiv = document.createElement("div");
-	tasksDiv.setAttribute("style","border: 1px solid; border-color: lightgrey; border-radius: 5px; margin-bottom: 4px; padding: 15px;");
+	tasksDiv.setAttribute("class","task");
 
 	var taskName = createInput("Name", task.name, true);
 	tasksDiv.append(taskName);
@@ -648,11 +654,11 @@ function createTaskDiv(task){
 	var taskPath = createInput("Path", task.path, true);
 	tasksDiv.append(taskPath);
 	tasksDiv.append(document.createElement("br"));
-	var taskPath = createInput("Arguments", task.args, true);
-	tasksDiv.append(taskPath);
+	var taskArgs = createInput("Arguments", task.args, true);
+	tasksDiv.append(taskArgs);
 	tasksDiv.append(document.createElement("br"));
-	var taskPath = createInput("Timeout", task.timeout, true);
-	tasksDiv.append(taskPath);
+	var taskTimeout = createInput("Timeout", task.timeout, true);
+	tasksDiv.append(taskTimeout);
 	tasksDiv.append(document.createElement("br"));
 	
 	return tasksDiv;

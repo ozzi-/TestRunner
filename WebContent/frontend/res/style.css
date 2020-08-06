@@ -10,6 +10,14 @@
   height: 170px;
   animation: spin 2s linear infinite;
 }
+
+.task{
+	border: 1px solid;
+	border-color: lightgrey;
+	border-radius: 5px;
+	margin-bottom: 4px;
+	padding: 15px
+}
  
 @keyframes spin { 
   0% { transform: rotate(0deg); }

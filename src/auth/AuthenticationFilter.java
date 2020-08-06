@@ -23,7 +23,7 @@ import pojo.Session;
 @Priority(Priorities.AUTHENTICATION)
 public class AuthenticationFilter implements ContainerRequestFilter {
 
-	public static final String headerNameSessionID = "X-TR-Session-ID";
+	public static final String SESSIONHEADERNAME = "X-TR-Session-ID";
 
 	@Context
 	private ResourceInfo resourceInfo;
@@ -40,7 +40,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 		}
 		
 
-		String sessionIdentifier = requestContext.getHeaderString(headerNameSessionID);
+		String sessionIdentifier = requestContext.getHeaderString(SESSIONHEADERNAME);
 		
 		if (sessionIdentifier != null) {
 			Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);
@@ -69,7 +69,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	
 	public static String getUsernameOfSession(HttpHeaders headers) {
 		if (headers != null) {
-			List<String> sessionHeaders = headers.getRequestHeader(headerNameSessionID);
+			List<String> sessionHeaders = headers.getRequestHeader(SESSIONHEADERNAME);
 			if(sessionHeaders != null && !sessionHeaders.isEmpty()) {
 				String sessionIdentifier = sessionHeaders.get(0);
 				Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);

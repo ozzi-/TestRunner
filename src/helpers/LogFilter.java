@@ -22,7 +22,7 @@ public class LogFilter implements ContainerRequestFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		
-		String sessionIdentifier = requestContext.getHeaderString(AuthenticationFilter.headerNameSessionID);
+		String sessionIdentifier = requestContext.getHeaderString(AuthenticationFilter.SESSIONHEADERNAME);
 		Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);		
 		String userName = session.getUsername();
 		

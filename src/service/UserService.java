@@ -50,7 +50,7 @@ public class UserService {
 	@Path("/logout")
 	public Response doLogout(@Context HttpHeaders headers) throws Exception {
 		if(headers!=null) {
-			List<String> sessionHeaders = headers.getRequestHeader(AuthenticationFilter.headerNameSessionID);
+			List<String> sessionHeaders = headers.getRequestHeader(AuthenticationFilter.SESSIONHEADERNAME);
 			if (sessionHeaders != null && !sessionHeaders.isEmpty()) { 
 				String sessionIdentifier = sessionHeaders.get(0);
 				Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);

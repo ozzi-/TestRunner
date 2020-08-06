@@ -1,6 +1,5 @@
 'use strict';
 var page = getQueryParams(document.location.search).page;
-
 if(page === undefined || page == "undefined" || page == "index" ){
 	page = "main";
 }
@@ -15,6 +14,8 @@ setTimeout(function() {
 }, 300); 
 
 function pageLogic (response){
+	var paramName;
+
 	document.getElementById("container").innerHTML = response;
 	if(page=="main"){
 		doRequest("GET", "../getTestList", listTests);
@@ -52,7 +53,6 @@ function pageLogic (response){
 		}
 	}
 	if(page=="results"){
-		var paramName;
 		var name = getQueryParams(document.location.search).name;
 		if(name=="undefined" || name === undefined ){
 			name = getQueryParams(document.location.search).groupname;
@@ -77,7 +77,6 @@ function pageLogic (response){
 	}
 	if(page=="run"){
 		removeLoader();
-		var paramName;
 		
 		var tag = encodeURI(getQueryParams(document.location.search).tag);
 		var args = encodeURI(getQueryParams(document.location.search).args);
@@ -86,7 +85,6 @@ function pageLogic (response){
 		if(tag != "undefined" && tag !== undefined && args !="undefined" && args !== undefined){
 			additional="/"+tag+"/"+args;
 		}
-
 		var name = getQueryParams(document.location.search).name;
 		if(name=="undefined" || name === undefined){
 			name = getQueryParams(document.location.search).groupname;
