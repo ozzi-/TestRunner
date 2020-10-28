@@ -240,7 +240,51 @@ function listTests(tests) {
 		tests[i].lastRunTime = timeConversion(tests[i].totalRunTimeInMS);
 	}
 	table.setData(tests);
+	var filterInput = document.getElementById("filterInput");
+	filterInput.onkeyup = function(){
+	    table.setFilter(matchAny, [filterInput.value,"name"]);
+	}
 }
+
+function matchAny(data, filterParams){
+	console.log( );
+    var match = false;
+    var searchTerm = filterParams[0];
+    var columnName = filterParams[1];
+    // empty search string means all match
+    if(searchTerm==""){
+    	return true;
+    }
+   
+	var searchTermRaw = searchTerm.toLowerCase();
+	var searchTerms = searchTermRaw.split(" ");
+	var searchTermsCount = 0;
+	var matches = 0;
+	
+	for (var i = 0; i < searchTerms.length; i++) {
+		var alreadyMatchedSearchTerm = false;
+		var searchTerm = searchTerms[i];
+		if(searchTerm!="" && searchTerm!=" "){
+			searchTermsCount++;
+			for(var key in data){
+				if(key===columnName){
+					var value = String(data[key]).toLowerCase();
+					if(value.includes(searchTerm)){
+						if(!alreadyMatchedSearchTerm){
+							matches ++;
+							// only one match per term, as otherwise "roger sch"
+							// might match many entries containing "sch" multiple
+							// times without containing "roger"
+							alreadyMatchedSearchTerm=true;
+						}
+					}					
+				}
+		    }
+		}
+	}  
+    return matches>=searchTermsCount;
+}
+
 
 function listGroups(groups){
 	var groupCount = groups.length;
