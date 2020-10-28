@@ -21,15 +21,23 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.MalformedJsonException;
 
 import pojo.GroupTestAbstraction;
+import pojo.LastRunCache;
 import pojo.Task;
 import pojo.Test;
 import pojo.TestCategoriesList;
+import service.CacheService;
 import testrunner.Testing;
 
 public class TRHelper {
 
-	public static TestCategoriesList getTestCategories() throws Exception {
+	public static TestCategoriesList getTestCategories() throws Exception {		
 		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
+		long lastModified = Helpers.getLastModifiedTimeByPath(categoriesPath);
+
+		TestCategoriesList tclCache = CacheService.getTestCategories(lastModified);
+		if(tclCache!=null) {
+			return tclCache;
+		}
 		TestCategoriesList tcl = new TestCategoriesList();
 		if (Helpers.fileExistsAndReadable(categoriesPath)) {
 			String file = Helpers.readFile(categoriesPath);
@@ -49,6 +57,7 @@ public class TRHelper {
 				}
 			}
 		}
+		CacheService.setTestCategories(tcl,lastModified);
 		return tcl;
 	}
 
@@ -96,7 +105,8 @@ public class TRHelper {
 		JsonObject resp = new JsonObject();
 		resp.addProperty("name", test.name);
 		resp.addProperty("handle", String.valueOf(test.start));
-
+		CacheService.expireLastRunEntry(testName);
+		
 		return resp;
 	}
 
@@ -247,26 +257,35 @@ public class TRHelper {
 		String lastRunDate = "";
 		boolean passed = true;
 		long totalRunTimeInMS = 0;
-
-		if (listResults.size() > 0) {
-			String newest = getNewest(listResults);
-			String handle = String.valueOf(newest);
-			String path = PathFinder.getSpecificTestGroupResultPath(groupName, handle, false);
-			String lastRun = Helpers.readFile(path);
-			JsonObject lastRunJO = new JsonParser().parse(lastRun).getAsJsonObject();
-			lastRunDate = lastRunJO.get("testStartString").getAsString();
-			JsonArray lastRunResults = lastRunJO.get("results").getAsJsonArray();
-			passed = true;
-			for (JsonElement lastRunResult : lastRunResults) {
-				totalRunTimeInMS += lastRunResult.getAsJsonObject().get("runTimeInMS").getAsLong();
-				if (lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
-					passed = false;
+		
+		LastRunCache lrc = CacheService.getLastRunEntry(name); // note we are using name, which has a postfix of ".group"
+		if(lrc!=null) {
+			testGroup.addProperty("totalRunTimeInMS", lrc.getTotalRunTimeInMS());
+			testGroup.addProperty("lastRunDate", lrc.getLastRunDate());
+			testGroup.addProperty("lastRunPassed", lrc.didLastRunPass());
+		}else {
+			if (listResults.size() > 0) {
+				String newest = getNewest(listResults);
+				String handle = String.valueOf(newest);
+				String path = PathFinder.getSpecificTestGroupResultPath(groupName, handle, false);
+				String lastRun = Helpers.readFile(path);
+				JsonObject lastRunJO = new JsonParser().parse(lastRun).getAsJsonObject();
+				lastRunDate = lastRunJO.get("testStartString").getAsString();
+				JsonArray lastRunResults = lastRunJO.get("results").getAsJsonArray();
+				passed = true;
+				for (JsonElement lastRunResult : lastRunResults) {
+					totalRunTimeInMS += lastRunResult.getAsJsonObject().get("runTimeInMS").getAsLong();
+					if (lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
+						passed = false;
+					}
 				}
 			}
+			testGroup.addProperty("lastRunDate", lastRunDate);
+			testGroup.addProperty("lastRunPassed", passed);
+			testGroup.addProperty("totalRunTimeInMS", totalRunTimeInMS);
+			CacheService.addLastRunEntry(name, new LastRunCache(totalRunTimeInMS, lastRunDate, passed));
 		}
-		testGroup.addProperty("lastRunDate", lastRunDate);
-		testGroup.addProperty("lastRunPassed", passed);
-		testGroup.addProperty("totalRunTimeInMS", totalRunTimeInMS);
+		
 		JsonArray tests = (JsonArray) test.get("tests");
 		for (Object testObj : tests) {
 			JsonObject testO = (JsonObject) testObj;
@@ -280,7 +299,15 @@ public class TRHelper {
 		boolean passed = true;
 		String lastRunDate = "";
 		long totalRunTimeInMS = 0;
-
+		
+		LastRunCache lrc = CacheService.getLastRunEntry(testName);
+		if(lrc!=null) {
+			test.addProperty("totalRunTimeInMS", lrc.getTotalRunTimeInMS());
+			test.addProperty("lastRunDate", lrc.getLastRunDate());
+			test.addProperty("lastRunPassed", lrc.didLastRunPass());
+			return;
+		}
+		
 		if (listResults.size() > 0) {
 			String newest = getNewest(listResults);
 			String handle = String.valueOf(newest);
@@ -300,6 +327,8 @@ public class TRHelper {
 		test.addProperty("totalRunTimeInMS", totalRunTimeInMS);
 		test.addProperty("lastRunDate", lastRunDate);
 		test.addProperty("lastRunPassed", passed);
+		
+		CacheService.addLastRunEntry(testName, new LastRunCache(totalRunTimeInMS, lastRunDate, passed));
 	}
 
 	public static String getNewest(ArrayList<String> toSortAL) {

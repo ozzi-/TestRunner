@@ -3,7 +3,9 @@ package helpers;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +23,18 @@ public class Helpers {
 
 	private static final ArrayList<String> allowedChars = new ArrayList<String>();
 	private static final int pageSize = 20;
+	
+	public static long getLastModifiedTimeByPath(String pathS) {
+	    Path path = Paths.get(pathS);
+	    BasicFileAttributes attr;
+	    try {
+	      attr = Files.readAttributes(path, BasicFileAttributes.class);
+	      return (attr.lastModifiedTime().toMillis());        
+	    } catch (IOException e ) {
+	    	Log.log(Level.WARNING, "Error trying to read last modified time of file "+pathS+" - "+e.getMessage()+" - "+e.getCause());
+	    }
+		return 0;
+	}
 	
 	public static ArrayList<String> getAllowedSessionChars() {
 		if (allowedChars.size() == 0) {
