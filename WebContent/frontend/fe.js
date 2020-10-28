@@ -241,13 +241,21 @@ function listTests(tests) {
 	}
 	table.setData(tests);
 	var filterInput = document.getElementById("filterInput");
+	var timer;
 	filterInput.onkeyup = function(){
-	    table.setFilter(matchAny, [filterInput.value,"name"]);
+		timer = setTimeout(function() {	
+			var filterInput = document.getElementById("filterInput");
+			table.setFilter(matchAny, [filterInput.value,"name"]);
+		},700)
+	}
+	filterInput.onkeydown = function(){
+		clearTimeout(timer);
 	}
 }
 
+
+
 function matchAny(data, filterParams){
-	console.log( );
     var match = false;
     var searchTerm = filterParams[0];
     var columnName = filterParams[1];
@@ -265,26 +273,18 @@ function matchAny(data, filterParams){
 		var alreadyMatchedSearchTerm = false;
 		var searchTerm = searchTerms[i];
 		if(searchTerm!="" && searchTerm!=" "){
-			searchTermsCount++;
 			for(var key in data){
 				if(key===columnName){
 					var value = String(data[key]).toLowerCase();
 					if(value.includes(searchTerm)){
-						if(!alreadyMatchedSearchTerm){
-							matches ++;
-							// only one match per term, as otherwise "roger sch"
-							// might match many entries containing "sch" multiple
-							// times without containing "roger"
-							alreadyMatchedSearchTerm=true;
-						}
+						return true;
 					}					
 				}
 		    }
 		}
 	}  
-    return matches>=searchTermsCount;
+    return false;
 }
-
 
 function listGroups(groups){
 	var groupCount = groups.length;
@@ -317,7 +317,7 @@ function listGroups(groups){
 			    {title:"Last Run", field:"lastRunDate" },
 			    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
-		});		
+		});
 	}
 	if(groupCount==0){
 		table.addRow([{group:"No Groups defined yet", tests:"", run:"", status:"", lastRun: "", lastRunTime:""}], false);
