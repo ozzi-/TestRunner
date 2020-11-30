@@ -99,11 +99,16 @@ function doLogin(){
 	var loginObj = new Object();
 	loginObj.username = username;
 	loginObj.password  = password;
-	doRequestBody("POST", JSON.stringify(loginObj), "application/json", "../login/", processLoginResult, true, false);
+	var toPage = "";
+	var redir = getQueryParams(document.location.search).redir;
+	if(redir){
+		toPage = atob(redir);
+	}
+	doRequestBody("POST", JSON.stringify(loginObj), "application/json", "../login/", processLoginResult, [toPage], false);
 	return false;
 }
 
-function processLoginResult(response){
+function processLoginResult(response, toPage){
 	if(response.status!=200){
 		alert(response.responseText);
 		document.getElementById("password").value="";
@@ -111,7 +116,11 @@ function processLoginResult(response){
 		var session = JSON.parse(response.responseText);
 		localStorage.setItem(trToken,session.sessionIdentifier);
 		localStorage.setItem(trRole,session.role);
-		window.location.replace("index.html");
+		if(toPage.startsWith("?")){ // prevent open redirect
+			window.location.replace("index.html"+toPage);
+		}else{
+			window.location.replace("index.html");
+		}
 	}
 }
 
@@ -121,12 +130,20 @@ function doLogout() {
 		if (request.readyState == 4) {
 			localStorage.removeItem(trToken);
 			localStorage.removeItem(trRole);
-			window.location.replace("index.html?page=login");
+			goToLoginPage();
 		}
 	};
 	request.open("POST", "../logout");
 	request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
 	request.send();
+}
+
+function goToLoginPage(){
+	var currentPage =  window.location.search;
+	if(currentPage==="?page=login" || currentPage==="?page=logout"){
+		currentPage="";
+	}
+	window.location.replace("index.html?page=login&redir="+btoa(currentPage));	
 }
 
 // *******
@@ -504,7 +521,7 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 					}
 				}
 			}else if(request.status==403){
-				window.location.replace("index.html?page=login");
+				goToLoginPage();
 				return;
 			} else {
 				try { 
@@ -554,7 +571,7 @@ function doRequest(method, url, callback, params) {
 			} else {
 				try { 
 					if(request.status==403){
-						window.location.replace("index.html?page=login");
+						goToLoginPage();
 						return;
 					}else{
 						response = JSON.parse(request.responseText);
