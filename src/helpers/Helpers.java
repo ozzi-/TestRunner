@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,19 +25,20 @@ public class Helpers {
 
 	private static final ArrayList<String> allowedChars = new ArrayList<String>();
 	private static final int pageSize = 20;
-	
+
 	public static long getLastModifiedTimeByPath(String pathS) {
-	    Path path = Paths.get(pathS);
-	    BasicFileAttributes attr;
-	    try {
-	      attr = Files.readAttributes(path, BasicFileAttributes.class);
-	      return (attr.lastModifiedTime().toMillis());        
-	    } catch (IOException e ) {
-	    	Log.log(Level.WARNING, "Error trying to read last modified time of file "+pathS+" - "+e.getMessage()+" - "+e.getCause());
-	    }
+		Path path = Paths.get(pathS);
+		BasicFileAttributes attr;
+		try {
+			attr = Files.readAttributes(path, BasicFileAttributes.class);
+			return (attr.lastModifiedTime().toMillis());
+		} catch (IOException e) {
+			Log.log(Level.WARNING, "Error trying to read last modified time of file " + pathS + " - " + e.getMessage()
+					+ " - " + e.getCause());
+		}
 		return 0;
 	}
-	
+
 	public static ArrayList<String> getAllowedSessionChars() {
 		if (allowedChars.size() == 0) {
 			allowedChars.addAll(getASCIICharacters(48, 57)); // 0-9
@@ -44,14 +47,15 @@ public class Helpers {
 		}
 		return allowedChars;
 	}
-	
+
 	public static boolean fileExistsAndReadable(String path) {
 		File file = new File(path);
 		try {
-			if(file.isFile()) {
+			if (file.isFile()) {
 				return true;
-			}			
-		}catch (Exception e) {}
+			}
+		} catch (Exception e) {
+		}
 		return false;
 	}
 
@@ -86,28 +90,26 @@ public class Helpers {
 			}
 		}
 
-		if(page ==-1) {
+		if (page == -1) {
 			return listOfFilesFiltered;
-		}else {
+		} else {
 			Collections.sort(listOfFilesFiltered, Collections.reverseOrder());
 			ArrayList<String> result = new ArrayList<String>();
-			int i=0; 
-			int addedCount=0;
+			int i = 0;
+			int addedCount = 0;
 			for (String name : listOfFilesFiltered) {
-				if(i>=(pageSize*page)) {
-					if(addedCount<pageSize) {
+				if (i >= (pageSize * page)) {
+					if (addedCount < pageSize) {
 						result.add(name);
 						addedCount++;
-					}					
+					}
 				}
 				i++;
 			}
-			return result;			
+			return result;
 		}
 	}
 
-
-	
 	public static String readFile(String path) throws Exception {
 		Log.log(Level.FINEST, "Reading file " + path);
 		byte[] encoded;
@@ -119,13 +121,21 @@ public class Helpers {
 		return new String(encoded, "UTF-8");
 	}
 
-	public static JSONObject loadConfig(String path) throws Exception {
+	public static JSONObject parsePathToJSONObj(String path) throws Exception {
 		String json = "";
 		try {
 			json = readFile(path);
 		} catch (IOException e) {
 			throw new Exception("Cannot load test json file in loadConfig!");
 		}
+
+		String findTrailingComma = "(\\,)(?!\\s*?[\\{\\[\\\"\\\'\\w])"; // = (\,)(?!\s*?[\{\[\"\'\w])
+		Pattern p = Pattern.compile(findTrailingComma);
+		Matcher m = p.matcher(json);
+		if (m.find()) {
+			json = m.replaceAll("");
+		}
+
 		final JSONObject obj;
 		try {
 			obj = new JSONObject(json);
@@ -169,7 +179,7 @@ public class Helpers {
 				Task taskElem = new Task();
 				taskElem.name = task.getString("name");
 				taskElem.path = task.getString("path");
-				if(task.has("args")) {
+				if (task.has("args")) {
 					JSONArray args = task.getJSONArray("args");
 					for (Object argObj : args) {
 						taskElem.args.add(argObj.toString());

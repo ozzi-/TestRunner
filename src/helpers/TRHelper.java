@@ -88,7 +88,7 @@ public class TRHelper {
 
 	public static JsonObject runTestInternal(String testName, String userName, String tag, String args) throws Exception {
 		Log.log(Level.INFO, "User " + userName + " running test " + testName + " with tag = " + tag + " and additional args = " + args);
-		JSONObject obj = Helpers.loadConfig(PathFinder.getSpecificTestPath(testName));
+		JSONObject obj = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testName));
 		Test test = Helpers.parseConfig(obj, testName);
 
 		ArrayList<Task> tasks = test.tasks;
@@ -113,7 +113,7 @@ public class TRHelper {
 	public static JsonObject runGroupInternal(String groupName, String userName, String tag, String args) throws Exception {
 		Log.log(Level.INFO, "User " + userName + " running group test " + groupName + " with tag = " + tag + " and addtional args = " + args);
 
-		JSONObject group = Helpers.loadConfig(PathFinder.getSpecificGroupPath(groupName));
+		JSONObject group = Helpers.parsePathToJSONObj(PathFinder.getSpecificGroupPath(groupName));
 		JSONArray tests = (JSONArray) group.get("tests");
 		long curMil = System.currentTimeMillis();
 		String handle = String.valueOf(curMil);
@@ -388,7 +388,7 @@ public class TRHelper {
 			String testToAddName = testToAdd.getString("test");
 			test.description += testToAddName + ", ";
 			addedTest = true;
-			JSONObject objd = Helpers.loadConfig(PathFinder.getSpecificTestPath(testToAddName));
+			JSONObject objd = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testToAddName));
 			Test testD = Helpers.parseConfig(objd, testToAddName);
 			if (testD.successHook != null) {
 				test.successHook = testD.successHook;
