@@ -88,8 +88,7 @@ public class Testing {
 		ProcBuilder builder = null;
 		try {		
 			String procPath = isAbsolute(task.path)?task.path:PathFinder.getTestsPath()+task.path;
-			builder = new ProcBuilder(procPath)
-					.withArgs(Helpers.getStringArray(task.args))
+			builder = new ProcBuilder(procPath, Helpers.getStringArray(task.args))
 					.withTimeoutMillis(task.timeoutInSeconds*1000)
 					.withOutputStream(out)
 					.withErrorStream(errout);
