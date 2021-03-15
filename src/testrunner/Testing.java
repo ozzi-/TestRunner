@@ -12,11 +12,14 @@ import org.buildobjects.process.TimeoutException;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
+import helpers.TRHelper;
 import persistence.Persistence;
+import pojo.LastRunCache;
 import pojo.Result;
 import pojo.Results;
 import pojo.Task;
 import pojo.Test;
+import service.CacheService;
 
 public class Testing {
 	
@@ -53,10 +56,14 @@ public class Testing {
 					Log.log(Level.INFO, "Running failure hook '"+test.failureHook+"' for test '"+test.name+"'");
 					runPostHook(test.failureHook);
 				}
+				
 				try {
 					Persistence.persistTestRunAsJSONFile(test, results, group, userName);
 				} catch (Exception e) {
 					e.printStackTrace();
+				} finally {
+					TRHelper.runningTests--;
+					CacheService.expireLastRunEntry(test.name+(group?PathFinder.getGroupLabel():""));
 				}
 			}
 		}.start();

@@ -202,6 +202,13 @@ public class TRService {
 		}
 		return Response.status(200).entity(testsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
+	
+	@Authenticate("READ")	
+	@GET
+	@Path("/getRunningCount")
+	public Response getRunningCount(@Context HttpHeaders headers) throws Exception {
+		return Response.status(200).entity("{\"count\":"+TRHelper.runningTests+"}").type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
 
 	@LogRequest
 	@Authenticate("READ")

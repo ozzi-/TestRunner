@@ -213,6 +213,11 @@ function poll(res,name,paramName, poller, handle) {
 // * List *
 // ********
 
+function insertRunningCount(res){
+	document.getElementById("runningTestsSpan").style="";
+	document.getElementById("runningTests").textContent=res.count;
+}
+
 function listTests(tests) {
 	var testCount = tests.length;
 	removeLoader();

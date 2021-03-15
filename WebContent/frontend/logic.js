@@ -17,6 +17,15 @@ function pageLogic (response){
 	var paramName;
 
 	document.getElementById("container").innerHTML = response;
+
+	if(page!="login" && page !="logout"){
+		doRequest("GET", "../getRunningCount", insertRunningCount);
+		setInterval(function() {
+			doRequest("GET", "../getRunningCount", insertRunningCount);
+		}, 2000);
+		
+	}
+
 	if(page=="main"){
 		doRequest("GET", "../getTestList", listTests);
 		doRequest("GET", "../getTestGroupList", listGroups);
