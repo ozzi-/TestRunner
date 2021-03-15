@@ -88,6 +88,8 @@ public class TRHelper {
 
 	public static JsonObject runTestInternal(String testName, String userName, String tag, String args) throws Exception {
 		Log.log(Level.INFO, "User " + userName + " running test " + testName + " with tag = " + tag + " and additional args = " + args);
+		CacheService.expireLastRunEntry(testName);
+		
 		JSONObject obj = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testName));
 		Test test = Helpers.parseConfig(obj, testName);
 
@@ -105,7 +107,7 @@ public class TRHelper {
 		JsonObject resp = new JsonObject();
 		resp.addProperty("name", test.name);
 		resp.addProperty("handle", String.valueOf(test.start));
-		CacheService.expireLastRunEntry(testName);
+		
 		
 		return resp;
 	}
@@ -122,7 +124,8 @@ public class TRHelper {
 		test.name = groupName;
 		test.tag = tag;
 		test.start = curMil;
-
+		CacheService.expireLastRunEntry(groupName+PathFinder.getGroupLabel());
+		
 		mergeTestsToGroupTest(tests, test);
 		ArrayList<Task> tasks = test.tasks;
 		for (Task task : tasks) {
@@ -133,7 +136,7 @@ public class TRHelper {
 
 		createRunningFile(test, true);
 		Testing.runTestInThread(test, true, userName);
-
+		
 		JsonObject resp = new JsonObject();
 		resp.addProperty("name", groupName);
 		resp.addProperty("handle", handle);
@@ -258,7 +261,8 @@ public class TRHelper {
 		boolean passed = true;
 		long totalRunTimeInMS = 0;
 		
-		LastRunCache lrc = CacheService.getLastRunEntry(name); // note we are using name, which has a postfix of ".group"
+		// note name already contains the postfix  ".group" 
+		LastRunCache lrc = CacheService.getLastRunEntry(name); 
 		if(lrc!=null) {
 			testGroup.addProperty("totalRunTimeInMS", lrc.getTotalRunTimeInMS());
 			testGroup.addProperty("lastRunDate", lrc.getLastRunDate());
@@ -266,8 +270,7 @@ public class TRHelper {
 		}else {
 			if (listResults.size() > 0) {
 				String newest = getNewest(listResults);
-				String handle = String.valueOf(newest);
-				String path = PathFinder.getSpecificTestGroupResultPath(groupName, handle, false);
+				String path = PathFinder.getSpecificTestGroupResultPath(groupName, newest, false);
 				String lastRun = Helpers.readFile(path);
 				JsonObject lastRunJO = new JsonParser().parse(lastRun).getAsJsonObject();
 				lastRunDate = lastRunJO.get("testStartString").getAsString();
