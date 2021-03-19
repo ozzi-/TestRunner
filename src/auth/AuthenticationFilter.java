@@ -45,7 +45,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 				String userName = session.getUsername();
 				Roles requiredRole = Roles.getRoleByLabel(requiredRoleLabel);
 				Roles sessionRole = Roles.getRoleByID(session.getRoleID());
-				System.out.println(sessionRole.getRoleLevel());
 				if(sessionRole.getRoleLevel()>=requiredRole.getRoleLevel()) {
 					// all good
 					return;
@@ -61,7 +60,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	}
 		
 	private void abortWithAuthFailed(ContainerRequestContext requestContext, String userNameFromHeader, String msg) {
-		Log.log(Level.INFO, msg + userNameFromHeader);
+		Log.log(Level.INFO, msg +" - "+ userNameFromHeader);
 		requestContext.abortWith(Response.status(Response.Status.FORBIDDEN).entity("unauthorized").build());
 	}
 	

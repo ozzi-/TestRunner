@@ -46,7 +46,7 @@ public enum Roles {
     
     public static boolean isValidRole(String roleToValidate) {
     	for (Roles role : Roles.values()) { 
-    	    if(role.toString().equals(roleToValidate)) {
+    	    if(role.getRoleLabel().equals(roleToValidate)) {
     	    	return true;
     	    }
     	}

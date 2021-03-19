@@ -148,8 +148,8 @@ public class UserService {
 				throw new Exception("Username already taken");
 			}
 		}
-		if(!Roles.isValidRole(userToAdd.getRole())) {
-			throw new Exception("Invalid role");
+		if(Roles.getRoleByID(userToAdd.getRole())==null) {
+			throw new Exception("Invalid role received when calling /createUser");
 		}
 		Log.log(Level.INFO, "'"+userName+"' is adding user '"+userToAdd.getUsername()+"' with role '"+userToAdd.getRole()+"'");
 		UserManagement.addUser(userToAdd);
@@ -162,7 +162,7 @@ public class UserService {
 	}
 
 	@LogRequest
-	@Authenticate("WRITE")
+	@Authenticate("READ")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/changePassword")

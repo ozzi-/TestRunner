@@ -25,7 +25,7 @@ public class RunService {
 	private static String tagValidRegexp="[a-zA-Z0-9_]+";
 	
 	@LogRequest
-	@Authenticate("WRITE")
+	@Authenticate("READEXECUTE")
 	@POST
 	@Path("/run/{testname}/{tag}/{args}")
 	public Response runTestByNameCustom(@PathParam("testname") String testName , @PathParam("tag") String tag, @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
@@ -40,7 +40,7 @@ public class RunService {
 	}
 	
 	@LogRequest
-	@Authenticate("WRITE")
+	@Authenticate("READEXECUTE")
 	@POST
 	@Path("/run/{testname}/{tag}")
 	public Response runTestByNameTag(@PathParam("testname") String testName , @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
@@ -55,7 +55,7 @@ public class RunService {
 	}
 
 	@LogRequest
-	@Authenticate("WRITE")	
+	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/run/{testname}")
 	public Response runTestByName(@PathParam("testname") String testName, @Context HttpHeaders headers) throws Exception {
@@ -67,7 +67,7 @@ public class RunService {
 	}
 
 	@LogRequest
-	@Authenticate("WRITE")	
+	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/runGroup/{groupname}")
 	public Response runTestGroupByName(@PathParam("groupname") String groupName, @Context HttpHeaders headers) throws Exception {
@@ -78,7 +78,7 @@ public class RunService {
 	}
 
 	@LogRequest
-	@Authenticate("WRITE")	
+	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/runGroup/{groupname}/{tag}")
 	public Response runTestGroupByNameTag(@PathParam("groupname") String groupName, @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
@@ -92,7 +92,7 @@ public class RunService {
 	}
 	
 	@LogRequest
-	@Authenticate("WRITE")	
+	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/runGroup/{groupname}/{tag}/{args}")
 	public Response runTestGroupByNameCustom(@PathParam("groupname") String groupName, @PathParam("tag") String tag,  @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
