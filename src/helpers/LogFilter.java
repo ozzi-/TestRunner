@@ -28,7 +28,8 @@ public class LogFilter implements ContainerRequestFilter {
 		
 		String method = requestContext.getMethod();
 		String uri = "/"+requestContext.getUriInfo().getPath();
-
-		Log.log(Level.INFO, "API Call by "+userName+" - "+method+" "+uri);
+		if(!uri.equals("/getRunningCount")) {
+			Log.log(Level.INFO, "API Call by "+userName+" - "+method+" "+uri);			
+		}
 	}
 }

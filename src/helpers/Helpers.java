@@ -155,13 +155,13 @@ public class Helpers {
 		return dtf.format(System.currentTimeMillis());
 	}
 
-	public static Test parseConfig(JSONObject cfg, String name) throws Exception {
+	public static Test parseTest(JSONObject jo, String name) throws Exception {
 		JSONObject settings;
 		JSONObject test;
 		Test testElem = new Test();
-		Log.log(Level.FINE, "Parsing config file for " + name);
+		Log.log(Level.FINE, "Parsing test config file '"+name+"'");
 		try {
-			settings = (JSONObject) cfg.get("settings");
+			settings = (JSONObject) jo.get("settings");
 			try {
 				testElem.successHook = settings.getString("successhook");
 			} catch (Exception e) {
@@ -170,7 +170,7 @@ public class Helpers {
 				testElem.failureHook = settings.getString("failurehook");
 			} catch (Exception e) {
 			}
-			test = (JSONObject) cfg.get("test");
+			test = (JSONObject) jo.get("test");
 			testElem.name = name;
 			testElem.description = test.getString("description");
 			JSONArray tasks = (JSONArray) test.get("tasks");

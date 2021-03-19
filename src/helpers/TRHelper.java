@@ -93,7 +93,7 @@ public class TRHelper {
 		runningTests++;
 		
 		JSONObject obj = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testName));
-		Test test = Helpers.parseConfig(obj, testName);
+		Test test = Helpers.parseTest(obj, testName);
 
 		ArrayList<Task> tasks = test.tasks;
 		for (Task task : tasks) {
@@ -394,7 +394,7 @@ public class TRHelper {
 			test.description += testToAddName + ", ";
 			addedTest = true;
 			JSONObject objd = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testToAddName));
-			Test testD = Helpers.parseConfig(objd, testToAddName);
+			Test testD = Helpers.parseTest(objd, testToAddName);
 			if (testD.successHook != null) {
 				test.successHook = testD.successHook;
 			}

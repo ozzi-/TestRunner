@@ -64,5 +64,27 @@ public class Persistence {
 		runningFile.delete();
 		
         return fullPersistencePath;
+	}
+	
+	public static void validateFileNameSafe(String fileName) throws Exception {
+		if(fileName.contains(".") || fileName.contains("/") || fileName.contains("\\")) {
+			throw new Exception("Invalid file name - contains . / \\");
+		}
+	}
+
+	public static synchronized void writeTest(String testName, String body) throws Exception {
+		validateFileNameSafe(testName);
+		String savePath = PathFinder.getSpecificTestPath(testName);
+		try {
+			Files.write(Paths.get(savePath), body.getBytes());			
+		}catch (Exception e) {
+			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}
+	}
+
+	public static void deleteTest(String testName) throws Exception {
+		validateFileNameSafe(testName);
+		String deletePath = PathFinder.getSpecificTestPath(testName);
+		Files.deleteIfExists(Paths.get(deletePath));
 	}	
 }

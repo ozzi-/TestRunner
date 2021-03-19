@@ -90,6 +90,16 @@ function proccessPasswordChangeForUser(response){
 		location.reload();
 	}
 }
+
+function proccessTestEdited(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Edited Test");
+		var testName = getQueryParams(document.location.search).name;
+		window.location.replace("index.html?page=results&name="+testName);
+	}
+}
 // *************
 // * Login/out *
 // *************
@@ -144,6 +154,35 @@ function goToLoginPage(){
 		currentPage="";
 	}
 	window.location.replace("index.html?page=login&redir="+btoa(currentPage));	
+}
+
+// ********
+// * Edit *
+// ********
+
+function saveTest(){
+	var test = new Object();
+	test.settings = {};
+	test.settings.successHook = document.getElementById("successHook").value;
+	test.settings.failureHook = document.getElementById("failureHook").value;
+	test.test = {};
+	test.test.description = document.getElementById("description").value;
+	
+	var taskCounter = 1;
+	test.test.tasks = [];
+	while (document.getElementById("taskName_"+taskCounter)!==null) {
+		var task = new Object();
+		task.name = document.getElementById("taskName_"+taskCounter).value;
+		task.path = document.getElementById("taskPath_"+taskCounter).value;
+		task.args = document.getElementById("taskArgs_"+taskCounter).value.split(",");
+		task.timeout = document.getElementById("taskTimeout_"+taskCounter).value;
+		test.test.tasks.push(task);
+		taskCounter++;
+	}
+	
+	var testName = getQueryParams(document.location.search).name;
+	doRequestBody("POST", JSON.stringify(test), "application/json", "../manage/test/"+testName, proccessTestEdited, true, true);
+	return false;
 }
 
 // *******
@@ -413,6 +452,7 @@ function listResults(results,paramName) {
 	removeLoader();
 	var testName = document.getElementById("testName");
 	var runLink = document.getElementById("runLink");
+	var editLink = document.getElementById("editLink");
 
 	var isGroup=false;
 	var name = getQueryParams(document.location.search).name;
@@ -422,13 +462,23 @@ function listResults(results,paramName) {
 	}
 	testName.innerHTML = escapeHtml(name);
 	
-	if(!localStorage.getItem(trRole)==="r"){
+	// TODO build dom elements properly instead of using innerHTML
+	if(localStorage.getItem(trRole)!=="r"){
 		if(isGroup){
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</a>';			
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</button>&nbsp;';			
 		}else{
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+escapeHtml(name)+'\')"> Run Test &#9654;</a>';			
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+escapeHtml(name)+'\')"> Run Test &#9654;</button>&nbsp;';			
 		}
 	}
+	
+	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a"){
+		if(isGroup){
+			editLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=edit&groupname='+escapeHtml(name)+'\')"> Edit Test Group</button>&nbsp;';			
+		}else{
+			editLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=edit&name='+escapeHtml(name)+'\')"> Edit Test</button>&nbsp;';			
+		}
+	}
+
 	
 	var resultCount = results.length;
 	var resultsSpan = document.getElementById("resultsSpan");
@@ -491,7 +541,14 @@ function listResult(result) {
 }
 
 function listTestContent(result){
-	var form = createTestMask(result);
+	var form = createTestMask(result,true);
+	var testContent = document.getElementById("testContent");
+	testContent.append(form);
+}
+
+function editTestContent(result){
+	removeLoader();
+	var form = createTestMask(result,false);
 	var testContent = document.getElementById("testContent");
 	testContent.append(form);
 }
@@ -533,8 +590,8 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 				} catch (e) {
 					if(!window.errorReported){
 						window.errorReported=true;
-						alert("Unknown error - HTTP code: "+request.status+" - Exception: "+e.message);
 						console.log(e);
+						alert("Unknown error - HTTP code: "+request.status+" - Exception: "+e.message);
 					}
 				}
 			}
@@ -671,20 +728,20 @@ function basePath(path) {
 // * FORM *
 // ********
 
-function createTestMask(json){
+function createTestMask(json,disabled){
 	var maskSpan = document.createElement("span");
 	if(json.settings==undefined){
 		json.settings={};
 	}
-	var successHook = createInput("Success Hook", json.settings.successhook, true);
+	var successHook = createInput("Success Hook", json.settings.successHook, "successHook", disabled);
 	maskSpan.append(successHook);
 	maskSpan.append(document.createElement("br"));
 	
-	var failureHook = createInput("Failure Hook", json.settings.failurehook, true);
+	var failureHook = createInput("Failure Hook", json.settings.failureHook, "failureHook", disabled);
 	maskSpan.append(failureHook);
 	maskSpan.append(document.createElement("br"));
 
-	var description = createInput("Description", json.test.description, true);
+	var description = createInput("Description", json.test.description, "description", disabled);
 	maskSpan.append(description);
 	maskSpan.append(document.createElement("br"));
 	maskSpan.append(document.createElement("br"));
@@ -696,7 +753,7 @@ function createTestMask(json){
 
 	for (var i = 0; i < json.test.tasks.length ; i++) {
 		var task = json.test.tasks[i];
-		var taskDiv = createTaskDiv(task);
+		var taskDiv = createTaskDiv(task, i+1, disabled);
 		maskSpan.append(taskDiv);
 	}
 	
@@ -709,27 +766,27 @@ function displaySettings(){
 	}
 }
 
-function createTaskDiv(task){
+function createTaskDiv(task, i, disabled){
 	var tasksDiv = document.createElement("div");
 	tasksDiv.setAttribute("class","task");
 
-	var taskName = createInput("Name", task.name, true);
+	var taskName = createInput("Name", task.name, "taskName_"+i, disabled);
 	tasksDiv.append(taskName);
 	tasksDiv.append(document.createElement("br"));
-	var taskPath = createInput("Path", task.path, true);
+	var taskPath = createInput("Path", task.path, "taskPath_"+i, disabled);
 	tasksDiv.append(taskPath);
 	tasksDiv.append(document.createElement("br"));
-	var taskArgs = createInput("Arguments", task.args, true);
+	var taskArgs = createInput("Arguments", task.args, "taskArgs_"+i, disabled);
 	tasksDiv.append(taskArgs);
 	tasksDiv.append(document.createElement("br"));
-	var taskTimeout = createInput("Timeout", task.timeout, true);
+	var taskTimeout = createInput("Timeout", task.timeout, "taskTimeout_"+i, disabled);
 	tasksDiv.append(taskTimeout);
 	tasksDiv.append(document.createElement("br"));
 	
 	return tasksDiv;
 }
 
-function createInput(title, value, disabled){
+function createInput(title, value, id, disabled){
 	var resultSpan = document.createElement("span");
 	
 	var descriptionSpan = document.createElement("span");
@@ -743,6 +800,7 @@ function createInput(title, value, disabled){
 	value = value == undefined? "":value;
 	valueInput.setAttribute("value", value);
 	valueInput.disabled = disabled;
+	valueInput.setAttribute("id",id);
 	valueInput.setAttribute("class","form-control");
 	resultSpan.append(valueInput);
 	

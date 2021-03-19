@@ -102,7 +102,7 @@ public class UserManagement {
 		try {
 			Files.write(Paths.get(usersFile), usersJson.getBytes());			
 		}catch (Exception e) {
-			throw new Exception("Could save users.json - cause: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not save users.json - cause: "+e.getMessage()+" - "+e.getCause());
 		}
 	}
 	
