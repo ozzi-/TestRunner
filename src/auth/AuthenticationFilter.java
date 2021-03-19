@@ -44,7 +44,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			if (session != null) {
 				String userName = session.getUsername();
 				Roles requiredRole = Roles.getRoleByLabel(requiredRoleLabel);
-				Roles sessionRole = Roles.getRoleByLabel(session.getRole());
+				Roles sessionRole = Roles.getRoleByID(session.getRoleID());
+				System.out.println(sessionRole.getRoleLevel());
 				if(sessionRole.getRoleLevel()>=requiredRole.getRoleLevel()) {
 					// all good
 					return;

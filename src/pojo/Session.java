@@ -71,7 +71,7 @@ public class Session {
 		this.created = created;
 	}
 
-	public String getRole() {
+	public String getRoleID() {
 		return role;
 	}
 
