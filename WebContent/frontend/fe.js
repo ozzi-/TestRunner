@@ -222,7 +222,19 @@ function listTests(tests) {
 	var testCount = tests.length;
 	removeLoader();
 	var table;
-	if(localStorage.getItem(trRole)==="rw" || localStorage.getItem(trRole)==="a"){
+	if(localStorage.getItem(trRole)==="r"){
+		table = new Tabulator("#testsTable", {
+			layoutColumnsOnNewData:true,
+		    layout:"fitDataFill",
+		    groupBy:"category",
+		    columns:[
+		    {title:"Test", field:"testLink", minWidth:300, formatter:htmlFormatter},
+		    {title:"Status", field:"runState", minWidth:70, formatter:htmlFormatter},
+		    {title:"Last Run", field:"lastRunDate" , minWidth:170},
+		    {title:"Last Run Time", field:"lastRunTime"},
+		    ],
+		});
+	}else{
 		table = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
@@ -236,18 +248,6 @@ function listTests(tests) {
 		    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});
-	}else{
-		table = new Tabulator("#testsTable", {
-			layoutColumnsOnNewData:true,
-		    layout:"fitDataFill",
-		    groupBy:"category",
-		    columns:[
-		    {title:"Test", field:"testLink", minWidth:300, formatter:htmlFormatter},
-		    {title:"Status", field:"runState", minWidth:70, formatter:htmlFormatter},
-		    {title:"Last Run", field:"lastRunDate" , minWidth:170},
-		    {title:"Last Run Time", field:"lastRunTime"},
-		    ],
-		});		
 	}
 
 	if(testCount==0){
@@ -312,7 +312,20 @@ function listGroups(groups){
 	var groupCount = groups.length;
 	removeLoader();
 	var table;
-	if(localStorage.getItem(trRole)==="rw" || localStorage.getItem(trRole)==="a"){
+	if(localStorage.getItem(trRole)==="r"){
+		table = new Tabulator("#testGroupsTable", {
+			layoutColumnsOnNewData:true,
+		    layout:"fitDataFill",
+		    columns:[
+			    {title:"Group", field:"groupLink", formatter:htmlFormatter},
+			    {title:"Description", field:"description", formatter:htmlFormatter},
+			    {title:"Tests", field:"tests",  width:300},
+			    {title:"Status", field:"runState", formatter:htmlFormatter},
+			    {title:"Last Run", field:"lastRunDate" },
+			    {title:"Last Run Time", field:"lastRunTime"},
+		    ],
+		});
+	}else{
 		table = new Tabulator("#testGroupsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
@@ -325,19 +338,6 @@ function listGroups(groups){
 		    {title:"Status", field:"runState", formatter:htmlFormatter},
 		    {title:"Last Run", field:"lastRunDate"},
 		    {title:"Last Run Time", field:"lastRunTime"},
-		    ],
-		});
-	}else{
-		table = new Tabulator("#testGroupsTable", {
-			layoutColumnsOnNewData:true,
-		    layout:"fitDataFill",
-		    columns:[
-			    {title:"Group", field:"groupLink", formatter:htmlFormatter},
-			    {title:"Description", field:"description", formatter:htmlFormatter},
-			    {title:"Tests", field:"tests",  width:300},
-			    {title:"Status", field:"runState", formatter:htmlFormatter},
-			    {title:"Last Run", field:"lastRunDate" },
-			    {title:"Last Run Time", field:"lastRunTime"},
 		    ],
 		});
 	}
@@ -422,7 +422,7 @@ function listResults(results,paramName) {
 	}
 	testName.innerHTML = escapeHtml(name);
 	
-	if(localStorage.getItem(trRole)==="rw" || localStorage.getItem(trRole)==="a"){
+	if(!localStorage.getItem(trRole)==="r"){
 		if(isGroup){
 			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</a>';			
 		}else{
@@ -448,7 +448,6 @@ function listResults(results,paramName) {
 		document.getElementById("resultsSpan").tableHandle = table;
 		
 		for (var i = 0; i < resultCount; i++) {
-			var a = document.createElement("a");
 			var passed = true;
 			for (var j = 0; j < results[i].result.results.length; j++) {
 				passed = results[i].result.results[j].passed;

@@ -31,14 +31,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 
-		String mode = resourceInfo.getResourceMethod().getAnnotation(Authenticate.class).value();
-		boolean requiresWritePrivilege = mode.equals("WRITE") || mode.equals("ADMIN");
-		boolean requiresAdminPrivilege = mode.equals("ADMIN");
-		if (mode.equals("ADMIN") && mode.equals("WRITE") && mode.equals("READ")) {
-			Log.log(Level.SEVERE, "Invalid annotation value '" + mode + "' used - defaulting to 'ADMIN'");
-			requiresAdminPrivilege = true;
+		String requiredRoleLabel = resourceInfo.getResourceMethod().getAnnotation(Authenticate.class).value();
+		if(!Roles.isValidRole(requiredRoleLabel)) {
+			Log.log(Level.SEVERE, "Invalid annotation value '" + requiredRoleLabel + "' used - defaulting to 'ADMIN'");
+			requiredRoleLabel = Roles.A.getRoleLabel();
 		}
-		
 
 		String sessionIdentifier = requestContext.getHeaderString(SESSIONHEADERNAME);
 		
@@ -46,13 +43,13 @@ public class AuthenticationFilter implements ContainerRequestFilter {
 			Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);
 			if (session != null) {
 				String userName = session.getUsername();
-				if (requiresWritePrivilege && !session.getRole().equals("rw") && !session.getRole().equals("a")) {
-					abortWithAuthFailed(requestContext,userName,"Login check failed - user " + session.getUsername() + " attempted to execute write API call which he does not have sufficient privileges for.");
-				} else if (requiresAdminPrivilege && !session.getRole().equals("a")) {
-					abortWithAuthFailed(requestContext,userName,"Login check failed - user " + session.getUsername() + " attempted to execute admin API call which he does not have sufficient privileges for.");
-				} else {
+				Roles requiredRole = Roles.getRoleByLabel(requiredRoleLabel);
+				Roles sessionRole = Roles.getRoleByLabel(session.getRole());
+				if(sessionRole.getRoleLevel()>=requiredRole.getRoleLevel()) {
 					// all good
 					return;
+				} else {
+					abortWithAuthFailed(requestContext,userName,"Login check failed - user " + session.getUsername() + " attempted to execute an API call which he / she does not have sufficient privileges for.");
 				}
 			} else {
 				abortWithAuthFailed(requestContext,"", "Login check failed due to session provided not found in session storage (hs)");

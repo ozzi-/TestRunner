@@ -24,7 +24,7 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 
 	@Override
 	public void onStartup(Container container) {
-		final String version = "1.2";
+		final String version = "1.3";
 		try {
 			String logBasePath = PathFinder.getBasePath()+File.separator+"logs"+File.separator;
 			PathFinder.createFolderPath(logBasePath);
@@ -36,7 +36,6 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	
 		packages("services");		
 	}
 }

@@ -19,6 +19,7 @@ import com.google.gson.JsonParser;
 import annotations.Authenticate;
 import annotations.LogRequest;
 import auth.AuthenticationFilter;
+import auth.Roles;
 import auth.SessionManagement;
 import auth.UserManagement;
 import helpers.Log;
@@ -147,7 +148,7 @@ public class UserService {
 				throw new Exception("Username already taken");
 			}
 		}
-		if( !userToAdd.getRole().equals("a") && !userToAdd.getRole().equals("rw") && !userToAdd.getRole().equals("r")) {
+		if(!Roles.isValidRole(userToAdd.getRole())) {
 			throw new Exception("Invalid role");
 		}
 		Log.log(Level.INFO, "'"+userName+"' is adding user '"+userToAdd.getUsername()+"' with role '"+userToAdd.getRole()+"'");
