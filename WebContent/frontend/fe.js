@@ -82,6 +82,49 @@ function processDeleteUser(response){
 	}
 }
 
+// TODO refactor all the CRUD callbacks . . . 
+
+function groupDeleted(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Group deleted");
+		location.reload();
+	}
+}
+
+function categoryCreated(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Category created");
+		// TODO don't really need a reload here, migth as well add the row to tabulator 
+		location.reload();
+	}	
+}
+
+function groupCreated(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Group created");
+		location.reload();
+	}
+}
+
+function groupEdited(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}
+}
+
+function categoryEdited(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}
+}
+
+
 function proccessPasswordChangeForUser(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
@@ -347,6 +390,178 @@ function matchAny(data, filterParams){
     return false;
 }
 
+function addTestCategoryEntry(){
+	var test = document.getElementById("testNameSelect").value;
+	var category = document.getElementById("categoryNameSelect").value;
+	testCategoriesTableHandle.addRow([{name: test,category:category}], false);
+	var obj = {};
+	obj.test=test;
+	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/category/"+category, categoryEdited, true, true);
+	var x = document.getElementById("testNameSelect");
+	x.remove(x.selectedIndex); 
+	document.getElementById("addTestGroupMappingForm").reset();
+	return false;
+}
+
+
+function addTestGroupEntry(){
+	var test = document.getElementById("testNameSelect").value;
+	var group = document.getElementById("testGroupSelect").value;
+	var name = document.getElementById("testName").value;
+	testGroupsTableHandle.addRow([{test: test, name:name, group:group}], false);
+	addTestGroupMappingForm.reset();
+	
+	var obj = {};
+	obj.test=test;
+	obj.name=name;
+	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/group/"+group, groupEdited, true, true);
+
+	return false;
+}
+
+// TODO provide custom call that returns all categories instead of using getTestList and doing this filter business...
+function listTestCategories(tests){
+	var categories=[];
+	var testArr=[];
+	for (var i = 0; i < tests.length; i++) {
+		if(tests[i].category=="-"){
+			testArr.push(tests[i].name);
+		}else{
+			var categoryName = tests[i].category;
+			categories.push(categoryName);		
+		}
+	}
+	categories = categories.filter(onlyUnique);
+	
+	var sel = document.getElementById("categoryNameSelect");
+	for (var i = 0; i < categories.length; i++) {
+		var option = document.createElement("option");
+		option.text = categories[i];
+		sel.add(option);
+	}
+	
+	var sel2 = document.getElementById("testNameSelect");
+	for (var i = 0; i < testArr.length; i++) {
+		var option = document.createElement("option");
+		option.text = testArr[i];
+		sel2.add(option);
+	}
+	
+	
+	
+	testCategoriesTableHandle = new Tabulator("#testcategories", {
+	    groupBy:"category",
+	    groupStartOpen:false,
+	    layout:"fitDataFill",
+	    groupValues:[categories],
+	    columns:[
+	        {title:"Test", field:"name", width:400},
+	        {formatter:"buttonCross", align:"center", title:"", headerSort:false, cellClick:function(e, cell){
+	        	if(confirm('Are you sure you want to remove this test from the category?'))
+	        		var testName = cell.getRow()._row.data.name;
+	        		var categoryName = cell.getRow()._row.data.category;
+	        		var obj={};
+	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName+"/"+testName, categoryEdited, true, true);
+	        		var sel = document.getElementById("testNameSelect");
+	        		var option = document.createElement("option");
+	        		option.text = testName;
+	        		sel.add(option);
+	        		cell.getRow().delete();
+	        	}
+	        }
+	     ],
+	});
+	removeLoader();
+	testCategoriesTableHandle.setData(tests);
+}
+
+function listGroupSettingsTestNames(tests){
+	//document.getElementById("addTestGroupMappingForm").addEventListener('onsubmit', addTestGroupEntry);
+	var sel = document.getElementById("testNameSelect");
+	for (var i = 0; i < tests.length; i++) {
+		var option = document.createElement("option");
+		option.text = tests[i].name;
+		sel.add(option);
+	}
+}
+
+var testGroupsTableHandle;
+var testCategoriesTableHandle;
+
+function createTestGroup(){
+	var groupName = document.getElementById("groupName").value;
+	var obj =  {};
+	obj.name=groupName;
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/group/", groupCreated, true, true);
+
+	return false;
+}
+
+function createCategory(){
+	var categoryName = document.getElementById("categoryName").value;
+	var obj =  {};
+	obj.name=categoryName;
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/category/", categoryCreated, true, true);
+
+	return false;
+}
+
+function deleteTestGroup(){
+	var groupName = document.getElementById("testGroupSelectDelete").value
+	var obj={};
+	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName, groupDeleted, true, true);
+	return false;
+}
+
+function listGroupSettings(groups){
+	var groupNames=[];
+	
+	
+	var sel = document.getElementById("testGroupSelect");
+	var sel2 = document.getElementById("testGroupSelectDelete");
+	
+	for (var i = 0; i < groups.length; i++) {
+		groupNames.push(groups[i].name);
+		var option = document.createElement("option");
+		option.text = groups[i].name;
+		sel.add(option);
+		
+		var option2 = document.createElement("option");
+		option2.text = groups[i].name;
+		sel2.add(option2);
+	}
+	removeLoader();
+	
+	testGroupsTableHandle = new Tabulator("#testgroups", {
+	    groupBy:"group",
+	    groupStartOpen:false,
+	    layout:"fitDataFill",
+	    groupValues:[groupNames],
+	    columns:[
+	        {title:"Test", field:"test", width:400},
+	        {title:"Name", field:"name", width:400},
+	        {formatter:"buttonCross", align:"center", title:"", headerSort:false, cellClick:function(e, cell){
+	        	if(confirm('Are you sure you want to remove this test from the group?'))
+	        		var testName = cell.getRow()._row.data.test;
+	        		var groupName = cell.getRow()._row.data.group;
+	        		var obj={};
+	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName+"/"+testName, groupEdited, true, true);
+	        		cell.getRow().delete();
+	        	}
+	        }
+	     ],
+	});
+	// TODO refactor to use setData and prepare array first
+	for (var i = 0; i < groups.length; i++) {
+		var groupTests = groups[i].tests;
+		for (var x = 0; x < groupTests.length; x++) {
+			testGroupsTableHandle.addRow([{test:groupTests[x].test, name:groupTests[x].name, group:groups[i].name}], false);
+		}
+	}
+	
+	testGroupsTableHandle.redraw(true);
+}
+
 function listGroups(groups){
 	var groupCount = groups.length;
 	removeLoader();
@@ -398,6 +613,11 @@ function listGroups(groups){
 		groups[i].lastRunTime = timeConversion(groups[i].totalRunTimeInMS);
 	}
 	table.setData(groups);
+	
+	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a" ){
+		document.getElementById("testGroupsSettings").style.display="";
+		document.getElementById("testSettings").style.display="";
+	}
 }
 
 function loadMore(){
@@ -591,7 +811,11 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 					if(!window.errorReported){
 						window.errorReported=true;
 						console.log(e);
-						alert("Unknown error - HTTP code: "+request.status+" - Exception: "+e.message);
+						if(isJsonString(e.message)){
+							alert("Error ("+request.status+"): "+e.message);							
+						}else{
+							alert("Unknown error ("+request.status+"): "+request.responseText);	
+						}
 					}
 				}
 			}
@@ -723,6 +947,9 @@ function basePath(path) {
 	}		
 }
 
+function onlyUnique(value, index, self) {
+	return self.indexOf(value) === index;
+}
 
 // ********
 // * FORM *
@@ -805,6 +1032,15 @@ function createInput(title, value, id, disabled){
 	resultSpan.append(valueInput);
 	
 	return resultSpan;
+}
+
+function isJsonString(str) {
+	try {
+		JSON.parse(str);
+	} catch (e) {
+		return false;
+	}
+	return true;
 }
 
 function timeConversion(millisec) {

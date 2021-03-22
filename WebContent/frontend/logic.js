@@ -61,6 +61,13 @@ function pageLogic (response){
 			doRequest("GET", "../getResult/" + name + "/" + handle, listResult);
 		}
 	}
+	if(page=="testgroupsettings"){
+		doRequest("GET", "../getTestGroupList", listGroupSettings);
+		doRequest("GET", "../getTestList", listGroupSettingsTestNames);
+	}
+	if(page=="testsettings"){
+		doRequest("GET", "../getTestList", listTestCategories);
+	}
 	if(page=="results"){
 		var name = getQueryParams(document.location.search).name;
 		if(name=="undefined" || name === undefined ){

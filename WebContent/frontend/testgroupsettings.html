@@ -1,0 +1,55 @@
+<span id="testgroups"></span>
+<br><br>
+Add a new test to a group:
+<form id="addTestGroupMappingForm" onsubmit="return addTestGroupEntry()">
+	<div class="container">
+	 	<div class="row">
+			<div class="col-sm">
+				<select class="form-control" id="testNameSelect" required>
+					<option disabled selected value>-- choose a test --</option>
+				</select>
+			</div>
+			<div class="col-sm">
+				<input class="form-control" id="testName" placeholder="Test Name" required>
+			</div>
+			<div class="col-sm">
+				<select class="form-control" id="testGroupSelect" required>
+					<option disabled selected value>-- choose a group --</option>
+				</select>
+			</div>
+			<div class="col-sm">
+				<button class="btn btn-primary" type="submit" >+</button>
+			</div>
+		</div>
+	</div>
+</form>
+<br><br><br>
+Create new group:
+<form id="addTestGroupMappingForm" onsubmit="return createTestGroup()">
+	<div class="container">
+	 	<div class="row">
+			<div class="col-sm">
+				<input class="form-control" id="groupName" placeholder="Group Name" required>
+			</div>
+			<div class="col-sm">
+				<button class="btn btn-success" type="submit" >+</button>
+			</div>
+		</div>
+	</div>
+</form>
+<br><br><br>
+Delete group:
+<form id="deleteGroupForm" onsubmit="return deleteTestGroup()">
+	<div class="container">
+	 	<div class="row">
+			<div class="col-sm">
+				<select class="form-control" id="testGroupSelectDelete" required>
+					<option disabled selected value>-- choose a group --</option>
+				</select>
+			</div>
+			<div class="col-sm">
+				<button class="btn btn-danger" type="submit">-</button>
+			</div>
+		</div>
+	</div>
+</form>

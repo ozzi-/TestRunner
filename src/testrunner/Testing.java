@@ -14,7 +14,6 @@ import helpers.Log;
 import helpers.PathFinder;
 import helpers.TRHelper;
 import persistence.Persistence;
-import pojo.LastRunCache;
 import pojo.Result;
 import pojo.Results;
 import pojo.Task;

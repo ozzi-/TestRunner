@@ -22,7 +22,6 @@ public class CacheService {
 
 	public static LastRunCache getLastRunEntry(String testName) {
 		LastRunCache lrc = lastRunCache.get(testName);
-		Log.log(Level.FINEST, "Getting last run entry for "+testName+" - entry "+(lrc==null?"does not exists":"exists")+" in last run cache.");
 		return lrc;
 	}
 	

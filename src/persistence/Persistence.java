@@ -3,10 +3,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import helpers.Helpers;
 import helpers.Log;
@@ -86,5 +90,134 @@ public class Persistence {
 		validateFileNameSafe(testName);
 		String deletePath = PathFinder.getSpecificTestPath(testName);
 		Files.deleteIfExists(Paths.get(deletePath));
+	}
+
+	public static void createGroup(String groupName) throws Exception {
+		validateFileNameSafe(groupName);
+		String savePath = PathFinder.getSpecificGroupPath(groupName);
+		try {
+			Files.write(Paths.get(savePath), "{\"description\":\"\",\"tests\":[]}".getBytes());			
+		}catch (Exception e) {
+			throw new Exception("Could not write group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}		
+	}
+
+	public static void deleteGroup(String groupName) throws Exception {
+		validateFileNameSafe(groupName);
+		String deletePath = PathFinder.getSpecificGroupPath(groupName);
+		boolean success = Files.deleteIfExists(Paths.get(deletePath));
+		if(!success) {
+			throw new Exception("Could not delete group '"+groupName+"' due to deleteIfExists returning false");
+		}
+	}
+
+	public static void addToGroup(String groupName, String test, String name) throws Exception {
+		validateFileNameSafe(groupName);
+		String groupPath = PathFinder.getSpecificGroupPath(groupName);
+		
+		try {
+			String groupContent = new String(Files.readAllBytes(Paths.get(groupPath)));
+			JsonObject groupJO =  new JsonParser().parse(groupContent).getAsJsonObject();
+			JsonArray tests = groupJO.get("tests").getAsJsonArray();
+			
+			JsonObject testToAdd = new JsonObject();
+			testToAdd.addProperty("name", name);
+			testToAdd.addProperty("test", test);
+			tests.add(testToAdd);
+			
+			Files.write(Paths.get(groupPath), groupJO.toString().getBytes());
+		}catch (Exception e) {
+			throw new Exception("Could not edit group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}		
+	}	
+	
+	public static void removeOfGroup(String groupName, String testNameToRemove) throws Exception {
+		validateFileNameSafe(groupName);
+		String groupPath = PathFinder.getSpecificGroupPath(groupName);
+		
+		try {
+			String groupContent = new String(Files.readAllBytes(Paths.get(groupPath)));
+			JsonObject groupJO =  new JsonParser().parse(groupContent).getAsJsonObject();
+			JsonArray tests = groupJO.get("tests").getAsJsonArray();
+			for (int i = 0; i < tests.size(); i++) {
+				String testName = tests.get(i).getAsJsonObject().get("test").getAsString();
+				if(testName.equals(testNameToRemove)) {
+					tests.remove(i);
+				}
+			}
+	
+			Files.write(Paths.get(groupPath), groupJO.toString().getBytes());
+		}catch (Exception e) {
+			throw new Exception("Could not remove test from group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}		
+	}
+
+	public static void removeOfCategory(String categoryName, String testNameToRemove) throws Exception {
+		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
+		
+		try {
+			String categoriesContent = new String(Files.readAllBytes(Paths.get(categoriesPath)));
+			JsonObject categoriesJO =  new JsonParser().parse(categoriesContent).getAsJsonObject();
+			JsonArray testsInCategory = categoriesJO.get(categoryName).getAsJsonArray();
+			System.out.println(testsInCategory.size());
+			for (int i = 0; i < testsInCategory.size(); i++) {
+				String testName = testsInCategory.get(i).getAsString();
+				if(testName.equals(testNameToRemove)) {
+					testsInCategory.remove(i);
+				}
+			}
+	
+			Files.write(Paths.get(categoriesPath), categoriesJO.toString().getBytes());
+		}catch (Exception e) {
+			throw new Exception("Could not remove test from category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}		
+	}
+
+	public static boolean addToCategory(String categoryNameToAdd, String test) throws Exception {
+		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
+		
+		try {
+			String categoryContent = new String(Files.readAllBytes(Paths.get(categoriesPath)));
+			JsonObject categoryJO =  new JsonParser().parse(categoryContent).getAsJsonObject();
+			checkIfTestIsAlreadyInCategory(test, categoryJO);
+			JsonArray categoriesR = categoryJO.get(categoryNameToAdd).getAsJsonArray();
+			categoriesR.add(test);
+			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
+			return true;
+		}catch (Exception e) {
+			throw new Exception("Could not add '"+test+"' category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}
+	}
+
+	private static void checkIfTestIsAlreadyInCategory(String test, JsonObject categoryJO) throws Exception {
+		Set<Entry<String, JsonElement>> categories = categoryJO.entrySet();
+		for (Entry<String, JsonElement> category : categories) {
+			String categoryName =  category.getKey();
+			JsonArray testsInCategory = category.getValue().getAsJsonArray();
+			for (JsonElement testInCategory : testsInCategory) {
+				if(testInCategory.getAsString().equals(test)) {
+					throw new Exception("test \""+test+"\" is already part of category \""+categoryName+"\"");
+				}
+			}
+		}
+	}
+
+	public static void createCategory(String categoryNameToAdd) throws Exception {
+		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
+		
+		try {
+			String categoryContent = new String(Files.readAllBytes(Paths.get(categoriesPath)));
+			JsonObject categoryJO =  new JsonParser().parse(categoryContent).getAsJsonObject();
+			categoryJO.add(categoryNameToAdd, new JsonArray());
+			checkIfCategoryExists(categoryNameToAdd, categoryJO);
+			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
+		}catch (Exception e) {
+			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}
+	}
+
+	private static void checkIfCategoryExists(String categoryNameToAdd, JsonObject categoryJO) {
+		// TODO Auto-generated method stub
+		
 	}	
 }

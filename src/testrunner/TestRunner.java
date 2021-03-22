@@ -11,6 +11,11 @@ import auth.UserManagement;
 import helpers.Log;
 import helpers.PathFinder;
 
+
+// TODO TEST GROUP DESCRIPTIONS IN UI
+// TODO createCategory & deleteCategory
+// TODO refactoring
+
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
 	@Override
 	public void onReload(Container container) {
