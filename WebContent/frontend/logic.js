@@ -66,7 +66,7 @@ function pageLogic (response){
 		doRequest("GET", "../getTestList", listGroupSettingsTestNames);
 	}
 	if(page=="testsettings"){
-		doRequest("GET", "../getTestList", listTestCategories);
+		doRequest("GET", "../getTestList", loadTestSettingsPage);
 	}
 	if(page=="results"){
 		var name = getQueryParams(document.location.search).name;

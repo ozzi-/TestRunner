@@ -1,6 +1,8 @@
 package service;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import javax.inject.Singleton;
@@ -201,6 +203,17 @@ public class TRService {
 			testsArray.add(test);
 		}
 		return Response.status(200).entity(testsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	@LogRequest
+	@Authenticate("READ")	
+	@GET
+	@Path("/category")
+	public Response getCategories(@Context HttpHeaders headers) throws Exception {
+		// TODO pathfinder call for test.categories
+		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
+		String categories = new String(Files.readAllBytes(Paths.get(categoriesPath)));
+		return Response.status(200).entity(categories).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
 	@Authenticate("READ")	

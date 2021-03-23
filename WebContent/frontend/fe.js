@@ -93,6 +93,16 @@ function groupDeleted(response){
 	}
 }
 
+function categoryDeleted(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		// TODO don't really need a reload here, migth as well add the row to tabulator 
+		alert("Category deleted");
+		location.reload();
+	}
+}
+
 function categoryCreated(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
@@ -419,41 +429,47 @@ function addTestGroupEntry(){
 	return false;
 }
 
-// TODO provide custom call that returns all categories instead of using getTestList and doing this filter business...
-function listTestCategories(tests){
-	var categories=[];
-	var testArr=[];
-	for (var i = 0; i < tests.length; i++) {
-		if(tests[i].category=="-"){
-			testArr.push(tests[i].name);
-		}else{
-			var categoryName = tests[i].category;
-			categories.push(categoryName);		
-		}
-	}
-	categories = categories.filter(onlyUnique);
-	
+
+function loadTestSettingsPage(tests){
+	doRequest("GET", "../category", listTestCategories,[tests]);
+}
+
+function listTestCategories(categories, tests){
+	removeLoader();
+
+	var testObjs = [];
+	var testInCategories = [];
+
+	var plainCategories = Object.keys(categories);
+
 	var sel = document.getElementById("categoryNameSelect");
-	for (var i = 0; i < categories.length; i++) {
+	var sel2 = document.getElementById("categoryNameDelete");
+	for (var i = 0; i < plainCategories.length; i++) {
 		var option = document.createElement("option");
-		option.text = categories[i];
+		option.text = plainCategories[i];
 		sel.add(option);
-	}
-	
-	var sel2 = document.getElementById("testNameSelect");
-	for (var i = 0; i < testArr.length; i++) {
-		var option = document.createElement("option");
-		option.text = testArr[i];
 		sel2.add(option);
+		testInCategories = testInCategories.concat(categories[plainCategories[i]]);
 	}
 	
-	
+	console.log(testInCategories);
+	var sel2 = document.getElementById("testNameSelect");
+	for (var i = 0; i <tests.length; i++) {
+		if(!testInCategories.includes(tests[i].name)) {
+			var option = document.createElement("option");
+			option.text = tests[i].name;
+			sel2.add(option);
+		}
+		var testObj = {name:tests[i].name, category:tests[i].category}
+		testObjs.push(testObj);			
+			
+	}
 	
 	testCategoriesTableHandle = new Tabulator("#testcategories", {
 	    groupBy:"category",
 	    groupStartOpen:false,
 	    layout:"fitDataFill",
-	    groupValues:[categories],
+	    groupValues:[plainCategories],
 	    columns:[
 	        {title:"Test", field:"name", width:400},
 	        {formatter:"buttonCross", align:"center", title:"", headerSort:false, cellClick:function(e, cell){
@@ -471,8 +487,7 @@ function listTestCategories(tests){
 	        }
 	     ],
 	});
-	removeLoader();
-	testCategoriesTableHandle.setData(tests);
+	testCategoriesTableHandle.setData(testObjs);
 }
 
 function listGroupSettingsTestNames(tests){
@@ -510,6 +525,14 @@ function deleteTestGroup(){
 	var groupName = document.getElementById("testGroupSelectDelete").value
 	var obj={};
 	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName, groupDeleted, true, true);
+	return false;
+}
+
+
+function deleteCategory(){
+	var categoryName = document.getElementById("categoryNameDelete").value
+	var obj={};
+	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName, categoryDeleted, true, true);
 	return false;
 }
 

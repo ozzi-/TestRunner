@@ -204,20 +204,38 @@ public class Persistence {
 
 	public static void createCategory(String categoryNameToAdd) throws Exception {
 		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
-		
+		JsonObject categoryJO;
 		try {
 			String categoryContent = new String(Files.readAllBytes(Paths.get(categoriesPath)));
-			JsonObject categoryJO =  new JsonParser().parse(categoryContent).getAsJsonObject();
+			categoryJO =  new JsonParser().parse(categoryContent).getAsJsonObject();
 			categoryJO.add(categoryNameToAdd, new JsonArray());
-			checkIfCategoryExists(categoryNameToAdd, categoryJO);
+		}catch (Exception e) {
+			throw new Exception("Could not create category '"+categoryNameToAdd+"'");
+		}
+		try {
+			if(categoryExists(categoryNameToAdd, categoryJO)) {
+				throw new Exception("Category '"+categoryNameToAdd+"' already exists");
+			}
 			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
 	}
 
-	private static void checkIfCategoryExists(String categoryNameToAdd, JsonObject categoryJO) {
-		// TODO Auto-generated method stub
+	private static boolean categoryExists(String categoryNameToAdd, JsonObject categoryJO) {
+		return (categoryJO.get(categoryNameToAdd) != null);
+	}
+
+	public static void deleteCategory(String categoryName) throws Exception {
+		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
 		
+		try {
+			String categoryContent = new String(Files.readAllBytes(Paths.get(categoriesPath)));
+			JsonObject categoryJO =  new JsonParser().parse(categoryContent).getAsJsonObject();
+			categoryJO.remove(categoryName);
+			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
+		}catch (Exception e) {
+			throw new Exception("Could not remove category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
+		}
 	}	
 }

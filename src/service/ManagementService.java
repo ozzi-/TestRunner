@@ -188,9 +188,20 @@ public class ManagementService {
 		}catch (Exception e) {
 			throw new Exception("Error parsing category json - "+e.getMessage());
 		}
-		// TODO HMMMMMMM not really visible yet
 		Log.log(Level.INFO, "'"+userName+"' is creating a category '"+name+"'");
 		Persistence.createCategory(name);
+		return Response.status(200).build();			
+	
+	}
+	
+	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
+	@DELETE
+	@Path("/manage/category/{categoryname}")
+	public Response deleteCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName) throws Exception {
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		Log.log(Level.INFO, "'"+userName+"' is deleting category '"+categoryName+"'");
+		Persistence.deleteCategory(categoryName);
 		return Response.status(200).build();			
 	
 	}
