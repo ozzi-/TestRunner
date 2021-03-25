@@ -2,6 +2,7 @@ package persistence;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -78,9 +79,17 @@ public class Persistence {
 
 	public static synchronized void writeTest(String testName, String body) throws Exception {
 		validateFileNameSafe(testName);
-		String savePath = PathFinder.getSpecificTestPath(testName);
+		String savePathStrng = PathFinder.getSpecificTestPath(testName);
+		Path savePath = Paths.get(savePathStrng);
+		if(Files.exists(savePath)) {
+			throw new Exception("A test with the name '"+testName+"' already exists!");
+		}
+		Path resultPath = Paths.get(PathFinder.getTestResultsPath(testName));
+		if(Files.isDirectory(resultPath)) {
+			throw new Exception("Results for a now deleted test '"+testName+"' already exist - please remove the test results or pick another test name");			
+		}
 		try {
-			Files.write(Paths.get(savePath), body.getBytes());			
+			Files.write(savePath, body.getBytes());			
 		}catch (Exception e) {
 			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
@@ -94,9 +103,13 @@ public class Persistence {
 
 	public static void createGroup(String groupName) throws Exception {
 		validateFileNameSafe(groupName);
-		String savePath = PathFinder.getSpecificGroupPath(groupName);
+		String savePathStrng = PathFinder.getSpecificGroupPath(groupName);
+		Path savePath = Paths.get(savePathStrng);
+		if(Files.exists(savePath)) {
+			throw new Exception("A group with the name '"+groupName+"' already exists!");
+		}
 		try {
-			Files.write(Paths.get(savePath), "{\"description\":\"\",\"tests\":[]}".getBytes());			
+			Files.write(savePath, "{\"description\":\"\",\"tests\":[]}".getBytes());	
 		}catch (Exception e) {
 			throw new Exception("Could not write group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
@@ -210,12 +223,12 @@ public class Persistence {
 			categoryJO =  new JsonParser().parse(categoryContent).getAsJsonObject();
 			categoryJO.add(categoryNameToAdd, new JsonArray());
 		}catch (Exception e) {
-			throw new Exception("Could not create category '"+categoryNameToAdd+"'");
+			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
-		try {
-			if(categoryExists(categoryNameToAdd, categoryJO)) {
-				throw new Exception("Category '"+categoryNameToAdd+"' already exists");
-			}
+		if(categoryExists(categoryNameToAdd, categoryJO)) {
+			throw new Exception("Category '"+categoryNameToAdd+"' already exists");
+		}
+		try {  	
 			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());

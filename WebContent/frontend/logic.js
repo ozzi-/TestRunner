@@ -83,14 +83,10 @@ function pageLogic (response){
 	}
 	if(page=="edit"){
 		var name = getQueryParams(document.location.search).name;
-		if(name=="undefined" || name === undefined ){
-			name = getQueryParams(document.location.search).groupname;
-			paramName="groupname";
-			doRequest("GET", "../getGroup/" + name , editTestContent)
-		}else{
-			paramName="name";
-			doRequest("GET", "../getTest/" + name , editTestContent)
-		}
+		doRequest("GET", "../getTest/" + name , editTestContent)
+	}
+	if(page=="new"){
+		initNewTestPage();
 	}
 	if(page=="reload"){
 		doRequest("GET", "../reload/", reload,[]);

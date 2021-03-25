@@ -85,7 +85,7 @@ public class PathFinder {
 
 	
 	/**
-	 * @return "C:\Users\TR\Desktop\data\[name]\"
+	 * @return "C:\Users\TR\Desktop\results\[name]\"
 	 */
 	public static String getTestResultsPath (String testName) throws Exception {
 		String path = getBasePath() + dataFolder + File.separator + testName + File.separator;
@@ -93,7 +93,7 @@ public class PathFinder {
 	}
 	
 	/**
-	 * @return "C:\Users\TR\Desktop\data\groups\[name]\"
+	 * @return "C:\Users\TR\Desktop\results\groups\[name]\"
 	 */	
 	public static String getGroupTestResultsPath(String groupName) throws Exception {
 		String path = getBasePath() + dataFolder + File.separator + groupFolder + File.separator + groupName + File.separator;
@@ -102,7 +102,7 @@ public class PathFinder {
 	
 
 	/**
-	 * @return "C:\Users\TR\Desktop\data\[name]\[handle].data"
+	 * @return "C:\Users\TR\Desktop\results\[name]\[handle].data"
 	 * @throws Exception 
 	 */
 	public static String getSpecificTestResultPath(String testName, String handle, boolean createPath) throws Exception {
@@ -114,7 +114,7 @@ public class PathFinder {
 	}
 	
 	/**
-	 * @return "C:\Users\TR\Desktop\data\groups\[name]\[handle].data"
+	 * @return "C:\Users\TR\Desktop\results\groups\[name]\[handle].data"
 	 * @throws Exception 
 	 */
 	public static String getSpecificTestGroupResultPath(String groupName, String handle, boolean createPath) throws Exception {
@@ -126,7 +126,7 @@ public class PathFinder {
 	}
 
 	/**
-	 * @return "C:\Users\TR\Desktop\data\[name]\[handle].status"
+	 * @return "C:\Users\TR\Desktop\results\[name]\[handle].status"
 	 * @throws Exception 
 	 */
 	public static String getSpecificTestResultStatusPath(String testName, String handle, boolean createPath) throws Exception {
@@ -138,7 +138,7 @@ public class PathFinder {
 	}
 	
 	/**
-	 * @return "C:\Users\TR\Desktop\data\groups\[name]\[handle].status"
+	 * @return "C:\Users\TR\Desktop\results\groups\[name]\[handle].status"
 	 * @throws Exception 
 	 */
 	public static String getSpecificTestGroupResultStatusPath(String testName, String handle, boolean createPath) throws Exception {		

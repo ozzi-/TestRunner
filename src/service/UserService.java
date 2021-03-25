@@ -5,9 +5,11 @@ import java.util.logging.Level;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -27,7 +29,7 @@ import pojo.Session;
 import pojo.User;
 
 @Singleton
-@Path("/")
+@Path("/user")
 public class UserService {
 	
 	@LogRequest
@@ -64,36 +66,14 @@ public class UserService {
 		}
 		return Response.status(401).entity("").build();
 	}
-	
-	@LogRequest
-	@Authenticate("READ")
-	@GET
-	@Path("/testLogin")
-	public Response test(@Context HttpHeaders headers) {
-		return Response.status(200).entity("OK").build();
-	}
-	
+
 	@LogRequest
 	@Authenticate("ADMIN")
-	@POST
+	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/deleteUser")
-	public Response deleteUser(@Context HttpHeaders headers, String body) throws Exception {
+	@Path("/{user}")
+	public Response deleteUser(@Context HttpHeaders headers, @PathParam("user") String userNameToDelete) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-
-		String userNameToDelete = ""; 
-		JsonObject userJO;
-		try {
-			userJO =  new JsonParser().parse(body).getAsJsonObject();			
-		}catch (Exception e) {
-			throw new Exception("Error parsing user json - "+e.getMessage());
-		}
-		try {
-			userNameToDelete = userJO.getAsJsonObject().get("username").getAsString();
-		}catch (Exception e) {
-			throw new Exception("Error parsing username - key not found");
-		}
-
 		Log.log(Level.INFO, "'"+userName+"' is deleting  user '"+userNameToDelete+"'");
 		UserManagement.deleteUser(userNameToDelete);
 		return Response.status(200).entity("{\"user\" : \"deleted\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -101,32 +81,26 @@ public class UserService {
 
 	@LogRequest
 	@Authenticate("ADMIN")
-	@POST
+	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/changePasswordForUser")
-	public Response changePasswordForUser(@Context HttpHeaders headers, String body) throws Exception {		
+	@Path("/{user}/password")
+	public Response changePasswordForUser(@Context HttpHeaders headers, String body, @PathParam("user") String userNameToChangePW) throws Exception {		
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
-		String userNameToChange = ""; 
 		String password = "";
 		JsonObject userJO;
 		try {
 			userJO =  new JsonParser().parse(body).getAsJsonObject();			
-		}catch (Exception e) {
-			throw new Exception("Error parsing password json - "+e.getMessage());
-		}
-		try {
-			userNameToChange = userJO.getAsJsonObject().get("username").getAsString();
 			password = userJO.getAsJsonObject().get("password").getAsString();
 		}catch (Exception e) {
-			throw new Exception("Error parsing username / password - key not found");
+			throw new Exception("Error parsing password json - "+e.getMessage());
 		}
 		
 		if(password.length()<8) {
 			throw new Exception("Password length is 8 characters minimum");
 		}
-		Log.log(Level.INFO, "'"+userName+"' is changing the password of user '"+userNameToChange+"'");
-		UserManagement.changePassword(userNameToChange, password);
+		Log.log(Level.INFO, "'"+userName+"' is changing the password of user '"+userNameToChangePW+"'");
+		UserManagement.changePassword(userNameToChangePW, password);
 		return Response.status(200).entity("{\"password\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
@@ -134,7 +108,7 @@ public class UserService {
 	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/createUser")
+	@Path("/")
 	public Response createUser(@Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -163,9 +137,9 @@ public class UserService {
 
 	@LogRequest
 	@Authenticate("READ")
-	@POST
+	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Path("/changePassword")
+	@Path("/password")
 	public Response changePassword(@Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 

@@ -25,14 +25,14 @@ import helpers.Log;
 import persistence.Persistence;
 
 @Singleton
-@Path("/")
+@Path("/manage")
 public class ManagementService {
 
 
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
-	@POST
-	@Path("/manage/test/{testname}")
+	@PUT
+	@Path("/test/{testname}")
 	public Response editTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is editing test '"+testName+"'");
@@ -45,7 +45,27 @@ public class ManagementService {
 			throw new Exception("Error parsing test - "+e.getMessage());
 		}
 		// TODO pretty print the JSON output
-		// TODO hooks not written into file
+		Persistence.writeTest(testName,body);
+		
+		return Response.status(200).build();
+	}
+	
+	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
+	@POST
+	@Path("/test/{testname}")
+	public Response createTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		Log.log(Level.INFO, "'"+userName+"' is creating test '"+testName+"'");
+		
+		JSONObject testJO;
+		try {
+			testJO =  new JSONObject(body);	
+			Helpers.parseTest(testJO,testName);
+		}catch (Exception e) {
+			throw new Exception("Error parsing test - "+e.getMessage());
+		}
+		// TODO pretty print the JSON output
 		Persistence.writeTest(testName,body);
 		
 		return Response.status(200).build();
@@ -54,7 +74,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
-	@Path("/manage/test/{testname}")
+	@Path("/test/{testname}")
 	public Response deleteTest(@PathParam("testname") String testName, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting test '"+testName+"'");
@@ -68,7 +88,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@POST
-	@Path("/manage/group/")
+	@Path("/group/")
 	public Response createGroup( @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -90,7 +110,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
-	@Path("/manage/group/{groupname}")
+	@Path("/group/{groupname}")
 	public Response addToGroup( @Context HttpHeaders headers, String body,  @PathParam("groupname") String groupName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -113,7 +133,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
-	@Path("/manage/group/{groupname}")
+	@Path("/group/{groupname}")
 	public Response deleteGroup( @Context HttpHeaders headers, @PathParam("groupname") String groupName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -126,7 +146,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
-	@Path("/manage/group/{groupname}/{testname}")
+	@Path("/group/{groupname}/{testname}")
 	public Response deleteTestOfGroup( @Context HttpHeaders headers, @PathParam("groupname") String groupName,  @PathParam("testname") String testName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -140,7 +160,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
-	@Path("/manage/category/{categoryname}/{testname}")
+	@Path("/category/{categoryname}/{testname}")
 	public Response deleteTestFromCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName,  @PathParam("testname") String testName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -153,7 +173,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
-	@Path("/manage/category/{categoryname}")
+	@Path("/category/{categoryname}")
 	public Response addToCategory( @Context HttpHeaders headers, String body,  @PathParam("categoryname") String categoryName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -176,7 +196,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@POST
-	@Path("/manage/category/")
+	@Path("/category/")
 	public Response createCategory( @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -197,7 +217,7 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
-	@Path("/manage/category/{categoryname}")
+	@Path("/category/{categoryname}")
 	public Response deleteCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting category '"+categoryName+"'");

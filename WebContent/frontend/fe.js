@@ -11,6 +11,7 @@ var htmlFormatter = function(cell, formatterParams){
     return cell.getValue();
 }
 
+
 // ************
 // * Settings *
 // ************
@@ -19,11 +20,11 @@ function changeOthersPassword(){
 	var username = document.getElementById("changeUsername").value;
 	var password = document.getElementById("changePassword").value;
 	var changeObj = new Object();
-	changeObj.username = username;
 	changeObj.password  = password;
-	doRequestBody("POST", JSON.stringify(changeObj), "application/json", "../changePasswordForUser/", proccessPasswordChangeForUser, true, true);
+	doRequestBody("POST", JSON.stringify(changeObj), "application/json", "../user/"+username+"/password", proccessPasswordChangeForUser, true, true);
 	return false;
 }
+
 
 function createUser(){
 	var username = document.getElementById("createUsername").value;
@@ -33,15 +34,13 @@ function createUser(){
 	changeObj.username = username;
 	changeObj.password  = password;
 	changeObj.role  = role;
-	doRequestBody("POST", JSON.stringify(changeObj), "application/json", "../createUser/", processCreateUser, true, true);
+	doRequestBody("POST", JSON.stringify(changeObj), "application/json", "../user/", processCreateUser, true, true);
 	return false;
 }
 
 function deleteUser(){
 	var username = document.getElementById("deleteUsername").value;
-	var deleteObj = new Object();
-	deleteObj.username = username;
-	doRequestBody("POST", JSON.stringify(deleteObj), "application/json", "../deleteUser/", processDeleteUser, true, true);
+	doRequestBody("DELETE", JSON.stringify({}), "application/json", "../user/"+username, processDeleteUser, true, true);
 	return false;
 }
 
@@ -50,7 +49,7 @@ function changeMyPassword(){
 	var password = document.getElementById("myPassword").value;
 	var passwordObj = new Object();
 	passwordObj.password  = password;
-	doRequestBody("POST", JSON.stringify(passwordObj), "application/json", "../changePassword/", proccessPasswordChange, true, true);
+	doRequestBody("POST", JSON.stringify(passwordObj), "application/json", "../user/password", proccessPasswordChange, true, true);
 	return false;
 }
 
@@ -58,7 +57,7 @@ function proccessPasswordChange(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
 	}else{
-		alert("Password changed successfully - for security reasons, you will be logged out");
+		alert("Password changed successfully - for security reasons, you will now be logged out");
 		doLogout();
 	}
 }
@@ -90,6 +89,15 @@ function groupDeleted(response){
 	}else{
 		alert("Group deleted");
 		location.reload();
+	}
+}
+
+function testDeleted(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Test deleted");
+		window.location.replace("index.html");
 	}
 }
 
@@ -153,6 +161,16 @@ function proccessTestEdited(response){
 		window.location.replace("index.html?page=results&name="+testName);
 	}
 }
+
+function proccessTestCreated(response, testName){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Created Test");
+		window.location.replace("index.html?page=results&name="+testName);
+	}
+}
+
 // *************
 // * Login/out *
 // *************
@@ -167,7 +185,7 @@ function doLogin(){
 	if(redir){
 		toPage = atob(redir);
 	}
-	doRequestBody("POST", JSON.stringify(loginObj), "application/json", "../login/", processLoginResult, [toPage], false);
+	doRequestBody("POST", JSON.stringify(loginObj), "application/json", "../user/login/", processLoginResult, [toPage], false);
 	return false;
 }
 
@@ -196,7 +214,7 @@ function doLogout() {
 			goToLoginPage();
 		}
 	};
-	request.open("POST", "../logout");
+	request.open("POST", "../user/logout");
 	request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
 	request.send();
 }
@@ -224,17 +242,24 @@ function saveTest(){
 	var taskCounter = 1;
 	test.test.tasks = [];
 	while (document.getElementById("taskName_"+taskCounter)!==null) {
-		var task = new Object();
-		task.name = document.getElementById("taskName_"+taskCounter).value;
-		task.path = document.getElementById("taskPath_"+taskCounter).value;
-		task.args = document.getElementById("taskArgs_"+taskCounter).value.split(",");
-		task.timeout = document.getElementById("taskTimeout_"+taskCounter).value;
-		test.test.tasks.push(task);
+		if(!document.getElementById("taskDiv_"+taskCounter).getAttribute("removed")){
+			var task = new Object();
+			task.name = document.getElementById("taskName_"+taskCounter).value;
+			task.path = document.getElementById("taskPath_"+taskCounter).value;
+			task.args = document.getElementById("taskArgs_"+taskCounter).value.split(",");
+			task.timeout = document.getElementById("taskTimeout_"+taskCounter).value;
+			test.test.tasks.push(task);			
+		}
 		taskCounter++;
 	}
 	
 	var testName = getQueryParams(document.location.search).name;
-	doRequestBody("POST", JSON.stringify(test), "application/json", "../manage/test/"+testName, proccessTestEdited, true, true);
+	if(testName==undefined){
+		testName = document.getElementById("testName").value;
+		doRequestBody("POST", JSON.stringify(test), "application/json", "../manage/test/"+testName, proccessTestCreated,[testName], true);
+	}else{
+		doRequestBody("PUT", JSON.stringify(test), "application/json", "../manage/test/"+testName, proccessTestEdited, true, true);		
+	}
 	return false;
 }
 
@@ -448,7 +473,9 @@ function listTestCategories(categories, tests){
 		var option = document.createElement("option");
 		option.text = plainCategories[i];
 		sel.add(option);
-		sel2.add(option);
+		var option2 = document.createElement("option");
+		option2.text = plainCategories[i];
+		sel2.add(option2);
 		testInCategories = testInCategories.concat(categories[plainCategories[i]]);
 	}
 	
@@ -978,26 +1005,41 @@ function onlyUnique(value, index, self) {
 // * FORM *
 // ********
 
+function goToNewTest(){
+	window.location.href='index.html?page=new'; 
+	return false;
+}
+
 function createTestMask(json,disabled){
 	var maskSpan = document.createElement("span");
+	maskSpan.setAttribute("id","maskSpan");
+	if(json==null){
+		json={};
+		json.settings={};
+		json.test={};
+		json.test.tasks=[];
+	}
 	if(json.settings==undefined){
 		json.settings={};
 	}
-	var successHook = createInput("Success Hook", json.settings.successHook, "successHook", disabled);
+	var successHook = createInput("Success Hook", json.settings.successHook, "successHook", disabled,!disabled, false);
 	maskSpan.append(successHook);
 	maskSpan.append(document.createElement("br"));
 	
-	var failureHook = createInput("Failure Hook", json.settings.failureHook, "failureHook", disabled);
+	var failureHook = createInput("Failure Hook", json.settings.failureHook, "failureHook", disabled,!disabled, false);
 	maskSpan.append(failureHook);
 	maskSpan.append(document.createElement("br"));
 
-	var description = createInput("Description", json.test.description, "description", disabled);
+	var description = createInput("Description", json.test.description, "description", disabled,!disabled, false);
 	maskSpan.append(description);
 	maskSpan.append(document.createElement("br"));
 	maskSpan.append(document.createElement("br"));
 
 	var tasksTitle = document.createElement("span");
 	tasksTitle.textContent = "Tasks";
+	if(!disabled){
+		tasksTitle.style.fontWeight = "bold";
+	}
 	maskSpan.append(tasksTitle);
 	maskSpan.append(document.createElement("br"));
 
@@ -1006,7 +1048,7 @@ function createTestMask(json,disabled){
 		var taskDiv = createTaskDiv(task, i+1, disabled);
 		maskSpan.append(taskDiv);
 	}
-	
+
 	return maskSpan;
 }
 
@@ -1018,29 +1060,99 @@ function displaySettings(){
 
 function createTaskDiv(task, i, disabled){
 	var tasksDiv = document.createElement("div");
+	tasksDiv.setAttribute("id","taskDiv_"+i);
 	tasksDiv.setAttribute("class","task");
 
-	var taskName = createInput("Name", task.name, "taskName_"+i, disabled);
+	var taskName = createInput("Name", task.name, "taskName_"+i, disabled,false,  true);
 	tasksDiv.append(taskName);
 	tasksDiv.append(document.createElement("br"));
-	var taskPath = createInput("Path", task.path, "taskPath_"+i, disabled);
+	var taskPath = createInput("Path", task.path, "taskPath_"+i, disabled,false, true);
 	tasksDiv.append(taskPath);
 	tasksDiv.append(document.createElement("br"));
-	var taskArgs = createInput("Arguments", task.args, "taskArgs_"+i, disabled);
+	var taskArgs = createInput("Arguments", task.args, "taskArgs_"+i, disabled,false,false);
 	tasksDiv.append(taskArgs);
 	tasksDiv.append(document.createElement("br"));
-	var taskTimeout = createInput("Timeout", task.timeout, "taskTimeout_"+i, disabled);
+	var taskTimeout = createInput("Timeout", task.timeout, "taskTimeout_"+i, disabled,false, true);
 	tasksDiv.append(taskTimeout);
 	tasksDiv.append(document.createElement("br"));
 	
+	if(!disabled){
+		var button = document.createElement("button");
+		button.innerHTML = "Remove Task";
+		button.onclick=function() { removeTaskDiv(i); return false; }
+		button.classList.add("btn");
+		button.classList.add("btn-danger");
+		button.classList.add("float-right");
+		tasksDiv.append(button);
+		tasksDiv.append(document.createElement("br"));
+		tasksDiv.append(document.createElement("br"));
+	}
 	return tasksDiv;
 }
 
-function createInput(title, value, id, disabled){
+function deleteTest(){
+	var obj={};
+	var testName = getQueryParams(document.location.search).name;
+	if(confirm('Are you sure you want to delete this test?')){
+		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/test/"+testName, testDeleted, true, true);
+	}
+}
+
+function addTask(){
+	var task = {};
+	task.name="";
+	task.path="";
+	task.args="";
+	task.timeout="";	
+	var markSpan = document.getElementById("maskSpan");
+	var taskDiv = createTaskDiv(task, getCurrentTaskIndex(), false);
+	maskSpan.append(taskDiv);
+}
+
+function getCurrentTaskIndex(){
+	var taskCounter = 0;
+	do {
+		taskCounter++;
+	}while(document.getElementById("taskName_"+taskCounter)!==null);
+	return taskCounter;
+}
+
+function removeTaskDiv(i){
+	document.getElementById("taskDiv_"+i).style.display="none";
+	document.getElementById("taskDiv_"+i).setAttribute("removed",true);
+	document.getElementById("taskName_"+i).required = false;
+	document.getElementById("taskPath_"+i).required = false;
+	document.getElementById("taskArgs_"+i).required = false;
+	document.getElementById("taskTimeout_"+i).required = false;
+}
+
+function initNewTestPage(){
+	removeLoader();
+	var testContent = document.getElementById("testContent");
+	var descriptionSpan = document.createElement("span");
+	descriptionSpan.textContent = "Test Name";
+	descriptionSpan.style.fontWeight = "bold";		
+
+	testContent.append(descriptionSpan);
+	var valueInput = document.createElement("input");
+	valueInput.setAttribute("id","testName");
+	valueInput.setAttribute("class","form-control");
+	testContent.append(valueInput);
+	testContent.append(document.createElement("br"));
+
+	var form = createTestMask(null,null);
+	testContent.append(form);
+	addTask();
+}
+
+function createInput(title, value, id, disabled, bold, required){
 	var resultSpan = document.createElement("span");
 	
 	var descriptionSpan = document.createElement("span");
 	descriptionSpan.textContent = title;
+	if(bold){
+		descriptionSpan.style.fontWeight = "bold";		
+	}
 	resultSpan.append(descriptionSpan);
 	
 	var descriptionBR = document.createElement("br");
@@ -1050,6 +1162,7 @@ function createInput(title, value, id, disabled){
 	value = value == undefined? "":value;
 	valueInput.setAttribute("value", value);
 	valueInput.disabled = disabled;
+	valueInput.required = required;
 	valueInput.setAttribute("id",id);
 	valueInput.setAttribute("class","form-control");
 	resultSpan.append(valueInput);
