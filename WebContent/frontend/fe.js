@@ -21,7 +21,7 @@ function changeOthersPassword(){
 	var password = document.getElementById("changePassword").value;
 	var changeObj = new Object();
 	changeObj.password  = password;
-	doRequestBody("POST", JSON.stringify(changeObj), "application/json", "../user/"+username+"/password", proccessPasswordChangeForUser, true, true);
+	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/password", proccessPasswordChangeForUser, true, true);
 	return false;
 }
 
@@ -49,7 +49,7 @@ function changeMyPassword(){
 	var password = document.getElementById("myPassword").value;
 	var passwordObj = new Object();
 	passwordObj.password  = password;
-	doRequestBody("POST", JSON.stringify(passwordObj), "application/json", "../user/password", proccessPasswordChange, true, true);
+	doRequestBody("PUT", JSON.stringify(passwordObj), "application/json", "../user/password", proccessPasswordChange, true, true);
 	return false;
 }
 
@@ -329,6 +329,54 @@ function poll(res,name,paramName, poller, handle) {
 // ********
 // * List *
 // ********
+var scriptsTable;
+
+function listScripts(scripts){
+	removeLoader();
+	
+	var scriptObjArr = [];
+	for(var i = 0; i < scripts.length; i++){
+		var scriptObj = {};
+		scriptObj.path = scripts[i];
+		console.log(scriptObj.pathLink);
+		scriptObjArr.push(scriptObj);
+	}	
+		
+	scriptsTable = new Tabulator("#scriptsTable", {
+		layoutColumnsOnNewData:true,
+	    layout:"fitDataFill",
+	    columns:[
+	    	{title:"Path", field:"path", formatter:htmlFormatter},
+	    ],
+	    rowClick:function(e, id, data, row){
+	        var id = id._row.data.path;
+			window.location.href='index.html?page=script&name='+encodeURIComponent(id);
+	    }
+	});
+	scriptsTable.setData(scriptObjArr);
+	
+	if(scripts.length==0){
+		scriptsTable.addRow([{path:"No scripts found yet"}], false);
+		scriptsTable.redraw(true);
+	}
+
+	var filterInput = document.getElementById("filterInputScripts");
+	
+	filterInput.addEventListener("keyup", event => {
+		scriptsTable.setFilter("path", "like", document.getElementById("filterInputScripts").value);
+		// TODO why does tabulator.js scroll around like crazy on FF
+		//window.scrollTo(0,document.body.scrollHeight);
+	});
+}
+
+function loadScriptEdit(script){
+	document.getElementById('editor').value=script;
+	var editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+	    mode: "javascript",
+	    lineNumbers: true,
+	});
+	removeLoader();
+}
 
 function insertRunningCount(res){
 	document.getElementById("runningTestsSpan").style="";
@@ -379,11 +427,11 @@ function listTests(tests) {
 		tests[i].lastRunTime = timeConversion(tests[i].totalRunTimeInMS);
 	}
 	table.setData(tests);
-	var filterInput = document.getElementById("filterInput");
+	var filterInput = document.getElementById("filterInputTests");
 	var timer;
 	filterInput.onkeyup = function(){
 		timer = setTimeout(function() {	
-			var filterInput = document.getElementById("filterInput");
+			var filterInput = document.getElementById("filterInputTests");
 			table.setFilter(matchAny, [filterInput.value,"name"]);
 		},700)
 	}
@@ -667,6 +715,7 @@ function listGroups(groups){
 	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a" ){
 		document.getElementById("testGroupsSettings").style.display="";
 		document.getElementById("testSettings").style.display="";
+		//document.getElementById("scriptSettings").style.display="";
 	}
 }
 
@@ -831,7 +880,6 @@ window.errorReported=false;
 
 function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 	var request = new XMLHttpRequest();
-	
 	request.ontimeout = function() {
 		if(!window.errorReported){
 			window.errorReported=true;

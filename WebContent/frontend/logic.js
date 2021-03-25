@@ -29,6 +29,7 @@ function pageLogic (response){
 	if(page=="main"){
 		doRequest("GET", "../getTestList", listTests);
 		doRequest("GET", "../getTestGroupList", listGroups);
+		doRequest("GET", "../getScriptList", listScripts);
 	}
 	if(page=="login"){
 	    document.getElementById("username").focus();
@@ -41,6 +42,11 @@ function pageLogic (response){
 	}
 	if(page=="logout"){
 		doLogout();
+	}
+	if(page=="script"){
+		var name = getQueryParams(document.location.search).name;
+		document.getElementById("scriptNameSpan").textContent=name;
+		doRequest("GET", "../getScript/?name="+encodeURIComponent(name), loadScriptEdit);
 	}
 	if(page=="hash"){
 		doRequest("GET", "../getBasePath", basePath);
@@ -83,7 +89,7 @@ function pageLogic (response){
 	}
 	if(page=="edit"){
 		var name = getQueryParams(document.location.search).name;
-		doRequest("GET", "../getTest/" + name , editTestContent)
+		doRequest("GET", "../getTest/" + encodeURIComponent(name), editTestContent)
 	}
 	if(page=="new"){
 		initNewTestPage();

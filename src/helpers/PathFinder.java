@@ -12,7 +12,7 @@ public class PathFinder {
 	private static String groupLabel = ".group";
 	private static String stateLabel = ".running";
 
-	private static String dataFolder = "results";
+	private static String resultsFolder = "results";
 	private static String testFolder = "tests";
 	private static String groupFolder = "groups";
 
@@ -25,8 +25,8 @@ public class PathFinder {
 	public static String getGroupLabel() {
 		return groupLabel;
 	}
-	public static String getDataFolderName() {
-		return dataFolder;
+	public static String getResultsFolderName() {
+		return resultsFolder;
 	}
 	public static String getTestFolderName() {
 		return testFolder;
@@ -88,7 +88,7 @@ public class PathFinder {
 	 * @return "C:\Users\TR\Desktop\results\[name]\"
 	 */
 	public static String getTestResultsPath (String testName) throws Exception {
-		String path = getBasePath() + dataFolder + File.separator + testName + File.separator;
+		String path = getBasePath() + resultsFolder + File.separator + testName + File.separator;
 		return path;
 	}
 	
@@ -96,7 +96,7 @@ public class PathFinder {
 	 * @return "C:\Users\TR\Desktop\results\groups\[name]\"
 	 */	
 	public static String getGroupTestResultsPath(String groupName) throws Exception {
-		String path = getBasePath() + dataFolder + File.separator + groupFolder + File.separator + groupName + File.separator;
+		String path = getBasePath() + resultsFolder + File.separator + groupFolder + File.separator + groupName + File.separator;
 		return path;
 	}
 	
@@ -149,6 +149,16 @@ public class PathFinder {
 		return path + handle + stateLabel;
 	}
 	
+	/**
+	 * @return 
+	 * @return "C:\Users\TR\Desktop\tests\scripts\"
+	 * @throws Exception 
+	 */
+	public static String getScriptsFolder() throws Exception {
+		String path = getBasePath() + testFolder + File.separator + "scripts" + File.separator;
+		return path;
+	}
+	
 	public static void createFolderPath(String pathString) throws Exception {
 		Path path = Paths.get(pathString);
 		try {
@@ -157,4 +167,5 @@ public class PathFinder {
 			throw new Exception("Could not greate path '"+pathString+"' - due to: "+e.getMessage());
 		}
 	}
+
 }

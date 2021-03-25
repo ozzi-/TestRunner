@@ -223,6 +223,5 @@ public class ManagementService {
 		Log.log(Level.INFO, "'"+userName+"' is deleting category '"+categoryName+"'");
 		Persistence.deleteCategory(categoryName);
 		return Response.status(200).build();			
-	
 	}
 }

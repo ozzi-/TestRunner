@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -17,6 +21,7 @@ import javax.ws.rs.core.Response;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import annotations.Authenticate;
 import annotations.LogRequest;
@@ -221,6 +226,41 @@ public class TRService {
 	@Path("/getRunningCount")
 	public Response getRunningCount(@Context HttpHeaders headers) throws Exception {
 		return Response.status(200).entity("{\"count\":"+TRHelper.runningTests+"}").type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	// TODO make the "getXX" calls more rest-like
+	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
+	@GET
+	@Path("/getScriptList")
+	public Response getScripts( @Context HttpHeaders headers) throws Exception {
+		String scriptsPathStrng = PathFinder.getScriptsFolder();
+		int scriptsPathLength = scriptsPathStrng.length();
+		List<String> result;
+	    try (Stream<java.nio.file.Path> walk = Files.walk(Paths.get(scriptsPathStrng))) {
+	        result = walk.filter(Files::isRegularFile)
+	                .map(x -> x.toString()).collect(Collectors.toList());
+	    } catch (IOException e) {
+	        throw new Exception ("Exception encountered reading script path - "+e.getMessage());
+	    }
+	    
+	    JsonArray ja = new JsonArray();
+	    for (String filePath : result) {
+	    	ja.add(new JsonPrimitive(filePath.substring(scriptsPathLength)));
+			
+		}
+		return Response.status(200).entity(ja.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
+	@GET
+	@Path("/getScript")
+	public Response getScript( @Context HttpHeaders headers, @QueryParam("name") String path) throws Exception {	
+		String scriptsPathStrng = PathFinder.getScriptsFolder()+path;
+		// TODO list of file types editable
+		String scriptContent = new String(Files.readAllBytes(Paths.get(scriptsPathStrng)));
+		return Response.status(200).entity(scriptContent).type(MediaType.TEXT_PLAIN).build();
 	}
 
 	@LogRequest

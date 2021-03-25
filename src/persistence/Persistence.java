@@ -71,14 +71,20 @@ public class Persistence {
         return fullPersistencePath;
 	}
 	
-	public static void validateFileNameSafe(String fileName) throws Exception {
-		if(fileName.contains(".") || fileName.contains("/") || fileName.contains("\\")) {
-			throw new Exception("Invalid file name - contains . / \\");
+	public static void validateFileNameSafe(String fileName, boolean singleDotAllowed) throws Exception {
+		if(singleDotAllowed && fileName.contains("..")) {
+			throw new Exception("Invalid file name - contains: .. ");
+		}else if(!singleDotAllowed  && fileName.contains(".")) {
+			throw new Exception("Invalid file name - contains: . ");
+		}
+	
+		if(fileName.contains("/") || fileName.contains("\\")) {
+			throw new Exception("Invalid file name - contains: / or \\");
 		}
 	}
 
 	public static synchronized void writeTest(String testName, String body) throws Exception {
-		validateFileNameSafe(testName);
+		validateFileNameSafe(testName,false);
 		String savePathStrng = PathFinder.getSpecificTestPath(testName);
 		Path savePath = Paths.get(savePathStrng);
 		if(Files.exists(savePath)) {
@@ -96,13 +102,13 @@ public class Persistence {
 	}
 
 	public static void deleteTest(String testName) throws Exception {
-		validateFileNameSafe(testName);
+		validateFileNameSafe(testName,false);
 		String deletePath = PathFinder.getSpecificTestPath(testName);
 		Files.deleteIfExists(Paths.get(deletePath));
 	}
 
 	public static void createGroup(String groupName) throws Exception {
-		validateFileNameSafe(groupName);
+		validateFileNameSafe(groupName,false);
 		String savePathStrng = PathFinder.getSpecificGroupPath(groupName);
 		Path savePath = Paths.get(savePathStrng);
 		if(Files.exists(savePath)) {
@@ -116,7 +122,7 @@ public class Persistence {
 	}
 
 	public static void deleteGroup(String groupName) throws Exception {
-		validateFileNameSafe(groupName);
+		validateFileNameSafe(groupName,false);
 		String deletePath = PathFinder.getSpecificGroupPath(groupName);
 		boolean success = Files.deleteIfExists(Paths.get(deletePath));
 		if(!success) {
@@ -125,7 +131,7 @@ public class Persistence {
 	}
 
 	public static void addToGroup(String groupName, String test, String name) throws Exception {
-		validateFileNameSafe(groupName);
+		validateFileNameSafe(groupName,false);
 		String groupPath = PathFinder.getSpecificGroupPath(groupName);
 		
 		try {
@@ -145,7 +151,7 @@ public class Persistence {
 	}	
 	
 	public static void removeOfGroup(String groupName, String testNameToRemove) throws Exception {
-		validateFileNameSafe(groupName);
+		validateFileNameSafe(groupName,false);
 		String groupPath = PathFinder.getSpecificGroupPath(groupName);
 		
 		try {
