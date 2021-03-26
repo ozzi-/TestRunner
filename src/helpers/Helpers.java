@@ -201,7 +201,7 @@ public class Helpers {
 	}
 
 	public static String[] getStringArray(ArrayList<String> arr) {
-		int size = arr.size()==0?0:arr.size()-1;
+		int size = arr.size()==0?0:arr.size();
 		String str[] = new String[size];
 		for (int j = 0; j < size; j++) {
 			str[j] = arr.get(j);
