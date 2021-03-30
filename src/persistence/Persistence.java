@@ -8,6 +8,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -21,6 +25,9 @@ import pojo.Results;
 import pojo.Test;
 
 public class Persistence {
+	
+	// TODO optimize: beautify json does double parsing 
+	
 	public static String getTestRunAsJSON(Test test, Results results, String userName) {
 		JsonObject res = new JsonObject();
 		Log.log(Level.FINE, "Persisting test "+test.name+" as JSON");
@@ -77,25 +84,24 @@ public class Persistence {
 		}else if(!singleDotAllowed  && fileName.contains(".")) {
 			throw new Exception("Invalid file name - contains: . ");
 		}
-	
-		if(fileName.contains("/") || fileName.contains("\\")) {
-			throw new Exception("Invalid file name - contains: / or \\");
+		if(fileName.contains("/") || fileName.contains("\\") || fileName.contains("\"") || fileName.contains("<") || fileName.contains(">")) {
+			throw new Exception("Invalid file name - contains: / , \\ , <, > or \"");
 		}
 	}
 
-	public static synchronized void writeTest(String testName, String body) throws Exception {
+	public static synchronized void writeTest(String testName, String body, boolean isEdit) throws Exception {
 		validateFileNameSafe(testName,false);
 		String savePathStrng = PathFinder.getSpecificTestPath(testName);
 		Path savePath = Paths.get(savePathStrng);
-		if(Files.exists(savePath)) {
+		if(!isEdit && Files.exists(savePath)) {
 			throw new Exception("A test with the name '"+testName+"' already exists!");
 		}
 		Path resultPath = Paths.get(PathFinder.getTestResultsPath(testName));
-		if(Files.isDirectory(resultPath)) {
+		if(!isEdit && Files.isDirectory(resultPath)) {
 			throw new Exception("Results for a now deleted test '"+testName+"' already exist - please remove the test results or pick another test name");			
 		}
 		try {
-			Files.write(savePath, body.getBytes());			
+			Files.write(savePath, beautifyJSON(body).getBytes());			
 		}catch (Exception e) {
 			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
@@ -107,7 +113,7 @@ public class Persistence {
 		Files.deleteIfExists(Paths.get(deletePath));
 	}
 
-	public static void createGroup(String groupName) throws Exception {
+	public static void createGroup(String groupName, String groupDescription) throws Exception {
 		validateFileNameSafe(groupName,false);
 		String savePathStrng = PathFinder.getSpecificGroupPath(groupName);
 		Path savePath = Paths.get(savePathStrng);
@@ -115,7 +121,10 @@ public class Persistence {
 			throw new Exception("A group with the name '"+groupName+"' already exists!");
 		}
 		try {
-			Files.write(savePath, "{\"description\":\"\",\"tests\":[]}".getBytes());	
+			JSONObject jo = new JSONObject();
+			jo.put("description", groupDescription);
+			jo.put("tests", new JSONArray());
+			Files.write(savePath, jo.toString().getBytes());	
 		}catch (Exception e) {
 			throw new Exception("Could not write group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
@@ -144,7 +153,7 @@ public class Persistence {
 			testToAdd.addProperty("test", test);
 			tests.add(testToAdd);
 			
-			Files.write(Paths.get(groupPath), groupJO.toString().getBytes());
+			Files.write(Paths.get(groupPath), beautifyJSON(groupJO.toString()).getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not edit group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
@@ -165,7 +174,7 @@ public class Persistence {
 				}
 			}
 	
-			Files.write(Paths.get(groupPath), groupJO.toString().getBytes());
+			Files.write(Paths.get(groupPath), beautifyJSON(groupJO.toString()).getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not remove test from group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
@@ -186,7 +195,7 @@ public class Persistence {
 				}
 			}
 	
-			Files.write(Paths.get(categoriesPath), categoriesJO.toString().getBytes());
+			Files.write(Paths.get(categoriesPath), beautifyJSON(categoriesJO.toString()).getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not remove test from category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
@@ -201,11 +210,15 @@ public class Persistence {
 			checkIfTestIsAlreadyInCategory(test, categoryJO);
 			JsonArray categoriesR = categoryJO.get(categoryNameToAdd).getAsJsonArray();
 			categoriesR.add(test);
-			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
+			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
 			return true;
 		}catch (Exception e) {
 			throw new Exception("Could not add '"+test+"' category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
+	}
+	
+	private static String beautifyJSON(String json) {
+		return (new GsonBuilder().setPrettyPrinting().create().toJson(new JsonParser().parse(json)));
 	}
 
 	private static void checkIfTestIsAlreadyInCategory(String test, JsonObject categoryJO) throws Exception {
@@ -235,7 +248,7 @@ public class Persistence {
 			throw new Exception("Category '"+categoryNameToAdd+"' already exists");
 		}
 		try {  	
-			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
+			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
@@ -252,7 +265,7 @@ public class Persistence {
 			String categoryContent = new String(Files.readAllBytes(Paths.get(categoriesPath)));
 			JsonObject categoryJO =  new JsonParser().parse(categoryContent).getAsJsonObject();
 			categoryJO.remove(categoryName);
-			Files.write(Paths.get(categoriesPath), categoryJO.toString().getBytes());
+			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not remove category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}

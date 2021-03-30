@@ -35,7 +35,18 @@ public class PathFinder {
 		return groupFolder;
 	}
 		
-
+	public static boolean isPathSafe(String filePathStrng, String basePath) throws Exception, IOException {
+		try {
+			java.io.File filePath = new java.io.File(filePathStrng);
+			java.nio.file.Path normalizedFilePath = filePath.toPath().toAbsolutePath().normalize();
+			normalizedFilePath.toFile(); // might throw a invalidPathException
+			return (normalizedFilePath.startsWith(basePath));		
+		}catch (Exception e) {
+			return false;
+		}
+	}
+	
+	
 	/**
 	 * @return i.E: "C:\Users\TR\Desktop\"
 	 */

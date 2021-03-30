@@ -12,13 +12,13 @@ public class Log {
 	private static boolean pathSet = false;
 	private static ArrayList<LogEntry> backLog = new ArrayList<LogEntry>();
 	private static String testRunnerLogPrefix = "TestRunner";
+	private static FileHandler fileH;
 	
 	public static void setup(String path) {
 		pathSet = true; 
 		logger = Logger.getLogger(Log.class.getName());
 		logger.setLevel(Level.INFO);
 
-		FileHandler fileH;
 		try {
 			fileH = new FileHandler(path,5000000,10,true);
 			SimpleFormatter formatterTxt = new SimpleFormatter();
@@ -38,6 +38,10 @@ public class Log {
 			System.err.println("IO Exception while creating logger. Exiting (2)");
 			System.exit(2);
 		}
+	}
+	
+	public static void closeHandle() {
+		fileH.close();
 	}
 
 	public static void setLogPath(String path) {

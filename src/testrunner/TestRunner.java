@@ -21,6 +21,7 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	@Override
 	public void onShutdown(Container container) {
 		Log.log(Level.INFO, "Test Runner - onShutdown received");
+		Log.closeHandle();
 	}
 
 	@Override
@@ -37,6 +38,6 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		packages("services");		
+		packages("services");	
 	}
 }

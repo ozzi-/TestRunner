@@ -12,6 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONObject;
 
 import com.google.gson.JsonObject;
@@ -44,8 +45,7 @@ public class ManagementService {
 		}catch (Exception e) {
 			throw new Exception("Error parsing test - "+e.getMessage());
 		}
-		// TODO pretty print the JSON output
-		Persistence.writeTest(testName,body);
+		Persistence.writeTest(testName,body,true);
 		
 		return Response.status(200).build();
 	}
@@ -65,8 +65,7 @@ public class ManagementService {
 		}catch (Exception e) {
 			throw new Exception("Error parsing test - "+e.getMessage());
 		}
-		// TODO pretty print the JSON output
-		Persistence.writeTest(testName,body);
+		Persistence.writeTest(testName,body,false);
 		
 		return Response.status(200).build();
 	}
@@ -94,15 +93,17 @@ public class ManagementService {
 
 		JsonObject groupJO;
 		String groupName;
+		String groupDescription;
 		try {
 			groupJO =  new JsonParser().parse(body).getAsJsonObject();
 			groupName = groupJO.get("name").getAsString();
+			groupDescription = StringEscapeUtils.escapeHtml4(groupJO.get("description").getAsString());
 		}catch (Exception e) {
 			throw new Exception("Error parsing group json - "+e.getMessage());
 		}
 
 		Log.log(Level.INFO, "'"+userName+"' is creating a group '"+groupName+"'");
-		Persistence.createGroup(groupName);
+		Persistence.createGroup(groupName,groupDescription);
 		
 		return Response.status(200).build();
 	}

@@ -26,10 +26,17 @@ public class LogFilter implements ContainerRequestFilter {
 		Session session = SessionManagement.getSessionFormIdentifier(sessionIdentifier);		
 		String userName = session.getUsername();
 		
+		String additionalInfo="";
+		if(requestContext.getHeaderString("X-File-Path")!=null) {
+			additionalInfo+=" , X-File-Path = '"+requestContext.getHeaderString("X-File-Path")+"'";
+		}
+		if(requestContext.getUriInfo().getQueryParameters()!=null) {
+			additionalInfo+=" , URL Params = '"+requestContext.getUriInfo().getQueryParameters()+"'";
+		}
 		String method = requestContext.getMethod();
 		String uri = "/"+requestContext.getUriInfo().getPath();
 		if(!uri.equals("/getRunningCount")) {
-			Log.log(Level.INFO, "API Call by "+userName+" - "+method+" "+uri);			
+			Log.log(Level.INFO, "API Call by "+userName+" - "+method+" "+uri+additionalInfo);
 		}
 	}
 }

@@ -4,6 +4,7 @@ var cloud = "&#127785;";
 var trToken = "TR_Token";
 var trRole = "TR_Role";
 var sessionHeaderName ="X-TR-Session-ID";
+var uploadFilePathHeaderName = "X-File-Path";
 var pageIndex=0;
 
 var htmlFormatter = function(cell, formatterParams){
@@ -139,6 +140,23 @@ function groupEdited(response){
 function categoryEdited(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
+	}
+}
+
+function scriptSaved(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Script saved");
+	}
+}
+
+function scriptDeleted(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Script deleted");
+		window.location.replace("index.html");
 	}
 }
 
@@ -338,7 +356,6 @@ function listScripts(scripts){
 	for(var i = 0; i < scripts.length; i++){
 		var scriptObj = {};
 		scriptObj.path = scripts[i];
-		console.log(scriptObj.pathLink);
 		scriptObjArr.push(scriptObj);
 	}	
 		
@@ -369,12 +386,148 @@ function listScripts(scripts){
 	});
 }
 
-function loadScriptEdit(script){
-	document.getElementById('editor').value=script;
-	var editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-	    mode: "javascript",
-	    lineNumbers: true,
+function initScriptAdd(){
+	removeLoader();
+
+	var headerObj={};
+	headerObj[sessionHeaderName] = localStorage.getItem(trToken);
+	
+	var myDropzone = new Dropzone("div#dropZoneDiv", { 
+		url: "../script/mpfd",
+		maxFiles:1,
+		init: function() {
+		    this.hiddenFileInput.removeAttribute('multiple');
+		},
+		success:function(file, response){
+			window.location.replace("index.html?page=script&name="+file.name);
+        },
+		headers: headerObj
 	});
+	
+	myDropzone.on("addedfiles", function(files) {
+		document.getElementById("loader").style.display="";
+		headerObj[uploadFilePathHeaderName] = myDropzone.files[0].name;
+	});
+	myDropzone.on("queuecomplete", function(files) {
+		removeLoader();
+	});	
+}
+
+function loadScriptEdit(res){
+	var name = getQueryParams(document.location.search).name;
+	if(res.type=="text"){
+		doRequest("GET", "../getScript/?name="+encodeURIComponent(name), loadTextScriptEdit);
+		document.getElementById("textEditor").style="";
+	}else{
+		document.getElementById("binaryEditor").style="";
+		
+		var headerObj={};
+		headerObj[sessionHeaderName] = localStorage.getItem(trToken);
+		headerObj[uploadFilePathHeaderName] = name;
+
+		var myDropzone = new Dropzone("div#dropZoneDiv", { 
+			url: "../script/mpfd",
+			maxFiles:1,
+			init: function() {
+			    this.hiddenFileInput.removeAttribute('multiple');
+			},
+			headers: headerObj
+		});
+		removeLoader();
+		
+		myDropzone.on("addedfiles", function(files) {
+			document.getElementById("loader").style.display="";
+		});
+		myDropzone.on("queuecomplete", function(files) {
+			removeLoader();
+		});	
+	}
+}
+
+function downloadBinaryButton(){
+	document.getElementById("loader").style.display="";
+	console.log(document.getElementById("loader").style.display);
+	var name = getQueryParams(document.location.search).name;
+	doRequest("GET", "../getScript/?name="+encodeURIComponent(name), loadBinaryScriptEdit, true, true);
+}
+
+function  loadBinaryScriptEdit(blob){
+	var name = getQueryParams(document.location.search).name;	
+	var dataUri = window.URL.createObjectURL(blob);	
+    var anchor = document.getElementById("downloadBinaryLink");
+    anchor.setAttribute('href', dataUri);
+    anchor.setAttribute('download', name);
+    document.getElementById("loader").style.display="none";
+    anchor.click();
+}
+
+function saveScript(){	
+	var textAreaEditor = document.getElementById('editor');
+	var scriptContent = textAreaEditor.editorHandle.getValue();
+	var name = getQueryParams(document.location.search).name;
+	doRequestBody("POST", scriptContent, "text/plain", "../script", scriptSaved, true, true,name);
+}
+
+function deleteScript(){
+	var name = getQueryParams(document.location.search).name;
+	if(confirm('Are you sure you want to delete this script?\r\nThis may break existing tests.')){
+		doRequestBody("DELETE", {}, "application/json", "../script", scriptDeleted, true, true, name);
+	}
+}
+
+function loadTextScriptEdit(scriptContent){
+	document.getElementById('editor').value=scriptContent;
+	var name = (getQueryParams(document.location.search).name).toLowerCase();
+	var mode="none";
+
+	if(name.endsWith(".md")){
+		mode="markdown";
+	}else if(name.endsWith(".js")){
+		mode="text/javascript";
+	}else if(name.endsWith(".java")){
+		mode="jsx";
+	}else if(name.endsWith(".cpp")||name.endsWith(".h")||name.endsWith(".o")||name.endsWith(".c")){
+		mode="clike";
+	}else if(name.endsWith(".css")){
+		mode="css";
+	}else if(name.endsWith(".py")){
+		mode="python";
+	}else if(name.endsWith(".lua")){
+		mode="lua";
+	}else if(name.endsWith(".html")){
+		mode="htmlmixed";
+	}else if(name.endsWith(".groovy")){
+		mode="groovy";
+	}else if(name.endsWith(".pl")){
+		mode="perl";
+	}else if(name.endsWith(".php")){
+		mode="php";
+	}else if(name.endsWith(".ps1")||name.endsWith(".psm1")||name.endsWith(".psd1")){
+		mode="powershell";
+	}else if(name.endsWith(".rb")){
+		mode="ruby";
+	}else if(name.endsWith(".sh")||name.endsWith(".bash")||name.endsWith(".zsh")||name.endsWith(".ksh")){
+		mode="shell";
+	}else if(name.endsWith(".vb")){
+		mode="vb";
+	}else if(name.endsWith(".vbs")||name.endsWith(".vbe")||name.endsWith(".wsf")){
+		mode="vbscript";
+	}else if(name.endsWith(".vm")){
+		mode="velocity";
+	}else if(name.endsWith(".xml")){
+		mode="xml";
+	}else if(name.endsWith(".yaml")){
+		mode="yaml";
+	}	
+	
+	var textAreaEditor = document.getElementById('editor');
+	
+	var editor = CodeMirror.fromTextArea(textAreaEditor, {
+		mode: mode,
+		lineNumbers: true,
+	});
+	editor.setSize("100%","73vh");
+	textAreaEditor.editorHandle=editor;
 	removeLoader();
 }
 
@@ -527,7 +680,6 @@ function listTestCategories(categories, tests){
 		testInCategories = testInCategories.concat(categories[plainCategories[i]]);
 	}
 	
-	console.log(testInCategories);
 	var sel2 = document.getElementById("testNameSelect");
 	for (var i = 0; i <tests.length; i++) {
 		if(!testInCategories.includes(tests[i].name)) {
@@ -580,8 +732,10 @@ var testCategoriesTableHandle;
 
 function createTestGroup(){
 	var groupName = document.getElementById("groupName").value;
+	var groupDescription = document.getElementById("groupDescription").value;
 	var obj =  {};
 	obj.name=groupName;
+	obj.description=groupDescription;
 	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/group/", groupCreated, true, true);
 
 	return false;
@@ -715,7 +869,7 @@ function listGroups(groups){
 	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a" ){
 		document.getElementById("testGroupsSettings").style.display="";
 		document.getElementById("testSettings").style.display="";
-		//document.getElementById("scriptSettings").style.display="";
+		document.getElementById("scriptAdd").style.display="";
 	}
 }
 
@@ -878,7 +1032,7 @@ function editTestContent(result){
 
 window.errorReported=false;
 
-function doRequestBody(method, data, type, url, callback, params, sendAuth) {
+function doRequestBody(method, data, type, url, callback, params, sendAuth, uploadHeaderPath) {
 	var request = new XMLHttpRequest();
 	request.ontimeout = function() {
 		if(!window.errorReported){
@@ -886,7 +1040,6 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 			alert("The request for " + url + " timed out.");
 		}
 	};
-
 	request.onreadystatechange = function() {
 		if (request.readyState == 4) {
 			if (request.status == 200) {
@@ -919,9 +1072,14 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 			}
 		}
 	};
+	
+	
 	request.open(method, url);
 	request.timeout = 5000;
 
+	if(typeof uploadHeaderPath !== undefined){
+		request.setRequestHeader(uploadFilePathHeaderName, uploadHeaderPath);
+	}
 	if(sendAuth){
 		request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
 	}
@@ -929,9 +1087,14 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth) {
 	request.send(data);
 }
 
-function doRequest(method, url, callback, params) {
+
+function doRequest(method, url, callback, params, blob) {
 	var request = new XMLHttpRequest();
-	
+
+	if(typeof blob !== 'undefined' && blob){
+		request.responseType = "blob";		
+	}
+
 	request.ontimeout = function() {
 		if(!window.errorReported){
 			window.errorReported=true;
@@ -943,9 +1106,14 @@ function doRequest(method, url, callback, params) {
 		if (request.readyState == 4) {
 			if (request.status == 200) {
 				var response = "";
-				try { 
-					var responseJSON = JSON.parse(request.responseText);
-					response = responseJSON;
+				try {
+					if(typeof blob !== 'undefined' && blob){
+						response = request.response;
+						console.log(response);
+					}else{						
+						var responseJSON = JSON.parse(request.responseText);
+						response = responseJSON;
+					}
 				} catch (e) {
 					response = request.responseText;
 				}
@@ -1013,7 +1181,7 @@ function escapeHtml(stn) {
 
 function removeLoader(){
 	if(document.getElementById("loader")){
-		document.getElementById("loader").remove();					
+		document.getElementById("loader").style.display="none";
 	}
 }
 

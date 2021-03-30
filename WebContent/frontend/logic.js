@@ -46,7 +46,10 @@ function pageLogic (response){
 	if(page=="script"){
 		var name = getQueryParams(document.location.search).name;
 		document.getElementById("scriptNameSpan").textContent=name;
-		doRequest("GET", "../getScript/?name="+encodeURIComponent(name), loadScriptEdit);
+		doRequest("GET", "../getScriptType/?name="+encodeURIComponent(name), loadScriptEdit);
+	}
+	if(page=="scriptadd"){
+		initScriptAdd();
 	}
 	if(page=="hash"){
 		doRequest("GET", "../getBasePath", basePath);
