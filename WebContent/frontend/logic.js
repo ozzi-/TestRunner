@@ -106,6 +106,7 @@ function pageLogic (response){
 	if(page=="settings"){
 	    removeLoader();
 	    displaySettings();
+		doRequest("GET", "../user", fillUsers);
 	}
 	if(page=="run"){
 		removeLoader();

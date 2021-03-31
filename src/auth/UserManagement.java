@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 import com.google.gson.JsonArray;
@@ -16,15 +15,14 @@ import helpers.Crypto;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
+import helpers.Settiings;
 import pojo.User;
 
 public class UserManagement {
 	
 	private UserManagement() {}	
-	public static List<User> users = new ArrayList<User>();
-	private static final String DEFAULT_ADMIN_USERNAME = "admin";
-	private static final String DEFAUKT_ADMIN_PASSWORD = "letmein";
-	private static final int SALT_LENGTH = 10;
+	
+
 
 	public static User parseUserLoginJSON(String userJson) throws Exception {
 		JsonElement userJO;
@@ -52,7 +50,7 @@ public class UserManagement {
 		}
 		User user = new User();
 		try {
-			user.setSalt(Crypto.createSalt(SALT_LENGTH)); 
+			user.setSalt(Crypto.createSalt(Settiings.getSingleton().getSALT_LENGTH())); 
 			user.setUsername(userJO.getAsJsonObject().get("username").getAsString());
 			user.setPassword(userJO.getAsJsonObject().get("password").getAsString());
 			user.setRole(userJO.getAsJsonObject().get("role").getAsString());
@@ -66,9 +64,9 @@ public class UserManagement {
 		Log.log(Level.FINE, "Changing password for user '"+username+"'");
 		SessionManagement.destorySessionByUserName(username);
 		boolean changed = false;
-		for (User user : users) {
+		for (User user : Settiings.getSingleton().getUsers()) {
 			if(user.getUsername().equals(username)) {
-				user.setSalt(Crypto.createSalt(SALT_LENGTH)); 
+				user.setSalt(Crypto.createSalt(Settiings.getSingleton().getSALT_LENGTH())); 
 				user.setPassword(password);
 				persistUsers();
 				changed=true;
@@ -81,7 +79,7 @@ public class UserManagement {
 	
 	public static synchronized void addUser(User userToAdd) throws Exception {
 		Log.log(Level.FINE, "Adding user '"+userToAdd.getUsername()+"'");
-		users.add(userToAdd);
+		Settiings.getSingleton().getUsers().add(userToAdd);
 		persistUsers();
 	}
 
@@ -90,10 +88,10 @@ public class UserManagement {
 		
 		String usersJson = "["+System.lineSeparator();
 		int i = 0;
-		for (User user : users) {
+		for (User user : Settiings.getSingleton().getUsers()) {
 			usersJson += user.toJSON();
 			i++;
-			if(i!=users.size()) {
+			if(i!=Settiings.getSingleton().getUsers().size()) {
 				usersJson+=","+System.lineSeparator();
 			}
 		}
@@ -107,21 +105,21 @@ public class UserManagement {
 	}
 	
 	public static void loadUsers() throws Exception {
-		users = new ArrayList<User>();
+		Settiings.getSingleton().setUsers(new ArrayList<User>());
 		Log.log(Level.FINE, "Loading users");
 		String usersJson;
 		String usersFile = PathFinder.getBasePath()+"users.json";
 		File usersFileObj = new File(usersFile);
 		if(!usersFileObj.exists()) {
 			String adminUserJSON ="  {\r\n" + 
-					"        \"username\": \""+DEFAULT_ADMIN_USERNAME+"\",\r\n" + 
-					"        \"password\": \""+DEFAUKT_ADMIN_PASSWORD+"\",\r\n" + 
+					"        \"username\": \""+Settiings.getSingleton().getDEFAULT_ADMIN_USERNAME()+"\",\r\n" + 
+					"        \"password\": \""+Settiings.getSingleton().getDEFAUlT_ADMIN_PASSWORD()+"\",\r\n" + 
 					"        \"role\": \"a\"\r\n" + 
 					"  }";
 			
 			User adminUser = UserManagement.createUserObjByBodyJSON(adminUserJSON);
-			Log.log(Level.INFO,"users.json file does not exist, assuming first run. creating default user '"+DEFAULT_ADMIN_USERNAME+"' with password '"+DEFAUKT_ADMIN_PASSWORD+"'");
-			users.add(adminUser);
+			Log.log(Level.INFO,"users.json file does not exist, assuming first run. creating default user '"+Settiings.getSingleton().getDEFAULT_ADMIN_USERNAME()+"' with password '"+Settiings.getSingleton().getDEFAUlT_ADMIN_PASSWORD()+"'");
+			Settiings.getSingleton().getUsers().add(adminUser);
 			persistUsers();
 		}else {
 			try {
@@ -149,13 +147,13 @@ public class UserManagement {
 				}
 				user.setRole(role);
 				Log.log(Level.FINE, "Loaded user '"+user.getUsername()+"' with role '"+user.getRole()+"'");
-				users.add(user);
+				Settiings.getSingleton().getUsers().add(user);
 			}
 		}
 	}
 
 	public static User checkLogin(User loginUser) {
-		for (User user : users) {
+		for (User user : Settiings.getSingleton().getUsers()) {
 			if(MessageDigest.isEqual(user.getUsername().getBytes(),loginUser.getUsername().getBytes())) {
 				Log.log(Level.FINE, "Username '"+loginUser.getUsername()+"' found.");
 				loginUser.setSalt(user.getSalt());
@@ -176,7 +174,7 @@ public class UserManagement {
 
 	public static synchronized void deleteUser(String userNameToDelete) throws Exception {
 		Log.log(Level.FINE, "Deleting user '"+userNameToDelete+"'");
-		boolean deleted = users.removeIf(s -> s.getUsername().equals(userNameToDelete));
+		boolean deleted = Settiings.getSingleton().getUsers().removeIf(s -> s.getUsername().equals(userNameToDelete));
 		if(!deleted) {
 			throw new Exception("Cannot delete unknown user '"+userNameToDelete+"'");
 		}

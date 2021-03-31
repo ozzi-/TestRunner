@@ -362,6 +362,8 @@ function listScripts(scripts){
 	scriptsTable = new Tabulator("#scriptsTable", {
 		layoutColumnsOnNewData:true,
 	    layout:"fitDataFill",
+	    pagination:"local", 
+	    paginationSize:10,
 	    columns:[
 	    	{title:"Path", field:"path", formatter:htmlFormatter},
 	    ],
@@ -545,6 +547,8 @@ function listTests(tests) {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
+		    pagination:"local", 
+		    paginationSize:20,
 		    columns:[
 		    {title:"Test", field:"testLink", minWidth:300, formatter:htmlFormatter},
 		    {title:"Status", field:"runState", minWidth:70, formatter:htmlFormatter},
@@ -557,6 +561,8 @@ function listTests(tests) {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
+		    pagination:"local", 
+		    paginationSize:20,
 		    columns:[
 		    {title:"Test", field:"testLink",  formatter:htmlFormatter},
 		    {title:"Run", field:"runLink",  minWidth:70, formatter:htmlFormatter},
@@ -820,7 +826,8 @@ function listGroups(groups){
 	var table;
 	if(localStorage.getItem(trRole)==="r"){
 		table = new Tabulator("#testGroupsTable", {
-			layoutColumnsOnNewData:true,
+		    pagination:"local", 
+		    paginationSize:10,
 		    layout:"fitDataFill",
 		    columns:[
 			    {title:"Group", field:"groupLink", formatter:htmlFormatter},
@@ -833,7 +840,8 @@ function listGroups(groups){
 		});
 	}else{
 		table = new Tabulator("#testGroupsTable", {
-			layoutColumnsOnNewData:true,
+		    pagination:"local", 
+		    paginationSize:10,
 		    layout:"fitDataFill",
 		    columns:[
 		    {title:"Group", field:"groupLink",  formatter:htmlFormatter},
@@ -870,6 +878,22 @@ function listGroups(groups){
 		document.getElementById("testGroupsSettings").style.display="";
 		document.getElementById("testSettings").style.display="";
 		document.getElementById("scriptAdd").style.display="";
+	}
+}
+
+function fillUsers(res){
+	console.log(res);
+
+	var userSelects = document.getElementsByClassName("userSelect");
+	for(let i = 0; i < userSelects.length; i++){
+		for(let y = 0; y < res.length; y++){
+			var usrName= Object.keys(res[y])[0];
+			var option = document.createElement("option");
+			option.setAttribute("value", usrName);			
+			var text = document.createTextNode(usrName);
+			option.appendChild(text);
+			userSelects[i].appendChild(option);		
+		}
 	}
 }
 

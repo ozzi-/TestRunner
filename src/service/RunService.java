@@ -22,7 +22,7 @@ import helpers.TRHelper;
 @Path("/")
 public class RunService {
 	
-	private static String tagValidRegexp="[a-zA-Z0-9_]+";
+	private String tagValidRegexp="[a-zA-Z0-9_]+";
 	
 	@LogRequest
 	@Authenticate("READEXECUTE")

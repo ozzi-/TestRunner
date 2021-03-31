@@ -12,7 +12,6 @@ import org.buildobjects.process.TimeoutException;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
-import helpers.TRHelper;
 import persistence.Persistence;
 import pojo.Result;
 import pojo.Results;
@@ -34,6 +33,8 @@ public class Testing {
 		
 		return results;
 	}
+	
+	
 	
 	public static void runTestInThread(Test test, boolean group, String userName) throws Exception {
 		new Thread() {
@@ -61,7 +62,7 @@ public class Testing {
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
-					TRHelper.runningTests--;
+					//Singleton.getSingleton().setRunningCount(Singleton.getSingleton().getRunningCount()-1);
 					CacheService.expireLastRunEntry(test.name+(group?PathFinder.getGroupLabel():""));
 				}
 			}

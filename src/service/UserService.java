@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -15,6 +16,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -25,16 +27,20 @@ import auth.Roles;
 import auth.SessionManagement;
 import auth.UserManagement;
 import helpers.Log;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import pojo.Session;
 import pojo.User;
 
 @Singleton
+@Api("/user")
 @Path("/user")
 public class UserService {
 	
 	@LogRequest
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Get list of Students in the System ", response = Iterable.class, tags = "getStudents")
 	@Path("/login")
 	public Response doLogin(String jsonLogin) throws Exception {
 		User user = UserManagement.parseUserLoginJSON(jsonLogin);
@@ -78,6 +84,22 @@ public class UserService {
 		UserManagement.deleteUser(userNameToDelete);
 		return Response.status(200).entity("{\"user\" : \"deleted\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
+	
+	@LogRequest
+	@Authenticate("READ")
+	@GET
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response getUsers(@Context HttpHeaders headers, @PathParam("user") String userNameToDelete) throws Exception {
+		JsonArray usersJA = new JsonArray();
+		List<User> users = helpers.Settiings.getSingleton().getUsers();
+		for (User user : users) {
+			JsonObject userJO = new JsonObject();
+			userJO.addProperty(user.getUsername(), user.getRole());
+			usersJA.add(userJO);
+		}
+		return Response.status(200).entity(usersJA.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+
 
 	@LogRequest
 	@Authenticate("ADMIN")
@@ -116,7 +138,7 @@ public class UserService {
 		if(userToAdd.getPwLength()<8) {
 			throw new Exception("Password length is 8 characters minimum");
 		}
-		for (User user : UserManagement.users) {
+		for (User user : helpers.Settiings.getSingleton().getUsers()) {
 			if(user.getUsername().equals(userToAdd.getUsername())) {
 				throw new Exception("Username already taken");
 			}

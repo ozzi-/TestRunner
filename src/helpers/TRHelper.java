@@ -30,7 +30,7 @@ import testrunner.Testing;
 
 public class TRHelper {
 	
-	public static int runningTests = 0;
+	public int runningTests = 0;
 
 	public static TestCategoriesList getTestCategories() throws Exception {		
 		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
@@ -90,7 +90,7 @@ public class TRHelper {
 
 	public static JsonObject runTestInternal(String testName, String userName, String tag, String args) throws Exception {
 		Log.log(Level.INFO, "User " + userName + " running test " + testName + " with tag = " + tag + " and additional args = " + args);
-		runningTests++;
+		Settiings.getSingleton().setRunningCount(Settiings.getSingleton().getRunningCount()+1);
 		
 		JSONObject obj = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testName));
 		Test test = Helpers.parseTest(obj, testName);
@@ -116,7 +116,7 @@ public class TRHelper {
 
 	public static JsonObject runGroupInternal(String groupName, String userName, String tag, String args) throws Exception {
 		Log.log(Level.INFO, "User " + userName + " running group test " + groupName + " with tag = " + tag + " and addtional args = " + args);
-		runningTests++;
+		Settiings.getSingleton().setRunningCount(Settiings.getSingleton().getRunningCount()+1);
 		
 		JSONObject group = Helpers.parsePathToJSONObj(PathFinder.getSpecificGroupPath(groupName));
 		JSONArray tests = (JSONArray) group.get("tests");

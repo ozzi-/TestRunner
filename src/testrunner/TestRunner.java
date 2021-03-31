@@ -38,6 +38,6 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		packages("services");	
+		packages("services");
 	}
 }
