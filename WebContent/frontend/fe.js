@@ -882,8 +882,6 @@ function listGroups(groups){
 }
 
 function fillUsers(res){
-	console.log(res);
-
 	var userSelects = document.getElementsByClassName("userSelect");
 	for(let i = 0; i < userSelects.length; i++){
 		for(let y = 0; y < res.length; y++){

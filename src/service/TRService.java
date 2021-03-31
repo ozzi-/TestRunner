@@ -253,7 +253,7 @@ public class TRService {
 	@GET
 	@Path("/getRunningCount")
 	public Response getRunningCount(@Context HttpHeaders headers) throws Exception {
-		return Response.status(200).entity("{\"count\":" + 	helpers.Settiings.getSingleton().getRunningCount() + "}")
+		return Response.status(200).entity("{\"count\":" + 	helpers.Settings.getSingleton().getRunningCount() + "}")
 				.type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 

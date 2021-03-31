@@ -29,6 +29,9 @@ import auth.UserManagement;
 import helpers.Log;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import pojo.Login;
 import pojo.Session;
 import pojo.User;
 
@@ -40,10 +43,13 @@ public class UserService {
 	@LogRequest
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Get list of Students in the System ", response = Iterable.class, tags = "getStudents")
+	@ApiOperation( response = Session.class, value = "[NONE] If successful, returns a session", produces="application/json")
 	@Path("/login")
-	public Response doLogin(String jsonLogin) throws Exception {
-		User user = UserManagement.parseUserLoginJSON(jsonLogin);
+	@ApiResponses(value = { @ApiResponse(code = 401, message = "Username or Password wrong") }) 
+	public Response doLogin(Login login) throws Exception {
+		User user = new User();
+		user.setUsername(login.getUsername());
+		user.setPasswordRaw(login.getPassword());
 		user = UserManagement.checkLogin(user);
 		if (user != null) {
 			Session session = SessionManagement.createSession(user.getUsername(),user.getRole());
@@ -56,6 +62,7 @@ public class UserService {
 	@Authenticate("READ")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation( value = "[READ] Invalidates current session")
 	@Path("/logout")
 	public Response doLogout(@Context HttpHeaders headers) throws Exception {
 		if(headers!=null) {
@@ -77,6 +84,7 @@ public class UserService {
 	@Authenticate("ADMIN")
 	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation( response = Session.class, value = "[ADMIN] Deletes a user", produces="application/json")
 	@Path("/{user}")
 	public Response deleteUser(@Context HttpHeaders headers, @PathParam("user") String userNameToDelete) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
@@ -89,9 +97,10 @@ public class UserService {
 	@Authenticate("READ")
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation( response = Session.class, value = "[READ] Get all users", produces="application/json")
 	public Response getUsers(@Context HttpHeaders headers, @PathParam("user") String userNameToDelete) throws Exception {
 		JsonArray usersJA = new JsonArray();
-		List<User> users = helpers.Settiings.getSingleton().getUsers();
+		List<User> users = helpers.Settings.getSingleton().getUsers();
 		for (User user : users) {
 			JsonObject userJO = new JsonObject();
 			userJO.addProperty(user.getUsername(), user.getRole());
@@ -106,23 +115,15 @@ public class UserService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/{user}/password")
-	public Response changePasswordForUser(@Context HttpHeaders headers, String body, @PathParam("user") String userNameToChangePW) throws Exception {		
+	@ApiOperation( response = Session.class, value = "[READ] Get all users")
+	public Response changePasswordForUser(@Context HttpHeaders headers, Login login, @PathParam("user") String userNameToChangePW) throws Exception {		
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-
-		String password = "";
-		JsonObject userJO;
-		try {
-			userJO =  new JsonParser().parse(body).getAsJsonObject();			
-			password = userJO.getAsJsonObject().get("password").getAsString();
-		}catch (Exception e) {
-			throw new Exception("Error parsing password json - "+e.getMessage());
-		}
-		
-		if(password.length()<8) {
+				
+		if(login.getPassword().length()<8) {
 			throw new Exception("Password length is 8 characters minimum");
 		}
 		Log.log(Level.INFO, "'"+userName+"' is changing the password of user '"+userNameToChangePW+"'");
-		UserManagement.changePassword(userNameToChangePW, password);
+		UserManagement.changePassword(userNameToChangePW, login.getPassword());
 		return Response.status(200).entity("{\"password\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
@@ -130,6 +131,7 @@ public class UserService {
 	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
+	// TODO annotation
 	public Response createUser(@Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -138,7 +140,7 @@ public class UserService {
 		if(userToAdd.getPwLength()<8) {
 			throw new Exception("Password length is 8 characters minimum");
 		}
-		for (User user : helpers.Settiings.getSingleton().getUsers()) {
+		for (User user : helpers.Settings.getSingleton().getUsers()) {
 			if(user.getUsername().equals(userToAdd.getUsername())) {
 				throw new Exception("Username already taken");
 			}
