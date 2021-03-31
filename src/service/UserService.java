@@ -115,7 +115,7 @@ public class UserService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/{user}/password")
-	@ApiOperation( response = Session.class, value = "[READ] Get all users")
+	@ApiOperation( response = Session.class, value = "[ADMIN] Set password of user")
 	public Response changePasswordForUser(@Context HttpHeaders headers, Login login, @PathParam("user") String userNameToChangePW) throws Exception {		
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 				
