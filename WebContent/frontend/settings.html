@@ -14,7 +14,7 @@
 	<h4>Change other Users Password</h4>
 	<form onsubmit="return changeOthersPassword()">
 	    <select class="form-control userSelect" id="changeUsername" required>
-	    	<option disabled selected value>-- choose a user --</option>
+	    	<option disabled selected value="">-- choose a user --</option>
 	    </select>
 	 	<input class="form-control" type="password" id="changePassword" autocomplete="new-password" placeholder="Enter Password" name="changePassword" required>
 	 	<br> 
@@ -38,7 +38,7 @@
 	<h4>Delete User</h4>
 	<form onsubmit="return deleteUser()">
 		<select class="form-control userSelect" id="deleteUsername" required>
-			<option disabled selected value>-- choose a user --</option>
+			<option disabled selected value="">-- choose a user --</option>
 		</select>
 	 	<br> 
 	  	<button class="btn btn-danger" type="submit">Delete User</button>
