@@ -21,13 +21,11 @@ import pojo.User;
 public class UserManagement {
 	
 	private UserManagement() {}	
-	
-
 
 	public static User parseUserLoginJSON(String userJson) throws Exception {
 		JsonElement userJO;
 		try {
-			userJO =  new JsonParser().parse(userJson).getAsJsonObject();			
+			userJO =  JsonParser.parseString(userJson).getAsJsonObject();			
 		}catch (Exception e) {
 			throw new Exception("Error parsing login json - "+e.getMessage());
 		}
@@ -44,7 +42,7 @@ public class UserManagement {
 	public static User addUser(String userJson) throws Exception {
 		JsonElement userJO;
 		try {
-			userJO =  new JsonParser().parse(userJson).getAsJsonObject();			
+			userJO =  JsonParser.parseString(userJson).getAsJsonObject();			
 		}catch (Exception e) {
 			throw new Exception("Error parsing user json - "+e.getMessage());
 		}
@@ -129,7 +127,7 @@ public class UserManagement {
 				Log.log(Level.SEVERE, "Cannot load users file");
 				throw new Exception("Cannot load users file "+usersFile);
 			}
-			JsonArray usersJA =  new JsonParser().parse(usersJson).getAsJsonArray();
+			JsonArray usersJA = JsonParser.parseString(usersJson).getAsJsonArray();
 			for (JsonElement userJO : usersJA) {
 				User user = new User();
 				String role = "";

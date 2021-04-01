@@ -37,9 +37,7 @@ public class RunService {
 		if(!Pattern.matches(tagValidRegexp, tag)) {
 			return Response.status(400).entity("invalid tag name").type(MediaType.APPLICATION_JSON_TYPE).build();
 		}
-
 		JsonObject resp = TRHelper.runTestInternal(testName, userName,tag,args);
-		
 		return Response.status(200).entity(resp.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	

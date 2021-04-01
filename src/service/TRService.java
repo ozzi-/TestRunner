@@ -34,9 +34,6 @@ import pojo.TestCategoriesList;
 @Path("/tr")
 public class TRService {
 
-	
-	// TODO refactor calls
-	
 	@Authenticate("READ")
 	@LogRequest
 	@GET
@@ -63,8 +60,6 @@ public class TRService {
 		}
 		return Response.status(200).entity(resultsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
-
-
 
 	@LogRequest
 	@Authenticate("READ")
@@ -125,7 +120,6 @@ public class TRService {
 		return TRHelper.getResultInternal(path);
 	}
 
-
 	@LogRequest
 	@Authenticate("READ")
 	@GET
@@ -166,7 +160,6 @@ public class TRService {
 		return TRHelper.getResultInternal(path);
 	}
 
-
 	@LogRequest
 	@Authenticate("READ")
 	@GET
@@ -205,8 +198,7 @@ public class TRService {
 		TestCategoriesList tcl = TRHelper.getTestCategories();
 
 		JsonArray testsArray = new JsonArray();
-		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestsPath(), PathFinder.getTestLabel(),
-				-1);
+		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getTestsPath(), PathFinder.getTestLabel(),-1);
 		for (String name : listOfFiles) {
 			JsonObject test = new JsonObject();
 			String testName = name.substring(0, name.length() - PathFinder.getTestLabel().length());
@@ -242,7 +234,6 @@ public class TRService {
 				.type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
-
 	@LogRequest
 	@Authenticate("READ")
 	@GET
@@ -251,8 +242,7 @@ public class TRService {
 	public Response getGroupList(@Context HttpHeaders headers) throws Exception {
 
 		JsonArray groupsArray = new JsonArray();
-		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupsPath(), PathFinder.getGroupLabel(),
-				-1);
+		ArrayList<String> listOfFiles = Helpers.getListOfFiles(PathFinder.getGroupsPath(), PathFinder.getGroupLabel(),-1);
 		for (String name : listOfFiles) {
 			String testName = name.substring(0, name.length() - PathFinder.getGroupLabel().length());
 			String content = Helpers.readFile(PathFinder.getSpecificGroupPath(testName));

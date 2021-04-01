@@ -8,11 +8,9 @@ import pojo.LastRunCache;
 import pojo.TestCategoriesList;
 
 public class CacheService {
-	
-	
+
 	static TestCategoriesList tclCache;
 	static long tclCacheAge;
-
 	static HashMap<String, LastRunCache> lastRunCache = new HashMap<String, LastRunCache>();
 	
 	public static void addLastRunEntry(String testName, LastRunCache lrcToAdd) {

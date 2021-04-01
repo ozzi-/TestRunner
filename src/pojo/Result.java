@@ -5,7 +5,8 @@ import helpers.Helpers;
 
 public class Result {
 	public Result() {
-		this.pass = false; // default case is we fail
+		// default case is we fail
+		this.pass = false; 
 	}
 	
 	public String text;

@@ -45,7 +45,7 @@ public class TRHelper {
 			String file = Helpers.readFile(categoriesPath);
 			JsonObject categories;
 			try {
-				categories = new JsonParser().parse(file).getAsJsonObject();
+				categories = JsonParser.parseString(file).getAsJsonObject();
 			} catch (Exception e) {
 				throw new MalformedJsonException("Error parsing test.categories file - " + e.getMessage() + " - " + e.getCause());
 			}
@@ -229,7 +229,7 @@ public class TRHelper {
 			if (handle.contains("_")) {
 				result.addProperty("tag", handle.substring(handle.indexOf("_") + 1));
 			}
-			JsonElement resultJson = new JsonParser().parse(Helpers.readFile(resultPath));
+			JsonElement resultJson = JsonParser.parseString(Helpers.readFile(resultPath));
 			result.addProperty("handle", handle);
 
 			result.add("result", resultJson);
@@ -240,8 +240,7 @@ public class TRHelper {
 	private static String getDescriptionOfGroup(String groupName) throws Exception {
 		String path = PathFinder.getSpecificGroupPath(groupName);
 		String result = Helpers.readFile(path);
-		JsonParser parser = new JsonParser();
-		JsonElement jsonElement = parser.parse(result);
+		JsonElement jsonElement = JsonParser.parseString(result);
 		return jsonElement.getAsJsonObject().get("description").getAsString();
 	}
 
@@ -250,7 +249,7 @@ public class TRHelper {
 		JsonArray testGroupTests = new JsonArray();
 		JsonObject test;
 		try {
-			test = new JsonParser().parse(content).getAsJsonObject();
+			test = JsonParser.parseString(content).getAsJsonObject();
 		} catch (Exception e) {
 			throw new Exception("Error parsing test group \"" + name + "\" - " + e.getMessage());
 		}
@@ -274,7 +273,7 @@ public class TRHelper {
 				String newest = getNewest(listResults);
 				String path = PathFinder.getSpecificTestGroupResultPath(groupName, newest, false);
 				String lastRun = Helpers.readFile(path);
-				JsonObject lastRunJO = new JsonParser().parse(lastRun).getAsJsonObject();
+				JsonObject lastRunJO = JsonParser.parseString(lastRun).getAsJsonObject();
 				lastRunDate = lastRunJO.get("testStartString").getAsString();
 				JsonArray lastRunResults = lastRunJO.get("results").getAsJsonArray();
 				passed = true;
@@ -318,7 +317,7 @@ public class TRHelper {
 			String handle = String.valueOf(newest);
 			String path = PathFinder.getSpecificTestResultPath(testName, handle, false);
 			String lastRun = Helpers.readFile(path);
-			JsonObject lastRunJO = new JsonParser().parse(lastRun).getAsJsonObject();
+			JsonObject lastRunJO = JsonParser.parseString(lastRun).getAsJsonObject();
 			lastRunDate = lastRunJO.get("testStartString").getAsString();
 			JsonArray lastRunResults = lastRunJO.get("results").getAsJsonArray();
 			passed = true;
@@ -337,11 +336,9 @@ public class TRHelper {
 	}
 
 	public static String getNewest(ArrayList<String> toSortAL) {
-
 		for (int i = 0; i < toSortAL.size(); i++) {
 			toSortAL.set(i, cutDataLabelFromString(toSortAL.get(i)));
 		}
-
 		Collections.sort(toSortAL, Collections.reverseOrder());
 		return toSortAL.get(0);
 	}
@@ -351,7 +348,6 @@ public class TRHelper {
 	}
 
 	public static ArrayList<JsonElement> getJsonElementsOfPath(ArrayList<GroupTestAbstraction> gta) throws Exception {
-		JsonParser parser = new JsonParser();
 		ArrayList<JsonElement> elements = new ArrayList<JsonElement>();
 		for (GroupTestAbstraction gtaObj : gta) {
 			String testContent;
@@ -360,7 +356,7 @@ public class TRHelper {
 			} catch (Exception e) {
 				throw new Exception("Cannot load group due to an error reading one of its test: " + e.getMessage());
 			}
-			JsonElement testContentJSON = parser.parse(testContent);
+			JsonElement testContentJSON = JsonParser.parseString(testContent);
 			elements.add(testContentJSON);
 		}
 		return elements;
@@ -371,9 +367,7 @@ public class TRHelper {
 		String result = Helpers.readFile(path);
 		ArrayList<GroupTestAbstraction> paths = new ArrayList<GroupTestAbstraction>();
 
-		JsonParser parser = new JsonParser();
-		JsonElement jsonElement = parser.parse(result);
-
+		JsonElement jsonElement = JsonParser.parseString(result);
 		JsonArray groupTestsArray = jsonElement.getAsJsonObject().get("tests").getAsJsonArray();
 		for (JsonElement testElement : groupTestsArray) {
 			String testName = testElement.getAsJsonObject().get("test").getAsString();

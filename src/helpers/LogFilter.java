@@ -19,6 +19,7 @@ import pojo.Session;
 @Priority(Priorities.USER)
 public class LogFilter implements ContainerRequestFilter {
 
+	// TODO externalize X-FilePath Header into Settings Singleton
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		

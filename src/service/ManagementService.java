@@ -90,7 +90,6 @@ public class ManagementService {
 		return Response.status(200).build();
 	}
 	
-	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@POST
@@ -103,7 +102,7 @@ public class ManagementService {
 		String groupName;
 		String groupDescription;
 		try {
-			groupJO =  new JsonParser().parse(body).getAsJsonObject();
+			groupJO =  JsonParser.parseString(body).getAsJsonObject();
 			groupName = groupJO.get("name").getAsString();
 			groupDescription = StringEscapeUtils.escapeHtml4(groupJO.get("description").getAsString());
 		}catch (Exception e) {
@@ -127,7 +126,7 @@ public class ManagementService {
 		JsonObject groupJO;
 		String test, name;
 		try {
-			groupJO =  new JsonParser().parse(body).getAsJsonObject();
+			groupJO =  JsonParser.parseString(body).getAsJsonObject();
 			name = groupJO.get("name").getAsString();
 			test = groupJO.get("test").getAsString();
 		}catch (Exception e) {
@@ -194,7 +193,7 @@ public class ManagementService {
 		JsonObject groupJO;
 		String test;
 		try {
-			groupJO =  new JsonParser().parse(body).getAsJsonObject();
+			groupJO =  JsonParser.parseString(body).getAsJsonObject();
 			test = groupJO.get("test").getAsString();
 		}catch (Exception e) {
 			throw new Exception("Error parsing category json - "+e.getMessage());
@@ -218,7 +217,7 @@ public class ManagementService {
 		JsonObject categoryJO;
 		String name;
 		try {
-			categoryJO =  new JsonParser().parse(body).getAsJsonObject();
+			categoryJO =  JsonParser.parseString(body).getAsJsonObject();
 			name = categoryJO.get("name").getAsString();
 		}catch (Exception e) {
 			throw new Exception("Error parsing category json - "+e.getMessage());
@@ -238,6 +237,6 @@ public class ManagementService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting category '"+categoryName+"'");
 		Persistence.deleteCategory(categoryName);
-		return Response.status(200).build();			
+		return Response.status(200).build();
 	}
 }

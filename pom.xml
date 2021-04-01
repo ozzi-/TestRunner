@@ -111,6 +111,10 @@
 			<artifactId>jersey-hk2</artifactId>
 			<version>2.33</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>5.11.0.202103091610-r</version>
+		</dependency>
 	</dependencies>
 </project>

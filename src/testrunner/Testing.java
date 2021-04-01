@@ -31,11 +31,8 @@ public class Testing {
 			Result result = runTask(task);
 			results.results.add(result);
 		}
-		
 		return results;
 	}
-	
-	
 	
 	public static void runTestInThread(Test test, boolean group, String userName) throws Exception {
 		new Thread() {

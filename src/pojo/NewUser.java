@@ -23,7 +23,4 @@ public class NewUser {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
-
-
 }
