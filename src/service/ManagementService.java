@@ -23,17 +23,22 @@ import annotations.LogRequest;
 import auth.AuthenticationFilter;
 import helpers.Helpers;
 import helpers.Log;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import persistence.Persistence;
 
 @Singleton
+@Api("/manage")
 @Path("/manage")
 public class ManagementService {
 
-
+	// TODO use the POJOs and JAXB
+	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
 	@Path("/test/{testname}")
+	@ApiOperation( value = "[READEXECUTE] Edit a test")
 	public Response editTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is editing test '"+testName+"'");
@@ -54,6 +59,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Path("/test/{testname}")
+	@ApiOperation( value = "[READEXECUTE] Create a test")
 	public Response createTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is creating test '"+testName+"'");
@@ -74,6 +80,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/test/{testname}")
+	@ApiOperation( value = "[READEXECUTE] Delete a test")
 	public Response deleteTest(@PathParam("testname") String testName, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting test '"+testName+"'");
@@ -88,6 +95,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Path("/group/")
+	@ApiOperation( value = "[READEXECUTE] Create a group")
 	public Response createGroup( @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -112,6 +120,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
 	@Path("/group/{groupname}")
+	@ApiOperation( value = "[READEXECUTE] Add test to group")
 	public Response addToGroup( @Context HttpHeaders headers, String body,  @PathParam("groupname") String groupName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -135,6 +144,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/group/{groupname}")
+	@ApiOperation( value = "[READEXECUTE] Delete a group")
 	public Response deleteGroup( @Context HttpHeaders headers, @PathParam("groupname") String groupName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -148,6 +158,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/group/{groupname}/{testname}")
+	@ApiOperation( value = "[READEXECUTE] Remove a test from a group")
 	public Response deleteTestOfGroup( @Context HttpHeaders headers, @PathParam("groupname") String groupName,  @PathParam("testname") String testName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -162,6 +173,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/category/{categoryname}/{testname}")
+	@ApiOperation( value = "[READEXECUTE] Remove a test from a category")
 	public Response deleteTestFromCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName,  @PathParam("testname") String testName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -175,6 +187,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
 	@Path("/category/{categoryname}")
+	@ApiOperation( value = "[READEXECUTE] Add test to category")
 	public Response addToCategory( @Context HttpHeaders headers, String body,  @PathParam("categoryname") String categoryName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -198,6 +211,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Path("/category/")
+	@ApiOperation( value = "[READEXECUTE] Create a category")
 	public Response createCategory( @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -219,6 +233,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/category/{categoryname}")
+	@ApiOperation( value = "[READEXECUTE] Delete a category")
 	public Response deleteCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting category '"+categoryName+"'");

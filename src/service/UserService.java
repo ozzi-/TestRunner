@@ -18,7 +18,6 @@ import javax.ws.rs.core.Response;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import annotations.Authenticate;
 import annotations.LogRequest;
@@ -32,6 +31,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import pojo.Login;
+import pojo.NewUser;
+import pojo.Password;
 import pojo.Session;
 import pojo.User;
 
@@ -84,7 +85,7 @@ public class UserService {
 	@Authenticate("ADMIN")
 	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation( response = Session.class, value = "[ADMIN] Deletes a user", produces="application/json")
+	@ApiOperation(value = "[ADMIN] Deletes a user", produces="application/json")
 	@Path("/{user}")
 	public Response deleteUser(@Context HttpHeaders headers, @PathParam("user") String userNameToDelete) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
@@ -97,8 +98,8 @@ public class UserService {
 	@Authenticate("READ")
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation( response = Session.class, value = "[READ] Get all users", produces="application/json")
-	public Response getUsers(@Context HttpHeaders headers, @PathParam("user") String userNameToDelete) throws Exception {
+	@ApiOperation( response = Login.class , responseContainer="List", value = "[READ] Get all users", produces="application/json")
+	public Response getUsers(@Context HttpHeaders headers) throws Exception {
 		JsonArray usersJA = new JsonArray();
 		List<User> users = helpers.Settings.getSingleton().getUsers();
 		for (User user : users) {
@@ -115,15 +116,15 @@ public class UserService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/{user}/password")
-	@ApiOperation( response = Session.class, value = "[ADMIN] Set password of user")
-	public Response changePasswordForUser(@Context HttpHeaders headers, Login login, @PathParam("user") String userNameToChangePW) throws Exception {		
+	@ApiOperation( response = Password.class, value = "[ADMIN] Set password of user")
+	public Response changePasswordForUser(@Context HttpHeaders headers, Password password, @PathParam("user") String userNameToChangePW) throws Exception {		
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 				
-		if(login.getPassword().length()<8) {
+		if(password.getPassword().length()<8) {
 			throw new Exception("Password length is 8 characters minimum");
 		}
 		Log.log(Level.INFO, "'"+userName+"' is changing the password of user '"+userNameToChangePW+"'");
-		UserManagement.changePassword(userNameToChangePW, login.getPassword());
+		UserManagement.changePassword(userNameToChangePW, password.getPassword());
 		return Response.status(200).entity("{\"password\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
@@ -131,25 +132,25 @@ public class UserService {
 	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	// TODO annotation
-	public Response createUser(@Context HttpHeaders headers, String body) throws Exception {
+	@ApiOperation(value = "[ADMIN] Creates a new user", produces="application/json")
+	public Response createUser(@Context HttpHeaders headers, NewUser user) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
-		User userToAdd = UserManagement.createUserObjByBodyJSON(body);
-		
-		if(userToAdd.getPwLength()<8) {
+		if(user.getPassword().length()<8) {
 			throw new Exception("Password length is 8 characters minimum");
 		}
-		for (User user : helpers.Settings.getSingleton().getUsers()) {
-			if(user.getUsername().equals(userToAdd.getUsername())) {
+		for (User userToCheck : helpers.Settings.getSingleton().getUsers()) {
+			if(userToCheck.getUsername().equals(user.getUsername())) {
 				throw new Exception("Username already taken");
 			}
 		}
-		if(Roles.getRoleByID(userToAdd.getRole())==null) {
-			throw new Exception("Invalid role received when calling /createUser");
+		if(Roles.getRoleByID(user.getRole())==null) {
+			throw new Exception("Invalid role received when calling / createUser");
 		}
-		Log.log(Level.INFO, "'"+userName+"' is adding user '"+userToAdd.getUsername()+"' with role '"+userToAdd.getRole()+"'");
-		UserManagement.addUser(userToAdd);
+		
+		Log.log(Level.INFO, "'"+userName+"' is adding user '"+user.getUsername()+"' with role '"+user.getRole()+"'");
+		UserManagement.addUser(User.getUser(user));
+		
 		try {
 			UserManagement.loadUsers();
 		} catch (Exception e) {
@@ -163,29 +164,33 @@ public class UserService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/password")
-	public Response changePassword(@Context HttpHeaders headers, String body) throws Exception {
+	@ApiOperation(value = "[READ] Changes the password of the current sessions user", produces="application/json")
+	public Response changePassword(@Context HttpHeaders headers, Password password) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-
-		String password = "";
-		JsonObject userJO;
-		try {
-			userJO =  new JsonParser().parse(body).getAsJsonObject();			
-		}catch (Exception e) {
-			throw new Exception("Error parsing password json - "+e.getMessage());
-		}
-		try {
-			password = userJO.getAsJsonObject().get("password").getAsString();
-		}catch (Exception e) {
-			throw new Exception("Error parsing password - key not found");
-		}
 		
-		if(password.length()<8) {
+		if(password.getPassword().length()<8) {
 			throw new Exception("Password length is 8 characters minimum");
 		}
 		Log.log(Level.INFO, "'"+userName+"' is changing his password");
 
-		UserManagement.changePassword(userName, password);
+		UserManagement.changePassword(userName, password.getPassword());
 		return Response.status(200).entity("{\"password\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
+	
+	@Authenticate("ADMIN")
+	@LogRequest
+	@GET
+	@Path("/reload")
+	@ApiOperation(value = "[ADMIN] Reloads the users from storage")
+	public Response reload(@Context HttpHeaders headers) throws Exception {
+		try {
+			UserManagement.loadUsers();
+		} catch (Exception e) {
+			throw new Exception("Cannot load users - " + e.getMessage());
+		}
+
+		return Response.status(200).entity("reloaded").build();
+	}
+
 	
 }

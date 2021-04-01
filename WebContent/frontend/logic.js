@@ -19,17 +19,17 @@ function pageLogic (response){
 	document.getElementById("container").innerHTML = response;
 
 	if(page!="login" && page !="logout"){
-		doRequest("GET", "../getRunningCount", insertRunningCount);
+		doRequest("GET", "../tr/runningcount", insertRunningCount);
 		setInterval(function() {
-			doRequest("GET", "../getRunningCount", insertRunningCount);
+			doRequest("GET", "../tr/runningcount", insertRunningCount);
 		}, 2000);
 		
 	}
 
 	if(page=="main"){
-		doRequest("GET", "../getTestList", listTests);
-		doRequest("GET", "../getTestGroupList", listGroups);
-		doRequest("GET", "../getScriptList", listScripts);
+		doRequest("GET", "../tr/test", listTests);
+		doRequest("GET", "../tr/group", listGroups);
+		doRequest("GET", "../script", listScripts);
 	}
 	if(page=="login"){
 	    document.getElementById("username").focus();
@@ -38,7 +38,7 @@ function pageLogic (response){
 		document.getElementById("logout").remove();
 	}
 	if(page=="info"){
-		doRequest("GET", "../getBasePath", basePath);
+		doRequest("GET", "../tr/basepath", basePath);
 	}
 	if(page=="logout"){
 		doLogout();
@@ -46,13 +46,13 @@ function pageLogic (response){
 	if(page=="script"){
 		var name = getQueryParams(document.location.search).name;
 		document.getElementById("scriptNameSpan").textContent=name;
-		doRequest("GET", "../getScriptType/?name="+encodeURIComponent(name), loadScriptEdit);
+		doRequest("GET", "../script/type/?name="+encodeURIComponent(name), loadScriptEdit);
 	}
 	if(page=="scriptadd"){
 		initScriptAdd();
 	}
 	if(page=="hash"){
-		doRequest("GET", "../getBasePath", basePath);
+		doRequest("GET", "../tr/basepath", basePath);
 		var hashInputField = document.getElementById("in");
 		var hashOutputField = document.getElementById("out");
 		hashInputField.oninput = function(){
@@ -65,40 +65,40 @@ function pageLogic (response){
 		var name = getQueryParams(document.location.search).name;
 		if(name === undefined || name == "undefined"){
 			name = getQueryParams(document.location.search).groupname;
-			doRequest("GET", "../getGroupResult/" + name + "/" + handle, listResult);
+			doRequest("GET", "../tr/result/group/" + name + "/" + handle, listResult);
 		}else{
-			doRequest("GET", "../getResult/" + name + "/" + handle, listResult);
+			doRequest("GET", "../tr/result/test/" + name + "/" + handle, listResult);
 		}
 	}
 	if(page=="testgroupsettings"){
-		doRequest("GET", "../getTestGroupList", listGroupSettings);
-		doRequest("GET", "../getTestList", listGroupSettingsTestNames);
+		doRequest("GET", "../tr/group", listGroupSettings);
+		doRequest("GET", "../tr/test", listGroupSettingsTestNames);
 	}
 	if(page=="testsettings"){
-		doRequest("GET", "../getTestList", loadTestSettingsPage);
+		doRequest("GET", "../tr/test", loadTestSettingsPage);
 	}
 	if(page=="results"){
 		var name = getQueryParams(document.location.search).name;
 		if(name=="undefined" || name === undefined ){
 			name = getQueryParams(document.location.search).groupname;
 			paramName="groupname";
-			doRequest("GET", "../getGroupResults/"+name+"/0", listResults,[paramName]);
-			doRequest("GET", "../getGroup/" + name , listTestContent)
+			doRequest("GET", "../tr/result/group/"+name+"/page/0", listResults,[paramName]);
+			doRequest("GET", "../tr/group/" + name , listTestContent)
 		}else{
 			paramName="name";
-			doRequest("GET", "../getResults/" + name+"/0", listResults,[paramName]);
-			doRequest("GET", "../getTest/" + name , listTestContent)
+			doRequest("GET", "../tr/result/test/" + name+"/page/0", listResults,[paramName]);
+			doRequest("GET", "../tr/test/" + name , listTestContent)
 		}
 	}
 	if(page=="edit"){
 		var name = getQueryParams(document.location.search).name;
-		doRequest("GET", "../getTest/" + encodeURIComponent(name), editTestContent)
+		doRequest("GET", "../tr/test/" + encodeURIComponent(name), editTestContent)
 	}
 	if(page=="new"){
 		initNewTestPage();
 	}
 	if(page=="reload"){
-		doRequest("GET", "../reload/", reload,[]);
+		doRequest("GET", "../user/reload/", reload,[]);
 	}
 	if(page=="custom"){
 		removeLoader();
@@ -122,10 +122,10 @@ function pageLogic (response){
 		if(name=="undefined" || name === undefined){
 			name = getQueryParams(document.location.search).groupname;
 			paramName = "groupname";
-			doRequest("POST", "../runGroup/" + name + additional, runTestGroup, [name,paramName]);
+			doRequest("POST", "../run/group/" + name + additional, runTestGroup, [name,paramName]);
 		}else{
 			paramName = "name";
-			doRequest("POST", "../run/" + name+ additional, runTest,[name,paramName]);
+			doRequest("POST", "../run/test/" + name + additional, runTest,[name,paramName]);
 		}
 	}
 }

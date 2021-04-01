@@ -12,6 +12,7 @@ import org.buildobjects.process.TimeoutException;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
+import helpers.Settings;
 import persistence.Persistence;
 import pojo.Result;
 import pojo.Results;
@@ -62,7 +63,7 @@ public class Testing {
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
-					//Singleton.getSingleton().setRunningCount(Singleton.getSingleton().getRunningCount()-1);
+					Settings.getSingleton().setRunningCount(Settings.getSingleton().getRunningCount()-1);
 					CacheService.expireLastRunEntry(test.name+(group?PathFinder.getGroupLabel():""));
 				}
 			}

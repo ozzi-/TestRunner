@@ -2,6 +2,7 @@ package errorhandling;
 
 import java.util.logging.Level;
 
+import javax.annotation.Priority;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -13,6 +14,7 @@ import com.google.gson.JsonObject;
 import helpers.Log;
 
 @Provider
+@Priority(1)
 public class UncaughtException extends Throwable implements ExceptionMapper<Throwable> {
 	private static final long serialVersionUID = 1L;
 

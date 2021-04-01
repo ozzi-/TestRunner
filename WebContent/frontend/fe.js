@@ -309,11 +309,11 @@ function runCustomTest(){
 }
 
 function runTest(res,name,paramName) {
-	runInternal(res, name ,paramName, "getStatus");
+	runInternal(res, name ,paramName, "tr/status/test");
 }
 
 function runTestGroup(res,name,paramName) {
-	runInternal(res, name ,paramName, "getGroupStatus");
+	runInternal(res, name ,paramName, "tr/status/group");
 }
 
 function runInternal(res, name, paramName, call){
@@ -418,7 +418,7 @@ function initScriptAdd(){
 function loadScriptEdit(res){
 	var name = getQueryParams(document.location.search).name;
 	if(res.type=="text"){
-		doRequest("GET", "../getScript/?name="+encodeURIComponent(name), loadTextScriptEdit);
+		doRequest("GET", "../script/download/?name="+encodeURIComponent(name), loadTextScriptEdit);
 		document.getElementById("textEditor").style="";
 	}else{
 		document.getElementById("binaryEditor").style="";
@@ -450,7 +450,7 @@ function downloadBinaryButton(){
 	document.getElementById("loader").style.display="";
 	console.log(document.getElementById("loader").style.display);
 	var name = getQueryParams(document.location.search).name;
-	doRequest("GET", "../getScript/?name="+encodeURIComponent(name), loadBinaryScriptEdit, true, true);
+	doRequest("GET", "../script/download/?name="+encodeURIComponent(name), loadBinaryScriptEdit, true, true);
 }
 
 function  loadBinaryScriptEdit(blob){
@@ -909,10 +909,10 @@ function loadMore(){
 	
 	if(isGroup){
 		paramName="groupname";
-		doRequest("GET", "../getGroupResults/"+name+"/"+pageIndex, addResults,[paramName]);
+		doRequest("GET", "../tr/result/group/"+name+"/page/"+pageIndex, addResults,[paramName]);
 	}else{
 		paramName="name";
-		doRequest("GET", "../getResults/" + name+"/"+pageIndex, addResults,[paramName]);
+		doRequest("GET", "../tr/result/test//"+name+"/page/"+pageIndex, addResults,[paramName]);
 	}
 }
 
@@ -957,7 +957,7 @@ function listResults(results,paramName) {
 	}
 	testName.innerHTML = escapeHtml(name);
 	
-	// TODO build dom elements properly instead of using innerHTML
+	// TODO build dom elements properly instead of using innerHTML - then test a name containig ' in the end ... 
 	if(localStorage.getItem(trRole)!=="r"){
 		if(isGroup){
 			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</button>&nbsp;';			
@@ -968,7 +968,7 @@ function listResults(results,paramName) {
 	
 	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a"){
 		if(isGroup){
-			editLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=edit&groupname='+escapeHtml(name)+'\')"> Edit Test Group</button>&nbsp;';			
+			editLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=testgroupsettings\')"> Edit Test Group</button>&nbsp;';			
 		}else{
 			editLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=edit&name='+escapeHtml(name)+'\')"> Edit Test</button>&nbsp;';			
 		}

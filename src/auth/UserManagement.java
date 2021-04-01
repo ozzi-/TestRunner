@@ -41,7 +41,7 @@ public class UserManagement {
 		return user;
 	}
 	
-	public static User createUserObjByBodyJSON(String userJson) throws Exception {
+	public static User addUser(String userJson) throws Exception {
 		JsonElement userJO;
 		try {
 			userJO =  new JsonParser().parse(userJson).getAsJsonObject();			
@@ -118,7 +118,7 @@ public class UserManagement {
 					"        \"role\": \"a\"\r\n" + 
 					"  }";
 			
-			User adminUser = UserManagement.createUserObjByBodyJSON(adminUserJSON);
+			User adminUser = UserManagement.addUser(adminUserJSON);
 			Log.log(Level.INFO,"users.json file does not exist, assuming first run. creating default user '"+Settings.getSingleton().getDefaultAdminUsername()+"' with password '"+Settings.getSingleton().getDefaultAdminPassword()+"'");
 			Settings.getSingleton().getUsers().add(adminUser);
 			persistUsers();

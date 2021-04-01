@@ -11,18 +11,25 @@
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
 	        <param-name>jersey.config.server.provider.classnames</param-name>																																									
-        	<param-value>org.glassfish.jersey.media.multipart.MultiPartFeature,
-        	testrunner.TestRunner,
-        	service.ManagementService,
-        	service.RunService,
-        	service.TRService,
-        	service.UserService,
-        	auth.AuthenticationFilter,
-        	helpers.LogFilter,
-        	io.swagger.jaxrs.listing.ApiListingResource,
-        	io.swagger.jaxrs.listing.SwaggerSerializers.class,
-        	io.swagger.jersey.listing.ApiListingResource,
-        	io.swagger.jaxrs.listing.SwaggerSerializers</param-value>
+        	<param-value>
+        		org.glassfish.jersey.media.multipart.MultiPartFeature,
+        		testrunner.TestRunner,
+        		service.ManagementService,
+        		service.RunService,
+        		service.TRService,
+        		service.UserService,
+        		service.ScriptService,
+        		auth.AuthenticationFilter,
+        		helpers.LogFilter,
+        		errorhandling.EntityNotFoundMapper,
+        		errorhandling.NotAllowedMapper,
+        		errorhandling.UncaughtException,
+        		errorhandling.UnsupportedMediaTypeMapper,
+        		io.swagger.jaxrs.listing.ApiListingResource,
+        		io.swagger.jaxrs.listing.SwaggerSerializers,
+        		io.swagger.jersey.listing.ApiListingResource,
+        		io.swagger.jaxrs.listing.SwaggerSerializers,
+        	</param-value>
     	</init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
@@ -38,8 +45,9 @@
                 org.glassfish.jersey.media.multipart.MultiPartFeature,
                 service.UserService,
                 service.ManagementService,
+                service.ScriptService,
                 service.RunService,
-                service.TRService                
+                service.TRService            
             </param-value>
         </init-param>
     </servlet>

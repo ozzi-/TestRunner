@@ -2,6 +2,7 @@ package errorhandling;
 
 import java.util.logging.Level;
 
+import javax.annotation.Priority;
 import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -9,6 +10,7 @@ import javax.ws.rs.ext.Provider;
 
 import helpers.Log;
 @Provider
+@Priority(1)
 public class UnsupportedMediaTypeMapper implements ExceptionMapper<NotSupportedException> {
 	@Override
 	public Response toResponse(NotSupportedException ex) {

@@ -4,11 +4,11 @@ import helpers.Crypto;
 
 public class User {
 	private String username;
+	private String role;
 	private String passwordSaltedHashed;
 	private String passwordRaw;
 	private String salt;
 	private int passwordRawLength;
-	private String role;
 
 	public String toString() {
 		return username;
@@ -72,6 +72,14 @@ public class User {
 
 	public void setPasswordRaw(String passwordRaw) {
 		this.passwordRaw = passwordRaw;
+	}
+	
+	public static User getUser(NewUser newuser) {
+		User user = new User();
+		user.setUsername(newuser.getUsername());
+		user.setRole(newuser.getRole());
+		user.setPassword(newuser.getPassword());
+		return user;
 	}
 
 }
