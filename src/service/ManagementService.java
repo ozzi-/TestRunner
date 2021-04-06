@@ -50,7 +50,7 @@ public class ManagementService {
 		}catch (Exception e) {
 			throw new Exception("Error parsing test - "+e.getMessage());
 		}
-		Persistence.writeTest(testName,body,true);
+		Persistence.writeTest(testName,body,true, userName);
 		
 		return Response.status(200).build();
 	}
@@ -71,7 +71,7 @@ public class ManagementService {
 		}catch (Exception e) {
 			throw new Exception("Error parsing test - "+e.getMessage());
 		}
-		Persistence.writeTest(testName,body,false);
+		Persistence.writeTest(testName,body,false, userName);
 		
 		return Response.status(200).build();
 	}
@@ -85,7 +85,7 @@ public class ManagementService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting test '"+testName+"'");
 		
-		Persistence.deleteTest(testName);
+		Persistence.deleteTest(testName,userName);
 		
 		return Response.status(200).build();
 	}
@@ -110,7 +110,7 @@ public class ManagementService {
 		}
 
 		Log.log(Level.INFO, "'"+userName+"' is creating a group '"+groupName+"'");
-		Persistence.createGroup(groupName,groupDescription);
+		Persistence.createGroup(groupName,groupDescription, userName);
 		
 		return Response.status(200).build();
 	}
@@ -134,7 +134,7 @@ public class ManagementService {
 		}
 
 		Log.log(Level.INFO, "'"+userName+"' is adding '"+test+"' to group '"+groupName+"'");
-		Persistence.addToGroup(groupName,test,name);
+		Persistence.addToGroup(groupName,test,name,userName);
 		
 		return Response.status(200).build();
 	}
@@ -148,7 +148,7 @@ public class ManagementService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		Log.log(Level.INFO, "'"+userName+"' is deleting the group '"+groupName+"'");
-		Persistence.deleteGroup(groupName);
+		Persistence.deleteGroup(groupName,userName);
 		
 		return Response.status(200).build();
 	}
@@ -162,7 +162,7 @@ public class ManagementService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		Log.log(Level.INFO, "'"+userName+"' is removing '"+testName+"' from group '"+groupName+"'");
-		Persistence.removeOfGroup(groupName,testName);
+		Persistence.removeOfGroup(groupName,testName,userName);
 		
 		return Response.status(200).build();
 	}
@@ -177,7 +177,7 @@ public class ManagementService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		Log.log(Level.INFO, "'"+userName+"' is removing '"+testName+"' from category '"+categoryName+"'");
-		Persistence.removeOfCategory(categoryName,testName);
+		Persistence.removeOfCategory(categoryName,testName,userName);
 		
 		return Response.status(200).build();
 	}
@@ -200,7 +200,7 @@ public class ManagementService {
 		}
 
 		Log.log(Level.INFO, "'"+userName+"' is adding '"+test+"' to group '"+categoryName+"'");
-		if(Persistence.addToCategory(categoryName,test)) {
+		if(Persistence.addToCategory(categoryName,test,userName)) {
 			return Response.status(200).build();			
 		}
 		return Response.status(409).build();
@@ -223,7 +223,7 @@ public class ManagementService {
 			throw new Exception("Error parsing category json - "+e.getMessage());
 		}
 		Log.log(Level.INFO, "'"+userName+"' is creating a category '"+name+"'");
-		Persistence.createCategory(name);
+		Persistence.createCategory(name,userName);
 		return Response.status(200).build();			
 	
 	}
@@ -236,7 +236,7 @@ public class ManagementService {
 	public Response deleteCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting category '"+categoryName+"'");
-		Persistence.deleteCategory(categoryName);
+		Persistence.deleteCategory(categoryName, userName);
 		return Response.status(200).build();
 	}
 }

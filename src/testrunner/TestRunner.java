@@ -10,18 +10,21 @@ import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 import auth.UserManagement;
 import helpers.Log;
 import helpers.PathFinder;
+import persistence.Persistence;
 
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
 	@Override
 	public void onReload(Container container) {
-		Log.log(Level.INFO, "Test Runner - onReload received");		
+		Log.log(Level.INFO, "Test Runner - onReload received");
+		Persistence.gitClose();
 	}
 
 	@Override
 	public void onShutdown(Container container) {
 		Log.log(Level.INFO, "Test Runner - onShutdown received");
 		Log.closeHandle();
+		Persistence.gitClose();
 	}
 
 	@Override
@@ -33,7 +36,7 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 			
 			Log.setup(logBasePath+"testrunner.log");
 			Log.log(Level.INFO, "Starting Test Runner - "+version+" - meep meep - base path is \""+PathFinder.getBasePath()+"\"");
-			
+			Persistence.gitInit();
 			UserManagement.loadUsers();
 		} catch (Exception e) {
 			e.printStackTrace();

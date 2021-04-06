@@ -60,6 +60,15 @@ public class PathFinder {
 		createFolderPath(basePath);
 		return basePath;
 	}
+	
+	/**
+	 * @return i.E: "C:\Users\TR\Desktop\.git"
+	 */
+	public static String getGitBasePath() throws Exception {
+		String bp = getBasePath();
+		return bp+".git";
+	}
+
 
 	
 	/**
