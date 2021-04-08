@@ -239,4 +239,4 @@ Extensive logs are saved in the basePath/logs folder.
 
 
 # API
-You can find a swagger.json under https://github.com/ozzi-/TestRunner/blob/master/WebContent/swagger.json
+You can find a swagger.json under https://github.com/ozzi-/TestRunner/blob/master/WebContent/swagger.json or when deployed hosted on http://127.0.0.1:8080/testrunner/api/swagger.json
