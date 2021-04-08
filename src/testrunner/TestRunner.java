@@ -14,6 +14,10 @@ import persistence.Persistence;
 
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
+	
+	
+	// TODO script upload dropzone broken
+	
 	@Override
 	public void onReload(Container container) {
 		Log.log(Level.INFO, "Test Runner - onReload received");

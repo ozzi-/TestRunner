@@ -36,6 +36,8 @@ function pageLogic (response){
 	    removeLoader();
 		document.getElementById("settings").remove();
 		document.getElementById("logout").remove();
+		document.getElementById("runningTestsSpan").remove();
+		document.getElementById("historyHref").remove();
 	}
 	if(page=="info"){
 		doRequest("GET", "../tr/basepath", basePath);
@@ -47,6 +49,9 @@ function pageLogic (response){
 		var name = getQueryParams(document.location.search).name;
 		document.getElementById("scriptNameSpan").textContent=name;
 		doRequest("GET", "../script/type/?name="+encodeURIComponent(name), loadScriptEdit);
+		// TODO create proper dom elem instead of innerHTML . . .
+		var historyLink = document.getElementById("historyLink");	
+		historyLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=history&scriptname='+escapeHtml(name)+'\')"> Show History</button>&nbsp;';
 	}
 	if(page=="scriptadd"){
 		initScriptAdd();
@@ -99,6 +104,39 @@ function pageLogic (response){
 	}
 	if(page=="reload"){
 		doRequest("GET", "../user/reload/", reload,[]);
+	}
+	if(page=="history"){
+		var id = getQueryParams(document.location.search).id;
+		var testname = getQueryParams(document.location.search).testname;
+		var groupname = getQueryParams(document.location.search).groupname;
+		var scriptname = getQueryParams(document.location.search).scriptname;
+		var title="";
+		
+		if(id!==undefined){
+			doRequest("GET", "../manage/history/commit/"+id, showCommit);		
+			title="Commit Info";
+			document.getElementById("showMoreBtn").remove();
+		}else if(testname!==undefined){
+			document.getElementById("commitSpan").remove();
+			document.getElementById("showMoreBtn").remove();
+			doRequest("GET", "../manage/history/test/"+testname, showHistory, [true]);
+			title="Commits of test '"+testname+"'";
+		}else if(groupname!==undefined){
+			document.getElementById("commitSpan").remove();
+			document.getElementById("showMoreBtn").remove();
+			doRequest("GET", "../manage/history/testgroup/"+groupname, showHistory,[true]);
+			title="Commits of group '"+groupname+"'";
+		}else if(scriptname!==undefined){
+			document.getElementById("commitSpan").remove();
+			document.getElementById("showMoreBtn").remove();
+			doRequest("GET", "../manage/history/script/?name="+encodeURIComponent(scriptname), showHistory, [true]);
+			title="Commits of script '"+scriptname+"'";
+		}else{
+			document.getElementById("commitSpan").remove();
+			doRequest("GET", "../manage/history/0", showHistory,[true]);
+			title="Commit history"
+		}
+		document.getElementById("titleSpan").textContent=title;
 	}
 	if(page=="custom"){
 		removeLoader();

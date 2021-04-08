@@ -12,6 +12,7 @@ var htmlFormatter = function(cell, formatterParams){
     return cell.getValue();
 }
 
+// TODO move all JS into its own folder, split this file into multiple
 
 // ************
 // * Settings *
@@ -281,6 +282,37 @@ function saveTest(){
 	return false;
 }
 
+var historyTable;
+
+function showHistory(res,initial){
+	if(initial){
+		historyTable = new Tabulator("#historyTable", {
+			layoutColumnsOnNewData:true,
+			layout:"fitDataFill",
+			columns:[
+				{title:"User", field:"user"},
+				{title:"Time", field:"time"},
+				{title:"Commit Message", field:"commit"},
+				{title:"Commit ID", field:"id"},
+				],
+				
+				rowClick:function(e, id, data, row){
+					var id = id._row.data.id;
+					window.location.href='index.html?page=history&id='+encodeURIComponent(id);
+				}
+		});
+		historyTable.setData(res);
+	}else{
+		if(res.length==0){
+			document.getElementById("showMoreBtn").disabled=true;
+		}
+		historyTable.addData(res);
+	}
+
+	removeLoader();
+
+}
+
 // *******
 // * Run *
 // *******
@@ -475,6 +507,33 @@ function deleteScript(){
 	if(confirm('Are you sure you want to delete this script?\r\nThis may break existing tests.')){
 		doRequestBody("DELETE", {}, "application/json", "../script", scriptDeleted, true, true, name);
 	}
+}
+
+var historyPage=1;
+function loadMoreHistory(){
+	doRequest("GET", "../manage/history/"+historyPage, showHistory, [false]);
+	historyPage++;
+}
+
+function showCommit(rev){
+	document.getElementById("commitID").value=rev.id;
+	document.getElementById("commitUser").value=rev.user;
+	document.getElementById("commitTime").value=rev.time;
+	document.getElementById("commitMessage").value=rev.commit;
+	
+	var textAreaEditor = document.getElementById('editor');
+	textAreaEditor.value=rev.diff;
+	
+	var editor = CodeMirror.fromTextArea(textAreaEditor, {
+		mode: "diff",
+		readOnly: true,
+		lineWrapping: true,
+		lineNumbers: true,
+	});
+	editor.setSize("100%","55vh");
+	
+	
+	removeLoader();
 }
 
 function loadTextScriptEdit(scriptContent){
@@ -948,7 +1007,9 @@ function listResults(results,paramName) {
 	var testName = document.getElementById("testName");
 	var runLink = document.getElementById("runLink");
 	var editLink = document.getElementById("editLink");
+	var historyLink = document.getElementById("historyLink");	
 
+	
 	var isGroup=false;
 	var name = getQueryParams(document.location.search).name;
 	if(name === undefined || name == "undefined"){
@@ -957,12 +1018,19 @@ function listResults(results,paramName) {
 	}
 	testName.innerHTML = escapeHtml(name);
 	
-	// TODO build dom elements properly instead of using innerHTML - then test a name containig ' in the end ... 
+	// TODO build dom elements properly instead of using innerHTML - then test a name containig ' in the end ...
+	
+	if(isGroup){
+		historyLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=history&groupname='+escapeHtml(name)+'\')"> Show History</button>&nbsp;';
+	}else{
+		historyLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=history&testname='+escapeHtml(name)+'\')"> Show History</button>&nbsp;';
+	}
+	
 	if(localStorage.getItem(trRole)!=="r"){
 		if(isGroup){
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</button>&nbsp;';			
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</button>&nbsp;';
 		}else{
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+escapeHtml(name)+'\')"> Run Test &#9654;</button>&nbsp;';			
+			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+escapeHtml(name)+'\')"> Run Test &#9654;</button>&nbsp;';
 		}
 	}
 	

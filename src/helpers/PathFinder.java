@@ -13,6 +13,7 @@ public class PathFinder {
 	private static String stateLabel = ".running";
 
 	private static String resultsFolder = "results";
+	private static String scriptFolder = "scripts";
 	private static String testFolder = "tests";
 	private static String groupFolder = "groups";
 
@@ -33,8 +34,11 @@ public class PathFinder {
 	}
 	public static String getGroupFolderName() {
 		return groupFolder;
+	}	
+	public static String getScriptFolderName() {
+		return scriptFolder;
 	}
-		
+	
 	public static boolean isPathSafe(String filePathStrng, String basePath) throws Exception, IOException {
 		try {
 			java.io.File filePath = new java.io.File(filePathStrng);
@@ -175,10 +179,11 @@ public class PathFinder {
 	 * @throws Exception 
 	 */
 	public static String getScriptsFolder() throws Exception {
-		String path = getBasePath() + testFolder + File.separator + "scripts" + File.separator;
+		String path = getBasePath() + testFolder + File.separator + scriptFolder + File.separator;
 		return path;
 	}
 	
+
 	public static void createFolderPath(String pathString) throws Exception {
 		Path path = Paths.get(pathString);
 		try {

@@ -1,12 +1,8 @@
 package service;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,7 +25,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -39,11 +34,13 @@ import com.google.gson.JsonPrimitive;
 
 import annotations.Authenticate;
 import annotations.LogRequest;
+import auth.AuthenticationFilter;
 import helpers.Log;
 import helpers.PathFinder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import persistence.Persistence;
 
 
 @Singleton
@@ -111,6 +108,8 @@ public class ScriptService {
 	@ApiOperation(value = "[READWRITEEXECUTE] Uploads a multipart form document script")
     @ApiImplicitParam(name = "X-File-Path", value = "path/to/binary", paramType = "header")
 	public Response uploadScriptMPFD(@Context HttpHeaders headers, @FormDataParam("file") InputStream fileInputStream) throws Exception {
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+
 		String fileName;
 		String filePath;
 		byte[] buf;
@@ -123,12 +122,14 @@ public class ScriptService {
 		}
 	
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
-			FileUtils.writeByteArrayToFile(new File(filePath), buf);
+			Persistence.writeByteArrToFile(filePath, buf, "Uploaded binary script '"+fileName+"'",userName);
 			return Response.status(201).entity("OK").type(MediaType.TEXT_PLAIN).build();
 		}
 		Log.log(Level.WARNING, "Upload Script failed due to unsafe path '" + filePath + "'");
 		return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
 	}
+
+
 
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
@@ -137,21 +138,19 @@ public class ScriptService {
 	@ApiOperation(value = "[READWRITEEXECUTE] Uploads a plain text document script")
     @ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
 	public Response uploadScript(@Context HttpHeaders headers, String body) throws Exception {
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		String fileName = headers.getRequestHeader("X-File-Path").get(0);
 		String filePath = PathFinder.getScriptsFolder() + fileName;
 
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
-			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath), "UTF-8"));
-			try {
-				out.write(body);
-			} finally {
-				out.close();
-			}
+			Persistence.writeUTF8StringToFile(body, filePath, "Uploaded  script '"+fileName+"'", userName);
 			return Response.status(200).entity("OK").type(MediaType.TEXT_PLAIN).build();
 		}
 		Log.log(Level.WARNING, "Upload Script failed due to unsafe path '" + filePath + "'");
 		return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
 	}
+
+
 	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")

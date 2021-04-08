@@ -1,14 +1,37 @@
 package persistence;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.AbstractTreeIterator;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -28,9 +51,9 @@ import pojo.Test;
 public class Persistence {
 	
 	// TODO optimize: beautify json does double parsing 
-	// TODO jgit local repo
 	private static Git git;
 	private static boolean gitReady;
+	private static int gitHistoryPageSize = 20; 
 	
 	public static void gitInit() throws Exception {
 		
@@ -78,6 +101,126 @@ public class Persistence {
 			}
 		}else {
 			Log.log(Level.WARNING, "Skipping Git commit \""+commitMessage+"\" due to repo not being intialized");
+		}
+	}
+	
+	public static ArrayList<RevCommit> gitHistory(int page) throws NoHeadException, GitAPIException {
+		ArrayList<RevCommit> revs = new ArrayList<RevCommit>();
+		if(gitReady) {			
+			// TODO performance use git.log() SKIP and MAX COUNT for pagination
+			Iterable<RevCommit> logs = git.log().call();
+			int start = page * gitHistoryPageSize;
+			int end = (page+1) * gitHistoryPageSize;
+			int i=1;
+			for (RevCommit rev : logs) {
+				if(i>=start && i<=end) {
+					revs.add(rev);
+				}
+				i++;
+			}
+		}
+		return revs;
+	}	
+	
+	public static RevCommit getCommit(String id) {
+        try {
+        	RevWalk rw = new RevWalk(git.getRepository());
+			RevCommit commit = rw.parseCommit(git.getRepository().resolve(id));
+			rw.close();
+			return commit;
+		} catch (RevisionSyntaxException | IOException e) {
+			Log.log(Level.WARNING, "Failed to get commit '"+id+"' due to: "+e.getMessage()+" - "+e.getCause());
+		} catch (NullPointerException e) {
+			Log.log(Level.WARNING, "Failed to get commit '"+id+"' due to it being invalid");
+	
+		}
+        return null;
+	}
+	
+	public static String diffCommit(String hashID) throws IOException {
+	    RevCommit newCommit;
+	    try (RevWalk walk = new RevWalk(git.getRepository())) {
+	        newCommit = walk.parseCommit(git.getRepository().resolve(hashID));
+	    }
+	    String res = "";
+	    res += "LogCommit: " + newCommit+"\r\n";
+	    String logMessage = newCommit.getFullMessage();
+	    res += "LogMessage: " + logMessage+"\r\n";
+	    res += getDiffOfCommit(newCommit);
+	    return res;
+	}
+	
+	public static List<RevCommit> getCommitsForFile(String filePath) throws Exception {
+		List<RevCommit> commitsList = new ArrayList<RevCommit>();
+		LogCommand logCommand = git.log()
+		        .add(git.getRepository().resolve(Constants.HEAD))
+		        .addPath(filePath);
+
+		for (RevCommit revCommit : logCommand.call()) {
+			commitsList.add(revCommit);
+		}
+		return commitsList;
+	}
+	
+	private static String getDiffOfCommit(RevCommit newCommit) throws IOException {
+	    RevCommit oldCommit = getPrevHash(newCommit);
+	    if(oldCommit == null){
+	        return "Start of repo";
+	    }
+	    AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(oldCommit);
+	    AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(newCommit);
+	    OutputStream outputStream = new ByteArrayOutputStream();
+	    try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+	        formatter.setRepository(git.getRepository());
+	        formatter.format(oldTreeIterator, newTreeIterator);
+	    }
+	    String diff = outputStream.toString();
+	    // TODO remove "\ No newline at end of file"
+	    return diff;
+	}
+	
+	public static RevCommit getPrevHash(RevCommit commit)  throws  IOException {
+	    try (RevWalk walk = new RevWalk(git.getRepository())) {
+	        // Starting point
+	        walk.markStart(commit);
+	        int count = 0;
+	        for (RevCommit rev : walk) {
+	            // got the previous commit.
+	            if (count == 1) {
+	                return rev;
+	            }
+	            count++;
+	        }
+	        walk.dispose();
+	    }
+	    //Reached end and no previous commits.
+	    return null;
+	}
+	
+	// Written by Rüdiger Herrmann -> www.codeaffine.com
+	private static AbstractTreeIterator getCanonicalTreeParser(ObjectId commitId) throws IOException {
+	    try (RevWalk walk = new RevWalk(git.getRepository())) {
+	        RevCommit commit = walk.parseCommit(commitId);
+	        ObjectId treeId = commit.getTree().getId();
+	        try (ObjectReader reader = git.getRepository().newObjectReader()) {
+	            return new CanonicalTreeParser(null, reader, treeId);
+	        }
+	    }
+	}
+	
+	public static void writeByteArrToFile(String filePath, byte[] buf, String commitMessage, String userName) throws IOException {
+		FileUtils.writeByteArrayToFile(new File(filePath), buf);
+		gitCommit(commitMessage,userName);
+	}
+	// TODO script history buggy as this overwrites the whole content
+	public static void writeUTF8StringToFile(String body, String filePath, String commitMessage, String userName)
+			throws UnsupportedEncodingException, FileNotFoundException, IOException {
+		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath), "UTF-8"));
+		try {
+			out.write(body);
+			gitCommit(commitMessage,userName);
+		} finally {
+			out.close();
 		}
 	}
 	
@@ -156,7 +299,7 @@ public class Persistence {
 		}
 		try {
 			Files.write(savePath, beautifyJSON(body).getBytes());
-			gitCommit(isEdit?"edited":"created"+" test \""+testName+"\"",userName);
+			gitCommit((isEdit?"edited":"created")+" test \""+testName+"\"",userName);
 		}catch (Exception e) {
 			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
@@ -332,5 +475,7 @@ public class Persistence {
 		}catch (Exception e) {
 			throw new Exception("Could not remove category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
-	}	
+	}
+
+
 }
