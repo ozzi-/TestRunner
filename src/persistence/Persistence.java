@@ -336,7 +336,7 @@ public class Persistence {
 			Files.write(savePath, beautifyJSON(body).getBytes());
 			gitCommit((isEdit?"edited":"created")+" test \""+testName+"\"",userName,savePathStrng);
 		}catch (Exception e) {
-			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}
 	}
 

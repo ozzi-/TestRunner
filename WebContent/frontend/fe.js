@@ -933,7 +933,7 @@ function listGroups(groups){
 	}
 	table.setData(groups);
 	
-	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a" ){
+	if(localStorage.getItem(trRole)==="rwx" || localStorage.getItem(trRole)==="a" ){
 		document.getElementById("testGroupsSettings").style.display="";
 		document.getElementById("testSettings").style.display="";
 		document.getElementById("scriptAdd").style.display="";
@@ -1032,7 +1032,7 @@ function listResults(results,paramName) {
 		}
 	}
 	
-	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a"){
+	if(localStorage.getItem(trRole)==="rwx" || localStorage.getItem(trRole)==="a"){
 		if(isGroup){
 			createNavButton("editLink","Edit Test Group", 'index.html?page=testgroupsettings');			
 		}else{

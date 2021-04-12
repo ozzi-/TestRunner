@@ -17,6 +17,8 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	
 	// TODO frontend JS refactoring 
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
+	// TODO create new script - ability to use editor instead of only dropzone
+	// TODO revert to old versions of file via UI?
 	
 	@Override
 	public void onReload(Container container) {
