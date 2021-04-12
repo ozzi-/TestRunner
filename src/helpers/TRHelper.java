@@ -29,11 +29,23 @@ import service.CacheService;
 import testrunner.Testing;
 
 public class TRHelper {
-	
-	public int runningTests = 0;
+	public static final String DESCRIPTION = "description";
+	public static final String PASSED = "passed";
+	public static final String NAME = "name";
+	public static final String TEST = "test";
+	public static final String TESTS = "tests";
+	public static final String RUN_TIME_IN_MS = "runTimeInMS";
+	public static final String LAST_RUN_DATE = "lastRunDate";
+	public static final String LAST_RUN_PASSED = "lastRunPassed";
+	public static final String TOTAL_RUN_TIME_IN_MS = "totalRunTimeInMS";
 
+	/**
+	 * 
+	 * @return test categories and their associated tests as a JSON array
+	 * @throws Exception
+	 */
 	public static TestCategoriesList getTestCategories() throws Exception {		
-		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
+		String categoriesPath = PathFinder.getCategoriesFilePath();
 		long lastModified = Helpers.getLastModifiedTimeByPath(categoriesPath);
 
 		TestCategoriesList tclCache = CacheService.getTestCategories(lastModified);
@@ -107,9 +119,8 @@ public class TRHelper {
 		Testing.runTestInThread(test, false, userName);
 
 		JsonObject resp = new JsonObject();
-		resp.addProperty("name", test.name);
+		resp.addProperty(NAME, test.name);
 		resp.addProperty("handle", String.valueOf(test.start));
-		
 		
 		return resp;
 	}
@@ -119,7 +130,7 @@ public class TRHelper {
 		Settings.getSingleton().setRunningCount(Settings.getSingleton().getRunningCount()+1);
 		
 		JSONObject group = Helpers.parsePathToJSONObj(PathFinder.getSpecificGroupPath(groupName));
-		JSONArray tests = (JSONArray) group.get("tests");
+		JSONArray tests = (JSONArray) group.get(TESTS);
 		long curMil = System.currentTimeMillis();
 		String handle = String.valueOf(curMil);
 		Test test = new Test();
@@ -140,11 +151,17 @@ public class TRHelper {
 		Testing.runTestInThread(test, true, userName);
 		
 		JsonObject resp = new JsonObject();
-		resp.addProperty("name", groupName);
+		resp.addProperty(NAME, groupName);
 		resp.addProperty("handle", handle);
 		return resp;
 	}
 
+	/**
+	 * Mergers multiple tests into one, this is used for test groups
+	 * @param tests
+	 * @param groupName
+	 * @return a group json element consisting of all tests passed to it
+	 */
 	public static JsonElement mergeTests(ArrayList<JsonElement> tests, String groupName) {
 		JsonObject merged = new JsonObject();
 		JsonObject settingsObj = new JsonObject();
@@ -163,7 +180,7 @@ public class TRHelper {
 			if (failureHook != null) {
 				finalFailureHook = failureHook;
 			}
-			JsonArray tasks = test.getAsJsonObject().get("test").getAsJsonObject().get("tasks").getAsJsonArray();
+			JsonArray tasks = test.getAsJsonObject().get(TEST).getAsJsonObject().get("tasks").getAsJsonArray();
 			for (JsonElement task : tasks) {
 				tasksArr.add(task);
 			}
@@ -174,13 +191,19 @@ public class TRHelper {
 		if (finalFailureHook != null) {
 			settingsObj.add("failurehook", finalFailureHook);
 		}
-		testObj.addProperty("description", description);
+		testObj.addProperty(TRHelper.DESCRIPTION, description);
 		merged.add("settings", settingsObj);
 		testObj.add("tasks", tasksArr);
-		merged.add("test", testObj);
+		merged.add(TEST, testObj);
 		return merged;
 	}
 
+	/**
+	 * 
+	 * @param path on FS
+	 * @return a WS response with the test result as json body
+	 * @throws Exception
+	 */
 	public static Response getResultInternal(String path) throws Exception {
 		String result = "";
 		try {
@@ -241,7 +264,7 @@ public class TRHelper {
 		String path = PathFinder.getSpecificGroupPath(groupName);
 		String result = Helpers.readFile(path);
 		JsonElement jsonElement = JsonParser.parseString(result);
-		return jsonElement.getAsJsonObject().get("description").getAsString();
+		return jsonElement.getAsJsonObject().get(TRHelper.DESCRIPTION).getAsString();
 	}
 
 	public static JsonObject parseTestGroup(String name, String content) throws Exception {
@@ -254,8 +277,8 @@ public class TRHelper {
 			throw new Exception("Error parsing test group \"" + name + "\" - " + e.getMessage());
 		}
 		String groupName = name.substring(0, name.length() - PathFinder.getGroupLabel().length());
-		testGroup.addProperty("name", groupName);
-		testGroup.addProperty("description", getDescriptionOfGroup(groupName));
+		testGroup.addProperty(NAME, groupName);
+		testGroup.addProperty(TRHelper.DESCRIPTION, getDescriptionOfGroup(groupName));
 
 		ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getGroupTestResultsPath(groupName), PathFinder.getDataLabel(), -1);
 		String lastRunDate = "";
@@ -265,9 +288,9 @@ public class TRHelper {
 		// note name already contains the postfix  ".group" 
 		LastRunCache lrc = CacheService.getLastRunEntry(name); 
 		if(lrc!=null) {
-			testGroup.addProperty("totalRunTimeInMS", lrc.getTotalRunTimeInMS());
-			testGroup.addProperty("lastRunDate", lrc.getLastRunDate());
-			testGroup.addProperty("lastRunPassed", lrc.didLastRunPass());
+			testGroup.addProperty(TOTAL_RUN_TIME_IN_MS, lrc.getTotalRunTimeInMS());
+			testGroup.addProperty(LAST_RUN_DATE, lrc.getLastRunDate());
+			testGroup.addProperty(LAST_RUN_PASSED, lrc.didLastRunPass());
 		}else {
 			if (listResults.size() > 0) {
 				String newest = getNewest(listResults);
@@ -278,24 +301,24 @@ public class TRHelper {
 				JsonArray lastRunResults = lastRunJO.get("results").getAsJsonArray();
 				passed = true;
 				for (JsonElement lastRunResult : lastRunResults) {
-					totalRunTimeInMS += lastRunResult.getAsJsonObject().get("runTimeInMS").getAsLong();
-					if (lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
+					totalRunTimeInMS += lastRunResult.getAsJsonObject().get(RUN_TIME_IN_MS).getAsLong();
+					if (lastRunResult.getAsJsonObject().get(PASSED).getAsString().equals("false")) {
 						passed = false;
 					}
 				}
 			}
-			testGroup.addProperty("lastRunDate", lastRunDate);
-			testGroup.addProperty("lastRunPassed", passed);
-			testGroup.addProperty("totalRunTimeInMS", totalRunTimeInMS);
+			testGroup.addProperty(LAST_RUN_DATE, lastRunDate);
+			testGroup.addProperty(LAST_RUN_PASSED, passed);
+			testGroup.addProperty(TOTAL_RUN_TIME_IN_MS, totalRunTimeInMS);
 			CacheService.addLastRunEntry(name, new LastRunCache(totalRunTimeInMS, lastRunDate, passed));
 		}
 		
-		JsonArray tests = (JsonArray) test.get("tests");
+		JsonArray tests = (JsonArray) test.get(TESTS);
 		for (Object testObj : tests) {
 			JsonObject testO = (JsonObject) testObj;
 			testGroupTests.add(testO);
 		}
-		testGroup.add("tests", testGroupTests);
+		testGroup.add(TESTS, testGroupTests);
 		return testGroup;
 	}
 
@@ -306,9 +329,9 @@ public class TRHelper {
 		
 		LastRunCache lrc = CacheService.getLastRunEntry(testName);
 		if(lrc!=null) {
-			test.addProperty("totalRunTimeInMS", lrc.getTotalRunTimeInMS());
-			test.addProperty("lastRunDate", lrc.getLastRunDate());
-			test.addProperty("lastRunPassed", lrc.didLastRunPass());
+			test.addProperty(TOTAL_RUN_TIME_IN_MS, lrc.getTotalRunTimeInMS());
+			test.addProperty(LAST_RUN_DATE, lrc.getLastRunDate());
+			test.addProperty(LAST_RUN_PASSED, lrc.didLastRunPass());
 			return;
 		}
 		
@@ -322,15 +345,15 @@ public class TRHelper {
 			JsonArray lastRunResults = lastRunJO.get("results").getAsJsonArray();
 			passed = true;
 			for (JsonElement lastRunResult : lastRunResults) {
-				totalRunTimeInMS += lastRunResult.getAsJsonObject().get("runTimeInMS").getAsLong();
-				if (lastRunResult.getAsJsonObject().get("passed").getAsString().equals("false")) {
+				totalRunTimeInMS += lastRunResult.getAsJsonObject().get(RUN_TIME_IN_MS).getAsLong();
+				if (lastRunResult.getAsJsonObject().get(PASSED).getAsString().equals("false")) {
 					passed = false;
 				}
 			}
 		}
-		test.addProperty("totalRunTimeInMS", totalRunTimeInMS);
-		test.addProperty("lastRunDate", lastRunDate);
-		test.addProperty("lastRunPassed", passed);
+		test.addProperty(TOTAL_RUN_TIME_IN_MS, totalRunTimeInMS);
+		test.addProperty(LAST_RUN_DATE, lastRunDate);
+		test.addProperty(LAST_RUN_PASSED, passed);
 		
 		CacheService.addLastRunEntry(testName, new LastRunCache(totalRunTimeInMS, lastRunDate, passed));
 	}
@@ -368,10 +391,10 @@ public class TRHelper {
 		ArrayList<GroupTestAbstraction> paths = new ArrayList<GroupTestAbstraction>();
 
 		JsonElement jsonElement = JsonParser.parseString(result);
-		JsonArray groupTestsArray = jsonElement.getAsJsonObject().get("tests").getAsJsonArray();
+		JsonArray groupTestsArray = jsonElement.getAsJsonObject().get(TESTS).getAsJsonArray();
 		for (JsonElement testElement : groupTestsArray) {
-			String testName = testElement.getAsJsonObject().get("test").getAsString();
-			String descriptiveName = testElement.getAsJsonObject().get("name").getAsString();
+			String testName = testElement.getAsJsonObject().get(TEST).getAsString();
+			String descriptiveName = testElement.getAsJsonObject().get(NAME).getAsString();
 			String testPath = PathFinder.getSpecificTestPath(testName);
 
 			GroupTestAbstraction gta = new GroupTestAbstraction(descriptiveName, testPath);
@@ -384,7 +407,7 @@ public class TRHelper {
 		boolean addedTest = false;
 		for (Object testObj : testsToAdd) {
 			JSONObject testToAdd = (JSONObject) testObj;
-			String testToAddName = testToAdd.getString("test");
+			String testToAddName = testToAdd.getString(TEST);
 			test.description += testToAddName + ", ";
 			addedTest = true;
 			JSONObject objd = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testToAddName));
@@ -395,7 +418,7 @@ public class TRHelper {
 			if (testD.failureHook != null) {
 				test.failureHook = testD.failureHook;
 			}
-			testD.tasks.get(0).descriptiveName = testToAdd.getString("name");
+			testD.tasks.get(0).descriptiveName = testToAdd.getString(NAME);
 			test.tasks.addAll(testD.tasks);
 		}
 		if (addedTest) {

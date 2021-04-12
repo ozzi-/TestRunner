@@ -2,6 +2,7 @@ package pojo;
 import com.google.gson.JsonObject;
 
 import helpers.Helpers;
+import helpers.TRHelper;
 
 public class Result {
 	public Result() {
@@ -27,13 +28,13 @@ public class Result {
 	
 	public JsonObject toJsonObject() {
 		JsonObject res = new JsonObject();
-		res.addProperty("name", name);
+		res.addProperty(TRHelper.NAME, name);
 		res.addProperty("descriptiveName", descriptiveName);
-		res.addProperty("passed", pass);
-		res.addProperty("description", text);
+		res.addProperty(TRHelper.PASSED, pass);
+		res.addProperty(TRHelper.DESCRIPTION, text);
 		res.addProperty("output", output);
 		res.addProperty("errorOutput", errorOutput);
-		res.addProperty("runTimeInMS", runTimeInMS);
+		res.addProperty(TRHelper.RUN_TIME_IN_MS, runTimeInMS);
 		res.addProperty("startTimestamp", timestampStart);
 		res.addProperty("endTimestamp", timestampEnd);
 		res.addProperty("startDate", Helpers.getDateFromUnixTimestamp(timestampStart));

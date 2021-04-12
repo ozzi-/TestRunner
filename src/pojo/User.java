@@ -1,6 +1,9 @@
 package pojo;
 
+import com.google.gson.JsonObject;
+
 import helpers.Crypto;
+import helpers.Settings;
 
 public class User {
 	private String username;
@@ -19,6 +22,9 @@ public class User {
 	}
 	
 	public void setPassword(String password) {
+		if(this.salt==null) {
+			this.salt=Crypto.createSalt(Settings.getSingleton().getSaltLength());			
+		}
 		this.passwordRawLength=password.length();
 		this.passwordSaltedHashed = Crypto.saltHashString(this.salt,password);
 	}
@@ -44,14 +50,12 @@ public class User {
 	}
 	
 	public String toJSON() {
-        StringBuilder str = new StringBuilder(); 
-        str.append("{ "+System.lineSeparator());
-        str.append("\t\"username\" : \""+getUsername()+"\","+System.lineSeparator());
-        str.append("\t\"password\" : \""+getPassword()+"\","+System.lineSeparator());
-        str.append("\t\"salt\" : \""+getSalt()+"\","+System.lineSeparator());
-        str.append("\t\"role\" : \""+getRole()+"\""+System.lineSeparator());
-        str.append("}");
-        return str.toString();
+		JsonObject res = new JsonObject();
+		res.addProperty("username", getUsername());
+		res.addProperty("password", getPassword());
+		res.addProperty("salt", getSalt());
+		res.addProperty("role", getRole());
+		return res.toString();
 	}
 
 	public int getPwLength() {

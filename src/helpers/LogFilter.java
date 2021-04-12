@@ -19,7 +19,6 @@ import pojo.Session;
 @Priority(Priorities.USER)
 public class LogFilter implements ContainerRequestFilter {
 
-	// TODO externalize X-FilePath Header into Settings Singleton
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		
@@ -28,15 +27,15 @@ public class LogFilter implements ContainerRequestFilter {
 		String userName = session.getUsername();
 		
 		String additionalInfo="";
-		if(requestContext.getHeaderString("X-File-Path")!=null) {
-			additionalInfo+=" , X-File-Path = '"+requestContext.getHeaderString("X-File-Path")+"'";
+		if(requestContext.getHeaderString(Settings.getSingleton().getFilePathHeader())!=null) {
+			additionalInfo+=" , "+Settings.getSingleton().getFilePathHeader()+" = '"+requestContext.getHeaderString(Settings.getSingleton().getFilePathHeader())+"'";
 		}
 		if(requestContext.getUriInfo().getQueryParameters()!=null) {
 			additionalInfo+=" , URL Params = '"+requestContext.getUriInfo().getQueryParameters()+"'";
 		}
 		String method = requestContext.getMethod();
 		String uri = "/"+requestContext.getUriInfo().getPath();
-		if(!uri.equals("/getRunningCount")) {
+		if(!uri.equals("/tr/runningcount")) {
 			Log.log(Level.INFO, "API Call by "+userName+" - "+method+" "+uri+additionalInfo);
 		}
 	}

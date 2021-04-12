@@ -21,10 +21,12 @@ import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -44,6 +46,7 @@ import com.google.gson.JsonParser;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
+import helpers.TRHelper;
 import pojo.Result;
 import pojo.Results;
 import pojo.Test;
@@ -72,10 +75,17 @@ public class Persistence {
 	    	try {
 		    	Log.log(Level.INFO, "Trying to initialize Git Repo");
 	    		git = Git.init().setDirectory(gitBPF).call();
-	    		git.add().addFilepattern("groups/").call();
-	    		git.add().addFilepattern("results/").call();
-	    		git.add().addFilepattern("tests/").call();
+	    		git.add().addFilepattern(PathFinder.getGroupFolderName()+"/").call();
+	    		git.add().addFilepattern(PathFinder.getTestFolderName()+"/").call();
+	    		git.add().addFilepattern(PathFinder.getTestFolderName()+"/"+PathFinder.getScriptFolderName()+"/").call();
+	    		git.add().addFilepattern(PathFinder.getResultsFolderName()+"/").call();
+
 	    		git.commit().setMessage("initial").call();
+	    		
+	    	    git.getRepository().getConfig()
+	    	    .setBoolean(ConfigConstants.CONFIG_CORE_SECTION, null,
+	    	            ConfigConstants.CONFIG_KEY_AUTOCRLF, true);
+	    	    
 	    		gitReady = true;
 	    	} catch (Exception e) {
 	    		e.printStackTrace();
@@ -85,17 +95,38 @@ public class Persistence {
 	}
 	
 	public static void gitClose() {
+		git.getRepository().close();
 		git.close();
+		// TODO sometimes clean leaves orphan thread
+		//WARNING: The web application [testrunner] appears to have started a thread named [JGit-FileStoreAttributeReader-1] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+		//	 sun.misc.Unsafe.park(Native Method)
+		// . . . .
 	}
 	
-	public static void gitCommit(String commitMessage, String author) {
+	
+	public static void gitCommit(String commitMessage, String author, String filePath) {
+		gitCommitInternal(commitMessage, author, filePath,false);
+	}
+	
+	public static void gitCommitRM(String commitMessage, String author, String filePath) {
+		gitCommitInternal(commitMessage, author, filePath,true);
+	}
+	
+	private static void gitCommitInternal(String commitMessage, String author, String filePath, boolean doRM) {
+		String gitPath = pathToGitPath(filePath);
 		if(gitReady) {
 			try {
-				git.add().addFilepattern("groups/").call();
-				git.add().addFilepattern("results/").call();
-				git.add().addFilepattern("tests/").call();
-				git.commit().setMessage(commitMessage).setAuthor(author, "TESTRUNNER").call();
-				Log.log(Level.INFO, "Git commit - \""+commitMessage+"\"");
+				if(doRM) {
+					git.rm().addFilepattern(gitPath).call();
+				}else {
+					git.add().addFilepattern(gitPath).call();
+				}
+		        Status status = git.status().call();
+		        if(status.getChanged().size()<1 && status.getRemoved().size()<1) {
+					Log.log(Level.WARNING, "Git reporting no changed file, something must have gone wrong for commit: "+commitMessage+" and path "+gitPath+"!");
+		        }
+		        git.commit().setMessage(commitMessage).setCommitter(author, "TESTRUNNER").call();
+				Log.log(Level.INFO, "Git commit - \""+commitMessage+"\" - \""+gitPath+"\"");
 			} catch (Exception e) {
 				Log.log(Level.SEVERE, "Cannot commit to local Git Repo due to: "+e.getMessage()+"-"+e.getCause());
 			}
@@ -103,20 +134,27 @@ public class Persistence {
 			Log.log(Level.WARNING, "Skipping Git commit \""+commitMessage+"\" due to repo not being intialized");
 		}
 	}
-	
+
+	private static String pathToGitPath(String filePath) {
+		String gitPath="";
+		try {
+			gitPath = filePath.substring(PathFinder.getBasePath().length());
+			// git doesn't like windows \
+			if(File.separator.equals("\\")){
+				gitPath=gitPath.replace("\\", "/");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return gitPath;
+	}
+
 	public static ArrayList<RevCommit> gitHistory(int page) throws NoHeadException, GitAPIException {
 		ArrayList<RevCommit> revs = new ArrayList<RevCommit>();
-		if(gitReady) {			
-			// TODO performance use git.log() SKIP and MAX COUNT for pagination
-			Iterable<RevCommit> logs = git.log().call();
-			int start = page * gitHistoryPageSize;
-			int end = (page+1) * gitHistoryPageSize;
-			int i=1;
+		if(gitReady) {
+			Iterable<RevCommit> logs = git.log().setSkip(page*gitHistoryPageSize).setMaxCount(gitHistoryPageSize).call();
 			for (RevCommit rev : logs) {
-				if(i>=start && i<=end) {
-					revs.add(rev);
-				}
-				i++;
+				revs.add(rev);
 			}
 		}
 		return revs;
@@ -142,12 +180,9 @@ public class Persistence {
 	    try (RevWalk walk = new RevWalk(git.getRepository())) {
 	        newCommit = walk.parseCommit(git.getRepository().resolve(hashID));
 	    }
-	    String res = "";
-	    res += "LogCommit: " + newCommit+"\r\n";
-	    String logMessage = newCommit.getFullMessage();
-	    res += "LogMessage: " + logMessage+"\r\n";
-	    res += getDiffOfCommit(newCommit);
-	    return res;
+	    String res = getDiffOfCommit(newCommit);
+	    res = res.replace("\\ No newline at end of file", "");
+	    return res; 
 	}
 	
 	public static List<RevCommit> getCommitsForFile(String filePath) throws Exception {
@@ -174,8 +209,8 @@ public class Persistence {
 	        formatter.setRepository(git.getRepository());
 	        formatter.format(oldTreeIterator, newTreeIterator);
 	    }
-	    String diff = outputStream.toString();
-	    // TODO remove "\ No newline at end of file"
+	    // we need to force UTF-8 otherwise the diff will have encoding issues
+	    String diff = new String(outputStream.toString().getBytes("iso-8859-1"), "utf8");
 	    return diff;
 	}
 	
@@ -210,17 +245,17 @@ public class Persistence {
 	
 	public static void writeByteArrToFile(String filePath, byte[] buf, String commitMessage, String userName) throws IOException {
 		FileUtils.writeByteArrayToFile(new File(filePath), buf);
-		gitCommit(commitMessage,userName);
+		gitCommit(commitMessage,userName, filePath);
 	}
-	// TODO script history buggy as this overwrites the whole content
+	
 	public static void writeUTF8StringToFile(String body, String filePath, String commitMessage, String userName)
 			throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath), "UTF-8"));
 		try {
 			out.write(body);
-			gitCommit(commitMessage,userName);
 		} finally {
 			out.close();
+			gitCommit(commitMessage,userName,filePath);
 		}
 	}
 	
@@ -231,7 +266,7 @@ public class Persistence {
 		res.addProperty("testStartTimestamp", test.start);
 		res.addProperty("testRunBy", userName);
 		res.addProperty("testStartString", Helpers.getDateFromUnixTimestamp(test.start));
-		res.addProperty("description", test.description);
+		res.addProperty(TRHelper.DESCRIPTION, test.description);
 		
 		JsonArray resultsArray = new JsonArray();
 		for (Result result : results.results) {
@@ -256,7 +291,7 @@ public class Persistence {
         try {
 			Files.write(Paths.get(fullPersistencePath), json.getBytes());
 			Log.log(Level.FINE, "Success persisting as json file ("+fullPersistencePath+")");
-			gitCommit("added test result for \""+test.name+"\"",userName);
+			gitCommit("added test result for \""+test.name+"\"",userName,fullPersistencePath);
 		} catch (IOException e) {
 			System.err.println("Error while trying to persist results under '"+fullPersistencePath+"'. Reason: "+e.getClass().getCanonicalName());
 			System.exit(4);
@@ -299,7 +334,7 @@ public class Persistence {
 		}
 		try {
 			Files.write(savePath, beautifyJSON(body).getBytes());
-			gitCommit((isEdit?"edited":"created")+" test \""+testName+"\"",userName);
+			gitCommit((isEdit?"edited":"created")+" test \""+testName+"\"",userName,savePathStrng);
 		}catch (Exception e) {
 			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
@@ -309,7 +344,7 @@ public class Persistence {
 		validateFileNameSafe(testName,false);
 		String deletePath = PathFinder.getSpecificTestPath(testName);
 		Files.deleteIfExists(Paths.get(deletePath));
-		gitCommit("deleted test \""+testName+"\"",userName);
+		gitCommitRM("Deleted test \""+testName+"\"",userName,deletePath);
 	}
 
 	public static void createGroup(String groupName, String groupDescription, String userName) throws Exception {
@@ -321,10 +356,10 @@ public class Persistence {
 		}
 		try {
 			JSONObject jo = new JSONObject();
-			jo.put("description", groupDescription);
-			jo.put("tests", new JSONArray());
+			jo.put(TRHelper.DESCRIPTION, groupDescription);
+			jo.put(TRHelper.TESTS, new JSONArray());
 			Files.write(savePath, jo.toString().getBytes());
-			gitCommit("Created group \""+groupName+"\"",userName);
+			gitCommit("Created group \""+groupName+"\"",userName,savePathStrng);
 		}catch (Exception e) {
 			throw new Exception("Could not write group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
@@ -334,56 +369,56 @@ public class Persistence {
 		validateFileNameSafe(groupName,false);
 		String deletePath = PathFinder.getSpecificGroupPath(groupName);
 		boolean success = Files.deleteIfExists(Paths.get(deletePath));
-		gitCommit("Deleted group \""+groupName+"\"",userName);
+		gitCommitRM("Deleted group \""+groupName+"\"",userName,deletePath);
 		if(!success) {
 			throw new Exception("Could not delete group '"+groupName+"' due to deleteIfExists returning false");
 		}
 	}
 
-	public static void addToGroup(String groupName, String test, String name, String userName) throws Exception {
+	public static synchronized void addToGroup(String groupName, String test, String name, String userName) throws Exception {
 		validateFileNameSafe(groupName,false);
 		String groupPath = PathFinder.getSpecificGroupPath(groupName);
 		
 		try {
 			String groupContent = new String(Files.readAllBytes(Paths.get(groupPath)));
 			JsonObject groupJO = JsonParser.parseString(groupContent).getAsJsonObject();
-			JsonArray tests = groupJO.get("tests").getAsJsonArray();
+			JsonArray tests = groupJO.get(TRHelper.TESTS).getAsJsonArray();
 			
 			JsonObject testToAdd = new JsonObject();
-			testToAdd.addProperty("name", name);
-			testToAdd.addProperty("test", test);
+			testToAdd.addProperty(TRHelper.NAME, name);
+			testToAdd.addProperty(TRHelper.TEST, test);
 			tests.add(testToAdd);
 			
 			Files.write(Paths.get(groupPath), beautifyJSON(groupJO.toString()).getBytes());
-			gitCommit("Added test \""+name+"\" to group \""+groupName+"\"",userName);
+			gitCommit("Added test \""+name+"\" to group \""+groupName+"\"",userName,groupPath);
 
 		}catch (Exception e) {
 			throw new Exception("Could not edit group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
 	}	
 	
-	public static void removeOfGroup(String groupName, String testNameToRemove, String userName) throws Exception {
+	public static synchronized void removeOfGroup(String groupName, String testNameToRemove, String userName) throws Exception {
 		validateFileNameSafe(groupName,false);
 		String groupPath = PathFinder.getSpecificGroupPath(groupName);
 		
 		try {
 			String groupContent = new String(Files.readAllBytes(Paths.get(groupPath)));
 			JsonObject groupJO = JsonParser.parseString(groupContent).getAsJsonObject();
-			JsonArray tests = groupJO.get("tests").getAsJsonArray();
+			JsonArray tests = groupJO.get(TRHelper.TESTS).getAsJsonArray();
 			for (int i = 0; i < tests.size(); i++) {
-				String testName = tests.get(i).getAsJsonObject().get("test").getAsString();
+				String testName = tests.get(i).getAsJsonObject().get(TRHelper.TEST).getAsString();
 				if(testName.equals(testNameToRemove)) {
 					tests.remove(i);
 				}
 			}
-			gitCommit("Removed test \""+testNameToRemove+"\" from group \""+groupName+"\"",userName);
+			gitCommit("Removed test \""+testNameToRemove+"\" from group \""+groupName+"\"",userName,groupPath);
 			Files.write(Paths.get(groupPath), beautifyJSON(groupJO.toString()).getBytes());
 		}catch (Exception e) {
 			throw new Exception("Could not remove test from group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
 	}
 
-	public static void removeOfCategory(String categoryName, String testNameToRemove, String userName) throws Exception {
+	public static synchronized void removeOfCategory(String categoryName, String testNameToRemove, String userName) throws Exception {
 		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
 		
 		try {
@@ -398,13 +433,13 @@ public class Persistence {
 				}
 			}
 			Files.write(Paths.get(categoriesPath), beautifyJSON(categoriesJO.toString()).getBytes());
-			gitCommit("Removed test \""+testNameToRemove+"\" from category \""+categoryName+"\"",userName);
+			gitCommit("Removed test \""+testNameToRemove+"\" from category \""+categoryName+"\"",userName,categoriesPath);
 		}catch (Exception e) {
 			throw new Exception("Could not remove test from category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}		
 	}
 
-	public static boolean addToCategory(String categoryNameToAdd, String test, String userName) throws Exception {
+	public static synchronized boolean addToCategory(String categoryNameToAdd, String test, String userName) throws Exception {
 		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
 		
 		try {
@@ -414,7 +449,7 @@ public class Persistence {
 			JsonArray categoriesR = categoryJO.get(categoryNameToAdd).getAsJsonArray();
 			categoriesR.add(test);
 			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
-			gitCommit("Added test \""+test+"\" to category \""+categoryNameToAdd+"\"",userName);
+			gitCommit("Added test \""+test+"\" to category \""+categoryNameToAdd+"\"",userName,categoriesPath);
 			return true;
 		}catch (Exception e) {
 			throw new Exception("Could not add '"+test+"' category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
@@ -444,16 +479,16 @@ public class Persistence {
 		try {
 			String categoryContent = new String(Files.readAllBytes(Paths.get(categoriesPath)));
 			categoryJO = JsonParser.parseString(categoryContent).getAsJsonObject();
+			if(categoryExists(categoryNameToAdd, categoryJO)) {
+				throw new Exception("Category '"+categoryNameToAdd+"' already exists");
+			}
 			categoryJO.add(categoryNameToAdd, new JsonArray());
 		}catch (Exception e) {
 			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
-		if(categoryExists(categoryNameToAdd, categoryJO)) {
-			throw new Exception("Category '"+categoryNameToAdd+"' already exists");
-		}
 		try {  	
 			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
-			gitCommit("Created category \""+categoryNameToAdd+"\"",userName);
+			gitCommit("Created category \""+categoryNameToAdd+"\"",userName,categoriesPath);
 		}catch (Exception e) {
 			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
@@ -471,10 +506,17 @@ public class Persistence {
 			JsonObject categoryJO = JsonParser.parseString(categoryContent).getAsJsonObject();
 			categoryJO.remove(categoryName);
 			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
-			gitCommit("Deleted category \""+categoryName+"\"",userName);
+			gitCommit("Deleted category \""+categoryName+"\"",userName,categoriesPath);
 		}catch (Exception e) {
 			throw new Exception("Could not remove category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
 		}
+	}
+
+	public static boolean deleteFile(String filePath, String userName) {
+		File fileToDelete =  new File(filePath);
+		boolean fsDelRes = fileToDelete.delete();
+		gitCommitRM("Deleted \""+filePath+"\"", userName, filePath);
+		return fsDelRes;
 	}
 
 

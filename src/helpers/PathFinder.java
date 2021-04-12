@@ -11,6 +11,7 @@ public class PathFinder {
 	private static String testLabel = ".test";
 	private static String groupLabel = ".group";
 	private static String stateLabel = ".running";
+	private static String categoriesLabel = ".categories";
 
 	private static String resultsFolder = "results";
 	private static String scriptFolder = "scripts";
@@ -22,6 +23,9 @@ public class PathFinder {
 	}
 	public static String getTestLabel() {
 		return testLabel;
+	}
+	public static String getCategoriesLabel() {
+		return categoriesLabel;
 	}
 	public static String getGroupLabel() {
 		return groupLabel;
@@ -180,6 +184,11 @@ public class PathFinder {
 	 */
 	public static String getScriptsFolder() throws Exception {
 		String path = getBasePath() + testFolder + File.separator + scriptFolder + File.separator;
+		try {
+			Files.createDirectories(Paths.get(path));
+		} catch (IOException e) {
+			throw new Exception("Could not greate path '"+path+"' - due to: "+e.getMessage());
+		}
 		return path;
 	}
 	
@@ -191,6 +200,15 @@ public class PathFinder {
 		} catch (IOException e) {
 			throw new Exception("Could not greate path '"+pathString+"' - due to: "+e.getMessage());
 		}
+	}
+	
+	public static String getCategoriesFilePath() throws Exception {
+		String categoriesFilePath = PathFinder.getTestsPath() + "test"+categoriesLabel;
+		File categoriesFile = new File(categoriesFilePath);
+		if(!categoriesFile.isFile()) {
+			Files.write(Paths.get(categoriesFilePath), "{}".getBytes());
+		}
+		return categoriesFilePath;
 	}
 
 }

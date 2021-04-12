@@ -49,9 +49,7 @@ function pageLogic (response){
 		var name = getQueryParams(document.location.search).name;
 		document.getElementById("scriptNameSpan").textContent=name;
 		doRequest("GET", "../script/type/?name="+encodeURIComponent(name), loadScriptEdit);
-		// TODO create proper dom elem instead of innerHTML . . .
-		var historyLink = document.getElementById("historyLink");	
-		historyLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=history&scriptname='+escapeHtml(name)+'\')"> Show History</button>&nbsp;';
+		createNavButton("historyLink","Show History",'index.html?page=history&scriptname='+encodeURIComponent(name))
 	}
 	if(page=="scriptadd"){
 		initScriptAdd();

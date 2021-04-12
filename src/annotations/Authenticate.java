@@ -11,5 +11,5 @@ import javax.ws.rs.NameBinding;
 @Retention(RUNTIME)
 @Target({ TYPE, METHOD })
 public @interface Authenticate {
-	public String value()  default "ADMIN";
+	public String value() default "ADMIN";
 }

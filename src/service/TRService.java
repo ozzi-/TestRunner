@@ -204,7 +204,7 @@ public class TRService {
 			String testName = name.substring(0, name.length() - PathFinder.getTestLabel().length());
 			ArrayList<String> listResults = Helpers.getListOfFiles(PathFinder.getTestResultsPath(testName),
 					PathFinder.getDataLabel(), -1);
-			test.addProperty("name", testName);
+			test.addProperty(TRHelper.NAME, testName);
 			TRHelper.enrichLastRunData(test, testName, listResults);
 			String category = tcl.getCategoryOfTest(testName);
 			test.addProperty("category", category);
@@ -219,8 +219,7 @@ public class TRService {
 	@Path("/category")
 	@ApiOperation(value = "[READ] Returns all categories")
 	public Response getCategories(@Context HttpHeaders headers) throws Exception {
-		// TODO pathfinder call for test.categories
-		String categoriesPath = PathFinder.getTestsPath() + "test.categories";
+		String categoriesPath = PathFinder.getCategoriesFilePath();
 		String categories = new String(Files.readAllBytes(Paths.get(categoriesPath)));
 		return Response.status(200).entity(categories).type(MediaType.APPLICATION_JSON_TYPE).build();
 	}

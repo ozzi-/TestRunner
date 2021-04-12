@@ -37,6 +37,7 @@ import annotations.LogRequest;
 import auth.AuthenticationFilter;
 import helpers.Log;
 import helpers.PathFinder;
+import helpers.Settings;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -115,7 +116,7 @@ public class ScriptService {
 		byte[] buf;
 		try {
 			buf = IOUtils.toByteArray(fileInputStream);
-			fileName = headers.getRequestHeader("X-File-Path").get(0);
+			fileName = headers.getRequestHeader(Settings.getSingleton().getFilePathHeader()).get(0);
 			filePath = PathFinder.getScriptsFolder() + fileName;
 		}catch (Exception e) {
 			return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
@@ -149,8 +150,6 @@ public class ScriptService {
 		Log.log(Level.WARNING, "Upload Script failed due to unsafe path '" + filePath + "'");
 		return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
 	}
-
-
 	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
@@ -158,12 +157,13 @@ public class ScriptService {
 	@ApiOperation(value = "[READWRITEEXECUTE] Deletes a script")
 	@ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
 	public Response deleteScript(@Context HttpHeaders headers) throws Exception {
-		String fileName = headers.getRequestHeader("X-File-Path").get(0);
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		String fileName = headers.getRequestHeader(Settings.getSingleton().getFilePathHeader()).get(0);
 		String filePath = PathFinder.getScriptsFolder() + fileName;
 
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
-			File fileToDelete =  new File(filePath); 
-			if(fileToDelete.delete()) {
+			boolean res = Persistence.deleteFile(filePath,userName);
+			if(res) {
 				return Response.status(200).entity("OK").type(MediaType.TEXT_PLAIN).build();				
 			}
 			return Response.status(500).entity("Failed to delete file").type(MediaType.TEXT_PLAIN).build();

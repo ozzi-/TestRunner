@@ -1,5 +1,11 @@
 package service;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -14,6 +20,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -34,6 +41,7 @@ import auth.AuthenticationFilter;
 import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
+import helpers.TRHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import persistence.Persistence;
@@ -43,6 +51,7 @@ import persistence.Persistence;
 @Path("/manage")
 public class ManagementService {
 
+	// TODO refactor to use Pojos instead of raw request body
 	
 	@LogRequest
 	@Authenticate("READ")
@@ -64,7 +73,6 @@ public class ManagementService {
 			revJO.addProperty("commit", rev.getFullMessage());
 			revJO.addProperty("time", dateStrng);
 			revJO.addProperty("id", rev.getName());
-			//System.out.println("Commit: " + rev + ", name: " + rev.getName() + ", id: " + rev.getId().getName()+" "+rev.getAuthorIdent()+" "+rev.getCommitTime()+" "+rev.getFullMessage());
 			revsJA.add(revJO);
 		}
 		return Response.status(200).entity(revsJA.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -81,6 +89,7 @@ public class ManagementService {
 	@Authenticate("READ")
 	@GET
 	@Path("/history/commit/{id}")
+	@Produces("application/json; charset=UTF-8")
 	@ApiOperation( value = "[READ] Return commit info")
 	public Response getCommit(@Context HttpHeaders headers, @PathParam("id") String id) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
@@ -107,6 +116,7 @@ public class ManagementService {
 	@GET
 	@Path("/history/test/{testname}")
 	@ApiOperation( value = "[READ] Return all commits for specific test")
+	@Produces("application/json; charset=UTF-8")
 	public Response getHistoryForTest(@Context HttpHeaders headers, @PathParam("testname") String testname) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is getting commits for test  '"+testname+"'");
@@ -140,20 +150,22 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READ")
 	@GET
+	@Produces("application/json; charset=UTF-8")
 	@Path("/history/script/")
 	@ApiOperation( value = "[READ] Return all commits for specific test")
 	public Response getHistoryForScript(@Context HttpHeaders headers, @QueryParam("name") String name) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		
-
 		Log.log(Level.INFO, "'"+userName+"' is getting commits for script  '"+name+"'");
 
 		String filePath = PathFinder.getScriptsFolder() + name;
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
-			JsonArray revsJA = constructCommitsJsonArray(PathFinder.getTestFolderName()+"/"+PathFinder.getScriptFolderName()+"/"+(name.replace("\\", "/")));
-			if(revsJA.size()==0) {
+			File chk = new File(filePath);
+			if(!chk.isFile()) {
 				return Response.status(404).build();
 			}
+			String gitPath = PathFinder.getTestFolderName()+"/"+PathFinder.getScriptFolderName()+"/"+(name.replace("\\", "/"));
+			JsonArray revsJA = constructCommitsJsonArray(gitPath);
 			return Response.status(200).entity(revsJA.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
 		}
 		
@@ -172,25 +184,18 @@ public class ManagementService {
 			revJO.addProperty("commit", rev.getFullMessage());
 			revJO.addProperty("time", dateStrng);
 			revJO.addProperty("id", rev.getName());
-			//String a = Persistence.diffCommit(rev.getName()); 
-			//revJO.addProperty("diff", a);
 			revsJA.add(revJO);
 		}
 		return revsJA;
 	}
-	
-	
-	
-	
-	
 
-	// TODO use the POJOs and JAXB
+
 	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
 	@Path("/test/{testname}")
-	@ApiOperation( value = "[READEXECUTE] Edit a test")
+	@ApiOperation( value = "[READWRITEEXECUTE] Edit a test")
 	public Response editTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is editing test '"+testName+"'");
@@ -211,7 +216,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Path("/test/{testname}")
-	@ApiOperation( value = "[READEXECUTE] Create a test")
+	@ApiOperation( value = "[READWRITEEXECUTE] Create a test")
 	public Response createTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is creating test '"+testName+"'");
@@ -232,7 +237,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/test/{testname}")
-	@ApiOperation( value = "[READEXECUTE] Delete a test")
+	@ApiOperation( value = "[READWRITEEXECUTE] Delete a test")
 	public Response deleteTest(@PathParam("testname") String testName, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting test '"+testName+"'");
@@ -246,7 +251,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Path("/group/")
-	@ApiOperation( value = "[READEXECUTE] Create a group")
+	@ApiOperation( value = "[READWRITEEXECUTE] Create a group")
 	public Response createGroup( @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -255,8 +260,8 @@ public class ManagementService {
 		String groupDescription;
 		try {
 			groupJO =  JsonParser.parseString(body).getAsJsonObject();
-			groupName = groupJO.get("name").getAsString();
-			groupDescription = StringEscapeUtils.escapeHtml4(groupJO.get("description").getAsString());
+			groupName = groupJO.get(TRHelper.NAME).getAsString();
+			groupDescription = StringEscapeUtils.escapeHtml4(groupJO.get(TRHelper.DESCRIPTION).getAsString());
 		}catch (Exception e) {
 			throw new Exception("Error parsing group json - "+e.getMessage());
 		}
@@ -271,7 +276,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
 	@Path("/group/{groupname}")
-	@ApiOperation( value = "[READEXECUTE] Add test to group")
+	@ApiOperation( value = "[READWRITEEXECUTE] Add test to group")
 	public Response addToGroup( @Context HttpHeaders headers, String body,  @PathParam("groupname") String groupName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -279,8 +284,8 @@ public class ManagementService {
 		String test, name;
 		try {
 			groupJO =  JsonParser.parseString(body).getAsJsonObject();
-			name = groupJO.get("name").getAsString();
-			test = groupJO.get("test").getAsString();
+			name = groupJO.get(TRHelper.NAME).getAsString();
+			test = groupJO.get(TRHelper.TEST).getAsString();
 		}catch (Exception e) {
 			throw new Exception("Error parsing group json - "+e.getMessage());
 		}
@@ -295,7 +300,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/group/{groupname}")
-	@ApiOperation( value = "[READEXECUTE] Delete a group")
+	@ApiOperation( value = "[READWRITEEXECUTE] Delete a group")
 	public Response deleteGroup( @Context HttpHeaders headers, @PathParam("groupname") String groupName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -309,7 +314,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/group/{groupname}/{testname}")
-	@ApiOperation( value = "[READEXECUTE] Remove a test from a group")
+	@ApiOperation( value = "[READWRITEEXECUTE] Remove a test from a group")
 	public Response deleteTestOfGroup( @Context HttpHeaders headers, @PathParam("groupname") String groupName,  @PathParam("testname") String testName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -324,7 +329,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/category/{categoryname}/{testname}")
-	@ApiOperation( value = "[READEXECUTE] Remove a test from a category")
+	@ApiOperation( value = "[READWRITEEXECUTE] Remove a test from a category")
 	public Response deleteTestFromCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName,  @PathParam("testname") String testName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -338,7 +343,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@PUT
 	@Path("/category/{categoryname}")
-	@ApiOperation( value = "[READEXECUTE] Add test to category")
+	@ApiOperation( value = "[READWRITEEXECUTE] Add test to category")
 	public Response addToCategory( @Context HttpHeaders headers, String body,  @PathParam("categoryname") String categoryName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -346,7 +351,7 @@ public class ManagementService {
 		String test;
 		try {
 			groupJO =  JsonParser.parseString(body).getAsJsonObject();
-			test = groupJO.get("test").getAsString();
+			test = groupJO.get(TRHelper.TEST).getAsString();
 		}catch (Exception e) {
 			throw new Exception("Error parsing category json - "+e.getMessage());
 		}
@@ -362,7 +367,7 @@ public class ManagementService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Path("/category/")
-	@ApiOperation( value = "[READEXECUTE] Create a category")
+	@ApiOperation( value = "[READWRITEEXECUTE] Create a category")
 	public Response createCategory( @Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -370,7 +375,7 @@ public class ManagementService {
 		String name;
 		try {
 			categoryJO =  JsonParser.parseString(body).getAsJsonObject();
-			name = categoryJO.get("name").getAsString();
+			name = categoryJO.get(TRHelper.NAME).getAsString();
 		}catch (Exception e) {
 			throw new Exception("Error parsing category json - "+e.getMessage());
 		}
@@ -381,10 +386,35 @@ public class ManagementService {
 	}
 	
 	@LogRequest
+	@Authenticate("READ")
+	@GET
+	@Path("/category/")
+	@ApiOperation( value = "[READ] Returns all categories")
+	public Response getCategories( @Context HttpHeaders headers) throws Exception {
+		
+		try (FileInputStream fis = new FileInputStream(PathFinder.getCategoriesFilePath());
+				InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+				BufferedReader reader = new BufferedReader(isr)) {
+
+			String str;
+			String res = "";
+			while ((str = reader.readLine()) != null) {
+				res+=str;
+				System.out.println(str);
+			}
+			return Response.status(200).entity(res).type(MediaType.APPLICATION_JSON_TYPE).build();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return Response.status(500).build();	
+	}
+	
+	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/category/{categoryname}")
-	@ApiOperation( value = "[READEXECUTE] Delete a category")
+	@ApiOperation( value = "[READWRITEEXECUTE] Delete a category")
 	public Response deleteCategory( @Context HttpHeaders headers, @PathParam("categoryname") String categoryName) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is deleting category '"+categoryName+"'");

@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import helpers.Crypto;
@@ -39,19 +40,13 @@ public class UserManagement {
 		return user;
 	}
 	
-	public static User addUser(String userJson) throws Exception {
-		JsonElement userJO;
-		try {
-			userJO =  JsonParser.parseString(userJson).getAsJsonObject();			
-		}catch (Exception e) {
-			throw new Exception("Error parsing user json - "+e.getMessage());
-		}
+	public static User addUser(JsonObject adminUserJO) throws Exception {
 		User user = new User();
 		try {
 			user.setSalt(Crypto.createSalt(Settings.getSingleton().getSaltLength())); 
-			user.setUsername(userJO.getAsJsonObject().get("username").getAsString());
-			user.setPassword(userJO.getAsJsonObject().get("password").getAsString());
-			user.setRole(userJO.getAsJsonObject().get("role").getAsString());
+			user.setUsername(adminUserJO.get("username").getAsString());
+			user.setPassword(adminUserJO.get("password").getAsString());
+			user.setRole(adminUserJO.get("role").getAsString());
 		}catch (Exception e) {
 			throw new Exception("Error parsing username / password / role - keys not found");
 		}
@@ -109,14 +104,11 @@ public class UserManagement {
 		String usersFile = PathFinder.getBasePath()+"users.json";
 		File usersFileObj = new File(usersFile);
 		if(!usersFileObj.exists()) {
-			// TODO instead of string, create proper JsonObj
-			String adminUserJSON ="  {\r\n" + 
-					"        \"username\": \""+Settings.getSingleton().getDefaultAdminUsername()+"\",\r\n" + 
-					"        \"password\": \""+Settings.getSingleton().getDefaultAdminPassword()+"\",\r\n" + 
-					"        \"role\": \"a\"\r\n" + 
-					"  }";
-			
-			User adminUser = UserManagement.addUser(adminUserJSON);
+			JsonObject adminUserJO = new JsonObject();
+			adminUserJO.addProperty("username", Settings.getSingleton().getDefaultAdminUsername());
+			adminUserJO.addProperty("password", Settings.getSingleton().getDefaultAdminPassword());
+			adminUserJO.addProperty("role", "a");			
+			User adminUser = UserManagement.addUser(adminUserJO);
 			Log.log(Level.INFO,"users.json file does not exist, assuming first run. creating default user '"+Settings.getSingleton().getDefaultAdminUsername()+"' with password '"+Settings.getSingleton().getDefaultAdminPassword()+"'");
 			Settings.getSingleton().getUsers().add(adminUser);
 			persistUsers();
@@ -140,7 +132,7 @@ public class UserManagement {
 					Log.log(Level.SEVERE, "Error loading users - JSON missing keys");
 					System.exit(-1);
 				}
-				if(!role.equals("rw") && !role.equals("r") && !role.contentEquals("a")) {
+				if(!role.equals("r") && !role.equals("rx") && !role.contentEquals("rwx")  && !role.contentEquals("a")) {
 					Log.log(Level.WARNING, "Unknown role set for user '"+user.getUsername()+"'. Setting 'r'");
 					role="r";
 				}

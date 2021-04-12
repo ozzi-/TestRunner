@@ -722,7 +722,7 @@ function addTestGroupEntry(){
 
 
 function loadTestSettingsPage(tests){
-	doRequest("GET", "../category", listTestCategories,[tests]);
+	doRequest("GET", "../manage/category", listTestCategories,[tests]);
 }
 
 function listTestCategories(categories, tests){
@@ -1016,29 +1016,27 @@ function listResults(results,paramName) {
 		name = getQueryParams(document.location.search).groupname;
 		isGroup=true;
 	}
-	testName.innerHTML = escapeHtml(name);
-	
-	// TODO build dom elements properly instead of using innerHTML - then test a name containig ' in the end ...
+	testName.textContent = name;	
 	
 	if(isGroup){
-		historyLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=history&groupname='+escapeHtml(name)+'\')"> Show History</button>&nbsp;';
+		createNavButton("historyLink","Show History",'index.html?page=history&groupname='+encodeURIComponent(name));		
 	}else{
-		historyLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=history&testname='+escapeHtml(name)+'\')"> Show History</button>&nbsp;';
+		createNavButton("historyLink","Show History",'index.html?page=history&testname='+encodeURIComponent(name));	
 	}
 	
 	if(localStorage.getItem(trRole)!=="r"){
 		if(isGroup){
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&groupname='+escapeHtml(name)+'\')"> Run Test Group &#9654;</button>&nbsp;';
+			createNavButton("runLink","Run Test Group &#9654;", 'index.html?page=run&groupname='+encodeURIComponent(name));
 		}else{
-			runLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=run&name='+escapeHtml(name)+'\')"> Run Test &#9654;</button>&nbsp;';
+			createNavButton("runLink","Run Test &#9654;", 'index.html?page=run&name='+encodeURIComponent(name));
 		}
 	}
 	
 	if(localStorage.getItem(trRole)==="rwe" || localStorage.getItem(trRole)==="a"){
 		if(isGroup){
-			editLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=testgroupsettings\')"> Edit Test Group</button>&nbsp;';			
+			createNavButton("editLink","Edit Test Group", 'index.html?page=testgroupsettings');			
 		}else{
-			editLink.innerHTML = '<button type="button" class="btn btn-primary" onclick="location.assign(\'index.html?page=edit&name='+escapeHtml(name)+'\')"> Edit Test</button>&nbsp;';			
+			createNavButton("editLink","Edit Test", 'index.html?page=edit&name='+encodeURIComponent(name));		
 		}
 	}
 
@@ -1046,7 +1044,7 @@ function listResults(results,paramName) {
 	var resultCount = results.length;
 	var resultsSpan = document.getElementById("resultsSpan");
 	if(resultCount==0){
-		resultsSpan.innerHTML = "<i>This test has not been run yet.</i>";
+		resultsSpan.textContent = "This test has not been run yet.";
 	}else{	
 		results = results.sort((a, b) => (a.handle < b.handle) ? 1 : -1);
 
@@ -1077,24 +1075,38 @@ function listResults(results,paramName) {
 }
 
 
+function createNavButton(outerspan,label,locAssign){
+	var outerspan = document.getElementById(outerspan);	
+	var btn = document.createElement("BUTTON");
+	btn.classList.add("btn");
+	btn.classList.add("btn-primary");
+	btn.classList.add("ml-1");
+	btn.innerHTML=label; // needed for html entities (emojis) in btn label
+	btn.addEventListener("click", function(){
+		location.assign(locAssign);
+	});
+	outerspan.appendChild(btn);
+}
+
 function listResult(result) {
 	removeLoader();
+	// TODO use a class
 	var style = ' style="color:green;" ';
 	for (var i = 0; i < result.results.length; i++) {
 		if(! result.results[i].passed){
 			style=' style="color:red;" ';
 		}
 	}
+	// TODO remove innerHTML here
 	var infoSpan = document.getElementById("info");
-	infoSpan.innerHTML = ("<h3"+style+">" + escapeHtml(result.testName) + " - "
-			+ result.testStartString + "</h3>");
+	infoSpan.innerHTML = ("<h3"+style+">" + escapeHtml(result.testName) + " - "+ result.testStartString + "</h3>");
 	infoSpan.innerHTML += "<b>Run by</b>: "+escapeHtml(result.testRunBy)+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description) + "<br><hr>";
 
 	var resultsSpan = document.getElementById("results");
 	for (var i = 0; i < result.results.length; i++) {
 		// tests in groups have a descriptive name
 		var descriptiveName =  result.results[i].descriptiveName==undefined?"":"<b>"+result.results[i].descriptiveName+ "</b> - ";
-		resultsSpan.innerHTML += "<h3>"+descriptiveName+result.results[i].name + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
+		resultsSpan.innerHTML += "<h3>"+escapeHtml(descriptiveName+result.results[i].name) + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
 				+ "<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>"
 				+ "<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " 
 				+ "<b>Error Output:</b><br> " + escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />") + "<br>"
@@ -1384,7 +1396,7 @@ function createTaskDiv(task, i, disabled){
 	
 	if(!disabled){
 		var button = document.createElement("button");
-		button.innerHTML = "Remove Task";
+		button.textContent = "Remove Task";
 		button.onclick=function() { removeTaskDiv(i); return false; }
 		button.classList.add("btn");
 		button.classList.add("btn-danger");

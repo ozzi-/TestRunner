@@ -170,14 +170,14 @@ public class Helpers {
 				testElem.failureHook = settings.getString("failurehook");
 			} catch (Exception e) {
 			}
-			test = (JSONObject) jo.get("test");
+			test = (JSONObject) jo.get(TRHelper.TEST);
 			testElem.name = name;
-			testElem.description = test.getString("description");
+			testElem.description = test.getString(TRHelper.DESCRIPTION);
 			JSONArray tasks = (JSONArray) test.get("tasks");
 			for (Object taskObj : tasks) {
 				JSONObject task = (JSONObject) taskObj;
 				Task taskElem = new Task();
-				taskElem.name = task.getString("name");
+				taskElem.name = task.getString(TRHelper.NAME);
 				taskElem.path = task.getString("path");
 				if (task.has("args")) {
 					JSONArray args = task.getJSONArray("args");

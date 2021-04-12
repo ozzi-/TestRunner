@@ -15,12 +15,13 @@ import persistence.Persistence;
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
 	
-	
-	// TODO script upload dropzone broken
+	// TODO frontend JS refactoring 
+	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
 	
 	@Override
 	public void onReload(Container container) {
 		Log.log(Level.INFO, "Test Runner - onReload received");
+		Log.closeHandle();
 		Persistence.gitClose();
 	}
 
@@ -33,7 +34,7 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 
 	@Override
 	public void onStartup(Container container) {
-		final String version = "1.4";
+		final String version = "1.5";
 		try {
 			String logBasePath = PathFinder.getBasePath()+File.separator+"logs"+File.separator;
 			PathFinder.createFolderPath(logBasePath);

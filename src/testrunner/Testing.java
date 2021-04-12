@@ -92,7 +92,7 @@ public class Testing {
 		result.timestampStart=System.currentTimeMillis();
 		ProcBuilder builder = null;
 		try {		
-			String procPath = isAbsolute(task.path)?task.path:PathFinder.getTestsPath()+task.path;
+			String procPath = isAbsolute(task.path)?task.path:PathFinder.getScriptsFolder()+task.path;
 			builder = new ProcBuilder(procPath, Helpers.getStringArray(task.args))
 					.withTimeoutMillis(task.timeoutInSeconds*1000)
 					.withOutputStream(out)
@@ -116,6 +116,7 @@ public class Testing {
 			result.text = "Script execution longer than timeout";
 		} catch (StartupException ex) {
 			result.text = "StartupException: "+ex.getMessage();
+			ex.printStackTrace();
 		} catch (ExternalProcessFailureException ex) {
 			result.text = "Script returned non zero return code \""+ex.getExitValue()+"\"";
 		}

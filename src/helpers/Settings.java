@@ -11,6 +11,8 @@ public class Settings {
 	private int runningCount;
 	private String defaultAdminUsername = "admin";
 	private String defaultAdminPassword = "letmein";
+	// changing this requires changes to the @ApiImplicitParam annotations, as they need to be static
+	private String filePathHeader = "X-File-Path"; 
 	private int saltLength = 10;
 	private List<User> users = new ArrayList<User>();
 
@@ -50,5 +52,7 @@ public class Settings {
 		return saltLength;
 	}
 
-
+	public String getFilePathHeader() {
+		return filePathHeader;
+	}
 }
