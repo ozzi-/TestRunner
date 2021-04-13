@@ -445,6 +445,35 @@ function initScriptAdd(){
 	myDropzone.on("queuecomplete", function(files) {
 		removeLoader();
 	});	
+	
+
+}
+
+var scriptAddEditorInitialized=false;
+
+function scriptAddBtn(id){
+	if(id=="up"){
+		document.getElementById("scriptUpload").style="";
+		document.getElementById("scriptEditor").style.display="none";
+		document.getElementById("navUP").classList.add("active");
+		document.getElementById("navFE").classList.remove("active");
+	}else{
+		document.getElementById("scriptEditor").style="";
+		document.getElementById("scriptUpload").style.display="none";
+		document.getElementById("navFE").classList.add("active");
+		document.getElementById("navUP").classList.remove("active");
+		if(!scriptAddEditorInitialized){
+			var editorElem = document.getElementById("editor");
+			var editor = CodeMirror.fromTextArea(editorElem, {
+				lineWrapping: true,
+				lineNumbers: true,
+			});
+			editor.setSize("100%","70vh");			
+		}
+		scriptAddEditorInitialized=true;
+		editorElem.editorHandle=editor;
+	}
+	
 }
 
 function loadScriptEdit(res){
@@ -513,6 +542,25 @@ var historyPage=1;
 function loadMoreHistory(){
 	doRequest("GET", "../manage/history/"+historyPage, showHistory, [false]);
 	historyPage++;
+}
+
+function saveNewScript(){
+	var textAreaEditor = document.getElementById('editor');
+	var scriptContent = textAreaEditor.editorHandle.getValue();
+	var name = document.getElementById("scriptName").value;
+	if(name==""){
+		alert("Empty file name")
+	}else{
+		doRequestBody("POST", scriptContent, "text/plain", "../script", goToScript, [name], true,name);		
+	}
+}
+
+function goToScript(res,filename){
+	if(res.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		window.location.replace("index.html?page=script&name="+filename);		
+	}
 }
 
 function showCommit(rev){
@@ -1121,7 +1169,7 @@ function listResult(result) {
 	var resultsSpan = document.getElementById("results");
 	for (var i = 0; i < result.results.length; i++) {
 		// tests in groups have a descriptive name
-		var descriptiveName =  result.results[i].descriptiveName==undefined?"":"<b>"+result.results[i].descriptiveName+ "</b> - ";
+		var descriptiveName =  result.results[i].descriptiveName==undefined?"":result.results[i].descriptiveName+ " - ";
 		resultsSpan.innerHTML += "<h3>"+escapeHtml(descriptiveName+result.results[i].name) + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
 				+ "<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>"
 				+ "<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " 
