@@ -210,5 +210,9 @@ public class PathFinder {
 		}
 		return categoriesFilePath;
 	}
+	
+	public static String getLogPath() throws Exception {
+		return getBasePath()+File.separator+"logs"+File.separator;
+	}
 
 }

@@ -1,6 +1,5 @@
 package testrunner;
 
-import java.io.File;
 import java.util.logging.Level;
 
 import org.glassfish.jersey.server.ResourceConfig;
@@ -19,6 +18,8 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
 	// TODO create new script - ability to use editor instead of only dropzone
 	// TODO revert to old versions of file via UI?
+	// TODO ability to list & kill sessions?
+	// TODO UI collapse & expand all categories by btn
 	
 	@Override
 	public void onReload(Container container) {
@@ -38,16 +39,24 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	public void onStartup(Container container) {
 		final String version = "1.5";
 		try {
-			String logBasePath = PathFinder.getBasePath()+File.separator+"logs"+File.separator;
+			String logBasePath = PathFinder.getLogPath();
 			PathFinder.createFolderPath(logBasePath);
-			
 			Log.setup(logBasePath+"testrunner.log");
 			Log.log(Level.INFO, "Starting Test Runner - "+version+" - meep meep - base path is \""+PathFinder.getBasePath()+"\"");
+			
 			Persistence.gitInit();
 			UserManagement.loadUsers();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		try {
+			Persistence.checkFilePermissions();
+		} catch (Exception e) {
+			Log.log(Level.SEVERE, "Exception encountered while checking file permissions: "+e.getMessage()+" - "+e.getCause());
+			e.printStackTrace();
+		}
+		
 		packages("services");
 	}
 }

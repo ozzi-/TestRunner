@@ -89,7 +89,7 @@ public class Persistence {
 	    		gitReady = true;
 	    	} catch (Exception e) {
 	    		e.printStackTrace();
-	    		Log.log(Level.SEVERE, "Cannot initialize local Git Repo due to: "+e.getMessage()+"-"+e.getCause());
+	    		Log.log(Level.SEVERE, "Cannot initialize local Git Repo due to: "+e.getMessage()+"-"+e.getCause()+" - "+e.getClass().getName());
 	    	}	    	
 	    }
 	}
@@ -128,7 +128,7 @@ public class Persistence {
 		        git.commit().setMessage(commitMessage).setCommitter(author, "TESTRUNNER").call();
 				Log.log(Level.INFO, "Git commit - \""+commitMessage+"\" - \""+gitPath+"\"");
 			} catch (Exception e) {
-				Log.log(Level.SEVERE, "Cannot commit to local Git Repo due to: "+e.getMessage()+"-"+e.getCause());
+				Log.log(Level.SEVERE, "Cannot commit to local Git Repo due to: "+e.getMessage()+"-"+e.getCause()+" - "+e.getClass().getName());
 			}
 		}else {
 			Log.log(Level.WARNING, "Skipping Git commit \""+commitMessage+"\" due to repo not being intialized");
@@ -167,7 +167,7 @@ public class Persistence {
 			rw.close();
 			return commit;
 		} catch (RevisionSyntaxException | IOException e) {
-			Log.log(Level.WARNING, "Failed to get commit '"+id+"' due to: "+e.getMessage()+" - "+e.getCause());
+			Log.log(Level.WARNING, "Failed to get commit '"+id+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		} catch (NullPointerException e) {
 			Log.log(Level.WARNING, "Failed to get commit '"+id+"' due to it being invalid");
 	
@@ -361,7 +361,7 @@ public class Persistence {
 			Files.write(savePath, jo.toString().getBytes());
 			gitCommit("Created group \""+groupName+"\"",userName,savePathStrng);
 		}catch (Exception e) {
-			throw new Exception("Could not write group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not write group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}		
 	}
 
@@ -393,7 +393,7 @@ public class Persistence {
 			gitCommit("Added test \""+name+"\" to group \""+groupName+"\"",userName,groupPath);
 
 		}catch (Exception e) {
-			throw new Exception("Could not edit group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not edit group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}		
 	}	
 	
@@ -414,7 +414,7 @@ public class Persistence {
 			gitCommit("Removed test \""+testNameToRemove+"\" from group \""+groupName+"\"",userName,groupPath);
 			Files.write(Paths.get(groupPath), beautifyJSON(groupJO.toString()).getBytes());
 		}catch (Exception e) {
-			throw new Exception("Could not remove test from group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not remove test from group '"+groupName+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}		
 	}
 
@@ -435,7 +435,7 @@ public class Persistence {
 			Files.write(Paths.get(categoriesPath), beautifyJSON(categoriesJO.toString()).getBytes());
 			gitCommit("Removed test \""+testNameToRemove+"\" from category \""+categoryName+"\"",userName,categoriesPath);
 		}catch (Exception e) {
-			throw new Exception("Could not remove test from category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not remove test from category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}		
 	}
 
@@ -452,7 +452,7 @@ public class Persistence {
 			gitCommit("Added test \""+test+"\" to category \""+categoryNameToAdd+"\"",userName,categoriesPath);
 			return true;
 		}catch (Exception e) {
-			throw new Exception("Could not add '"+test+"' category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not add '"+test+"' category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}
 	}
 	
@@ -484,13 +484,13 @@ public class Persistence {
 			}
 			categoryJO.add(categoryNameToAdd, new JsonArray());
 		}catch (Exception e) {
-			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}
 		try {  	
 			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
 			gitCommit("Created category \""+categoryNameToAdd+"\"",userName,categoriesPath);
 		}catch (Exception e) {
-			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not create category '"+categoryNameToAdd+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}
 	}
 
@@ -508,7 +508,7 @@ public class Persistence {
 			Files.write(Paths.get(categoriesPath), beautifyJSON(categoryJO.toString()).getBytes());
 			gitCommit("Deleted category \""+categoryName+"\"",userName,categoriesPath);
 		}catch (Exception e) {
-			throw new Exception("Could not remove category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause());
+			throw new Exception("Could not remove category '"+categoryName+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
 		}
 	}
 
@@ -519,5 +519,12 @@ public class Persistence {
 		return fsDelRes;
 	}
 
-
+	public static void checkFilePermissions() throws Exception {
+			boolean basePathWritable = Files.isWritable(Paths.get(PathFinder.getBasePath()));
+			boolean groupsPathWritable = Files.isWritable(Paths.get(PathFinder.getGroupsPath()));
+			boolean scriptsPathWritable = Files.isWritable(Paths.get(PathFinder.getScriptsFolder()));
+			if(!basePathWritable || !groupsPathWritable || !scriptsPathWritable) {
+				throw new Exception("Cannot write to the TestRunner directories under \""+PathFinder.getBasePath()+"\". Please make sure Tomcat has RWX permissions for all files under said directory.");
+			}
+	}
 }

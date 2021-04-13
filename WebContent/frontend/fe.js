@@ -1032,6 +1032,7 @@ function listResults(results,paramName) {
 		}
 	}
 	
+	// TODO constants for role labels
 	if(localStorage.getItem(trRole)==="rwx" || localStorage.getItem(trRole)==="a"){
 		if(isGroup){
 			createNavButton("editLink","Edit Test Group", 'index.html?page=testgroupsettings');			
