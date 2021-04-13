@@ -601,12 +601,23 @@ function listTests(tests) {
 	var testCount = tests.length;
 	removeLoader();
 	var table;
+	
+	var collapse = getQueryParams(document.location.search).collapse;
+	if(collapse==undefined){
+		document.getElementById("collapseGroupsHref").style="";
+	}else{
+		document.getElementById("expandGroupsHref").style="";
+	}
+		
 	if(localStorage.getItem(trRole)==="r"){
 		table = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
-		    pagination:"local", 
+		    pagination:"local",
+		    groupStartOpen:function(value, count, data, group){
+		    	return collapse==undefined;
+		    },
 		    paginationSize:20,
 		    columns:[
 		    {title:"Test", field:"testLink", minWidth:300, formatter:htmlFormatter},
@@ -620,6 +631,9 @@ function listTests(tests) {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
+		    groupStartOpen:function(value, count, data, group){
+		    	return collapse==undefined;
+		    },
 		    pagination:"local", 
 		    paginationSize:20,
 		    columns:[
@@ -902,6 +916,7 @@ function listGroups(groups){
 		    pagination:"local", 
 		    paginationSize:10,
 		    layout:"fitDataFill",
+
 		    columns:[
 		    {title:"Group", field:"groupLink",  formatter:htmlFormatter},
 		    {title:"Description", field:"description", formatter:htmlFormatter},
