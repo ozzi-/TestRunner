@@ -34,10 +34,17 @@ public class TRHelper {
 	public static final String NAME = "name";
 	public static final String TEST = "test";
 	public static final String TESTS = "tests";
+	public static final String TASKS = "tasks";
+	public static final String ARGS = "args";
+	public static final String PATH = "path";
+	public static final String TIMEOUT = "timeout";
 	public static final String RUN_TIME_IN_MS = "runTimeInMS";
 	public static final String LAST_RUN_DATE = "lastRunDate";
 	public static final String LAST_RUN_PASSED = "lastRunPassed";
 	public static final String TOTAL_RUN_TIME_IN_MS = "totalRunTimeInMS";
+	public static final String SUCCESS_HOOK = "successHook";
+	public static final String FAILURE_HOOK = "failureHook";
+	public static final String SETTINGS = "settings";
 
 	/**
 	 * 
@@ -172,28 +179,28 @@ public class TRHelper {
 		JsonElement finalFailureHook = null;
 		String description = "Group Test '" + groupName + "'";
 		for (JsonElement test : tests) {
-			JsonElement successHook = test.getAsJsonObject().get("settings").getAsJsonObject().get("successhook");
-			JsonElement failureHook = test.getAsJsonObject().get("settings").getAsJsonObject().get("failurehook");
+			JsonElement successHook = test.getAsJsonObject().get(SETTINGS).getAsJsonObject().get(TRHelper.SUCCESS_HOOK);
+			JsonElement failureHook = test.getAsJsonObject().get(SETTINGS).getAsJsonObject().get(TRHelper.FAILURE_HOOK);
 			if (successHook != null) {
 				finalSuccessHook = successHook;
 			}
 			if (failureHook != null) {
 				finalFailureHook = failureHook;
 			}
-			JsonArray tasks = test.getAsJsonObject().get(TEST).getAsJsonObject().get("tasks").getAsJsonArray();
+			JsonArray tasks = test.getAsJsonObject().get(TEST).getAsJsonObject().get(TASKS).getAsJsonArray();
 			for (JsonElement task : tasks) {
 				tasksArr.add(task);
 			}
 		}
 		if (finalSuccessHook != null) {
-			settingsObj.add("successhook", finalSuccessHook);
+			settingsObj.add(TRHelper.SUCCESS_HOOK, finalSuccessHook);
 		}
 		if (finalFailureHook != null) {
-			settingsObj.add("failurehook", finalFailureHook);
+			settingsObj.add(TRHelper.FAILURE_HOOK, finalFailureHook);
 		}
 		testObj.addProperty(TRHelper.DESCRIPTION, description);
-		merged.add("settings", settingsObj);
-		testObj.add("tasks", tasksArr);
+		merged.add(SETTINGS, settingsObj);
+		testObj.add(TASKS, tasksArr);
 		merged.add(TEST, testObj);
 		return merged;
 	}

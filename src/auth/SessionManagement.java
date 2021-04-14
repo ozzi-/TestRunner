@@ -69,6 +69,7 @@ public class SessionManagement {
 		return null;
 	}
 
+
 	public static void destroySession(Session session) {
 		String userName = session.getUsername();
 		destorySessionByUserName(userName);

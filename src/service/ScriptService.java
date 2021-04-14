@@ -79,6 +79,11 @@ public class ScriptService {
 	// we are using a query param as it contains / and or \
 	public Response getScript(@Context HttpHeaders headers, @QueryParam("name") String path) throws Exception {
 		String scriptsPathStrng = PathFinder.getScriptsFolder() + path;
+		Persistence.validateFileNameSafe(path,true);
+		if (!PathFinder.isPathSafe(scriptsPathStrng, PathFinder.getScriptsFolder())) {
+			Log.log(Level.WARNING, "Get script failed due to unsafe path '" + path + "'");
+			return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
+		}
 		if (isTextFile(path)) {
 			String scriptContent="";
 			try {
@@ -121,7 +126,7 @@ public class ScriptService {
 		}catch (Exception e) {
 			return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
 		}
-	
+		Persistence.validateFileNameSafe(fileName,true);
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
 			Persistence.writeByteArrToFile(filePath, buf, "Uploaded binary script '"+fileName+"'",userName);
 			return Response.status(201).entity("OK").type(MediaType.TEXT_PLAIN).build();
@@ -142,8 +147,9 @@ public class ScriptService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		String fileName = headers.getRequestHeader("X-File-Path").get(0);
 		String filePath = PathFinder.getScriptsFolder() + fileName;
-
-		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
+		Persistence.validateFileNameSafe(fileName,true);
+		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder()) && fileName.length() > 0) {
+			Log.log(Level.INFO, "Upload Script failed '" + filePath + "'");
 			Persistence.writeUTF8StringToFile(body, filePath, "Uploaded  script '"+fileName+"'", userName);
 			return Response.status(200).entity("OK").type(MediaType.TEXT_PLAIN).build();
 		}
@@ -160,7 +166,8 @@ public class ScriptService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		String fileName = headers.getRequestHeader(Settings.getSingleton().getFilePathHeader()).get(0);
 		String filePath = PathFinder.getScriptsFolder() + fileName;
-
+		Persistence.validateFileNameSafe(fileName,true);
+		
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
 			boolean res = Persistence.deleteFile(filePath,userName);
 			if(res) {

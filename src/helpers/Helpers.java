@@ -161,32 +161,33 @@ public class Helpers {
 		Test testElem = new Test();
 		Log.log(Level.FINE, "Parsing test config file '"+name+"'");
 		try {
-			settings = (JSONObject) jo.get("settings");
+			settings = (JSONObject) jo.get(TRHelper.SETTINGS);
 			try {
-				testElem.successHook = settings.getString("successhook");
+				testElem.successHook = settings.getString(TRHelper.SUCCESS_HOOK);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 			try {
-				testElem.failureHook = settings.getString("failurehook");
+				testElem.failureHook = settings.getString(TRHelper.FAILURE_HOOK);
 			} catch (Exception e) {
 			}
 			test = (JSONObject) jo.get(TRHelper.TEST);
 			testElem.name = name;
 			testElem.description = test.getString(TRHelper.DESCRIPTION);
-			JSONArray tasks = (JSONArray) test.get("tasks");
+			JSONArray tasks = (JSONArray) test.get(TRHelper.TASKS);
 			for (Object taskObj : tasks) {
 				JSONObject task = (JSONObject) taskObj;
 				Task taskElem = new Task();
 				taskElem.name = task.getString(TRHelper.NAME);
-				taskElem.path = task.getString("path");
-				if (task.has("args")) {
-					JSONArray args = task.getJSONArray("args");
+				taskElem.path = task.getString(TRHelper.PATH);
+				if (task.has(TRHelper.ARGS)) {
+					JSONArray args = task.getJSONArray(TRHelper.ARGS);
 					for (Object argObj : args) {
 						taskElem.args.add(argObj.toString());
 					}
 				}
-				if (task.has("timeout")) {
-					taskElem.timeoutInSeconds = task.getInt("timeout");
+				if (task.has(TRHelper.TIMEOUT)) {
+					taskElem.timeoutInSeconds = task.getInt(TRHelper.TIMEOUT);
 				}
 				testElem.tasks.add(taskElem);
 			}

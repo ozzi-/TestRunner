@@ -130,6 +130,19 @@ public class UserService {
 	
 	@LogRequest
 	@Authenticate("ADMIN")
+	@DELETE
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/{user}/session")
+	@ApiOperation( response = Password.class, value = "[ADMIN] Set password of user")
+	public Response deleteSessionOfUser(@Context HttpHeaders headers,  @PathParam("user") String userNameOfSessionDel) throws Exception {		
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		Log.log(Level.INFO, "'"+userName+"' is killing all sessions of '"+userNameOfSessionDel+"'");
+		SessionManagement.destorySessionByUserName(userNameOfSessionDel);
+		return Response.status(200).entity("{\"sessions\" : \"deleted\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	@LogRequest
+	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "[ADMIN] Creates a new user", produces="application/json")

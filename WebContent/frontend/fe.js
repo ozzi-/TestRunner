@@ -64,6 +64,10 @@ function proccessPasswordChange(response){
 	}
 }
 
+function sessionsDeleted(){
+	alert("Sessions Deleted");
+}
+
 function processCreateUser(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
@@ -1138,6 +1142,12 @@ function listResults(results,paramName) {
 	}
 }
 
+function killSession(){
+	var userName = document.getElementById("sessionKillUsername").value;
+	if(userName!=""){
+		doRequest("DELETE", "../user/"+userName+"/session", sessionsDeleted,[]);		
+	}
+}
 
 function createNavButton(outerspan,label,locAssign){
 	var outerspan = document.getElementById(outerspan);	

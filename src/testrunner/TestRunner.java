@@ -18,8 +18,8 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
 	// TODO create new script - ability to use editor instead of only dropzone
 	// TODO revert to old versions of file via UI?
-	// TODO ability to list & kill sessions?
-	// TODO UI collapse & expand all categories by btn
+	// TODO when running tests, save meta data current commit of test config & script involved
+	// TODO dropdown when choosing test scripts?
 	
 	@Override
 	public void onReload(Container container) {

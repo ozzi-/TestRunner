@@ -1,12 +1,36 @@
-<h4><span id="scriptNameSpan"></span></h4><br>
-<div id="scriptAddDropZoneDiv">
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link" id="navUP" href="#" onclick="scriptAddBtn('up')">Upload</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="navFE" href="#" onclick="scriptAddBtn('fe')">File Editor</a>
+  </li>
+</ul>
+
+<div id="scriptEditor" style="display:none">
+	<textarea id="editor"></textarea>
 	<div class="container">
-		<div class="row">
+  		<div class="row">
+    		<div class="col-sm">
+				<input type="text" class="form-control" id="scriptName" placeholder="Script Name (including file ending)">
+			</div>
 			<div class="col-sm">
-				<div class="dropzone" id="dropZoneDiv">
-					<div class="dz-message" data-dz-message>Drag &amp; drop a file here to upload</div>
+				<button class="btn btn-primary" type="submit" onclick="saveNewScript()">Save</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div id="scriptUpload" style="display:none">
+	<div id="scriptAddDropZoneDiv">
+		<div class="container">
+			<div class="row">
+				<div class="col-sm">
+					<div class="dropzone" id="dropZoneDiv">
+						<div class="dz-message" data-dz-message>Drag &amp; drop a file here to upload</div>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </div>
+

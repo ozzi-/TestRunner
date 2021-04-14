@@ -53,6 +53,7 @@ function pageLogic (response){
 	}
 	if(page=="scriptadd"){
 		initScriptAdd();
+		scriptAddBtn('up')
 	}
 	if(page=="hash"){
 		doRequest("GET", "../tr/basepath", basePath);
