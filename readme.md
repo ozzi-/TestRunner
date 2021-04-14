@@ -176,12 +176,12 @@ Example of a test file called "windows.test". The test name is taken from the fi
 The paths defined can be absolute or relative (to the current directory).
 
 ### Hooks
-You can define optional hooks which will be ran if the tests succeeds (successhook) or fails (failurehook).
+You can define optional hooks which will be ran if the tests succeeds (successHook) or fails (failureHook).
 Example of a test which will, when it runs successfully, execute "sendmail.exe" with a command line argument.
 
 	{
 	  "settings": {
-		"successhook": "C:\\Program Files (x86)\\Mailer\\sendmail.exe \"windows test succeeded\""
+		"successHook": "C:\\Program Files (x86)\\Mailer\\sendmail.exe \"windows test succeeded\""
 	  },
 	  "test": {
 		"description": "test_windows",
