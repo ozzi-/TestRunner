@@ -14,12 +14,16 @@ import persistence.Persistence;
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
 	
+	// TODO when running tests, save meta data current commit of test config & script involved
+	// TODO revert to old versions of file via UI?
+	// TODO dropdown when choosing test scripts?
+
 	// TODO frontend JS refactoring 
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
-	// TODO create new script - ability to use editor instead of only dropzone
-	// TODO revert to old versions of file via UI?
-	// TODO when running tests, save meta data current commit of test config & script involved
-	// TODO dropdown when choosing test scripts?
+	// TODO different OS -> TestRunner satellite agents 
+	// TODO create script text button -> repeat error
+	// TODO scriptadd -> folder create & delete functionality
+	// TODO timeout gives "unknown error" instead of properly handled by frontend
 	
 	@Override
 	public void onReload(Container container) {

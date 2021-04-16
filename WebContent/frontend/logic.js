@@ -29,7 +29,7 @@ function pageLogic (response){
 	if(page=="main"){
 		doRequest("GET", "../tr/test", listTests);
 		doRequest("GET", "../tr/group", listGroups);
-		doRequest("GET", "../script", listScripts);
+		doRequest("GET", "../script/folder", listScripts);
 	}
 	if(page=="login"){
 	    document.getElementById("username").focus();
@@ -54,6 +54,7 @@ function pageLogic (response){
 	if(page=="scriptadd"){
 		initScriptAdd();
 		scriptAddBtn('up')
+		doRequest("GET", "../script/folder", fillFolders);
 	}
 	if(page=="hash"){
 		doRequest("GET", "../tr/basepath", basePath);
@@ -96,7 +97,7 @@ function pageLogic (response){
 	}
 	if(page=="edit"){
 		var name = getQueryParams(document.location.search).name;
-		doRequest("GET", "../tr/test/" + encodeURIComponent(name), editTestContent)
+		doRequest("GET", "../tr/test/" + encodeURIComponent(name), editTestContent);
 	}
 	if(page=="new"){
 		initNewTestPage();
@@ -143,7 +144,7 @@ function pageLogic (response){
 	if(page=="settings"){
 	    removeLoader();
 	    displaySettings();
-		doRequest("GET", "../user", fillUsers);
+		doRequest("GET", "../user", fillUsers);		
 	}
 	if(page=="run"){
 		removeLoader();

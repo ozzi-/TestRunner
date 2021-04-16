@@ -4,6 +4,7 @@ var cloud = "&#127785;";
 var trToken = "TR_Token";
 var trRole = "TR_Role";
 var sessionHeaderName ="X-TR-Session-ID";
+var uploadFileNameHeaderName = "X-File-Name";
 var uploadFilePathHeaderName = "X-File-Path";
 var pageIndex=0;
 
@@ -388,27 +389,26 @@ var scriptsTable;
 function listScripts(scripts){
 	removeLoader();
 	
-	var scriptObjArr = [];
-	for(var i = 0; i < scripts.length; i++){
-		var scriptObj = {};
-		scriptObj.path = scripts[i];
-		scriptObjArr.push(scriptObj);
-	}	
-		
+
 	scriptsTable = new Tabulator("#scriptsTable", {
 		layoutColumnsOnNewData:true,
 	    layout:"fitDataFill",
 	    pagination:"local", 
+	    dataTree:true,
+	    dataTreeStartExpanded:false,
 	    paginationSize:10,
 	    columns:[
-	    	{title:"Path", field:"path", formatter:htmlFormatter},
+	    	{title:"Name", field:"name", formatter:htmlFormatter, width: 700},
+
 	    ],
 	    rowClick:function(e, id, data, row){
-	        var id = id._row.data.path;
-			window.location.href='index.html?page=script&name='+encodeURIComponent(id);
+	    	if(id._row.data._children==undefined){
+	    		var path = id._row.data.path;
+	    		window.location.href='index.html?page=script&name='+encodeURIComponent(path);	    		
+	    	}
 	    }
 	});
-	scriptsTable.setData(scriptObjArr);
+	scriptsTable.setData(scripts);
 	
 	if(scripts.length==0){
 		scriptsTable.addRow([{path:"No scripts found yet"}], false);
@@ -437,14 +437,15 @@ function initScriptAdd(){
 		    this.hiddenFileInput.removeAttribute('multiple');
 		},
 		success:function(file, response){
-			window.location.replace("index.html?page=script&name="+file.name);
+			window.location.replace("index.html?page=script&name="+encodeURIComponent(response));
         },
 		headers: headerObj
 	});
 	
 	myDropzone.on("addedfiles", function(files) {
 		document.getElementById("loader").style.display="";
-		headerObj[uploadFilePathHeaderName] = myDropzone.files[0].name;
+		headerObj[uploadFilePathHeaderName] = document.getElementById("scriptFolderBinary").value;
+		headerObj[uploadFileNameHeaderName] = myDropzone.files[0].name;
 	});
 	myDropzone.on("queuecomplete", function(files) {
 		removeLoader();
@@ -453,19 +454,32 @@ function initScriptAdd(){
 
 }
 
+function createNewFolder(){
+	alert("TODO UI + Backend call");
+}
+
+function removeFolder(){
+	alert("TODO UI + Backend call");
+}
+
 var scriptAddEditorInitialized=false;
 
+// TODO beautify this
 function scriptAddBtn(id){
 	if(id=="up"){
-		document.getElementById("scriptUpload").style="";
-		document.getElementById("scriptEditor").style.display="none";
+		document.getElementById("scriptUploadTab").style="";
+		document.getElementById("scriptEditorTab").style.display="none";
+		document.getElementById("scriptFolderTab").style.display="none";
 		document.getElementById("navUP").classList.add("active");
 		document.getElementById("navFE").classList.remove("active");
-	}else{
-		document.getElementById("scriptEditor").style="";
-		document.getElementById("scriptUpload").style.display="none";
+		document.getElementById("navFO").classList.remove("active");
+	}else if(id=="fe"){
+		document.getElementById("scriptEditorTab").style="";
+		document.getElementById("scriptUploadTab").style.display="none";
+		document.getElementById("scriptFolderTab").style.display="none";
 		document.getElementById("navFE").classList.add("active");
 		document.getElementById("navUP").classList.remove("active");
+		document.getElementById("navFO").classList.remove("active");
 		if(!scriptAddEditorInitialized){
 			var editorElem = document.getElementById("editor");
 			var editor = CodeMirror.fromTextArea(editorElem, {
@@ -476,12 +490,21 @@ function scriptAddBtn(id){
 		}
 		scriptAddEditorInitialized=true;
 		editorElem.editorHandle=editor;
+	}else{
+		document.getElementById("scriptFolderTab").style="";
+		document.getElementById("scriptEditorTab").style.display="none";
+		document.getElementById("scriptUploadTab").style.display="none";
+		document.getElementById("navFO").classList.add("active");
+		document.getElementById("navUP").classList.remove("active");
+		document.getElementById("navFE").classList.remove("active");
 	}
 	
 }
 
 function loadScriptEdit(res){
 	var name = getQueryParams(document.location.search).name;
+	document.getElementById("scriptPath").value=res.path;
+	document.getElementById("scriptName").value=res.name;
 	if(res.type=="text"){
 		doRequest("GET", "../script/download/?name="+encodeURIComponent(name), loadTextScriptEdit);
 		document.getElementById("textEditor").style="";
@@ -490,8 +513,9 @@ function loadScriptEdit(res){
 		
 		var headerObj={};
 		headerObj[sessionHeaderName] = localStorage.getItem(trToken);
-		headerObj[uploadFilePathHeaderName] = name;
-
+		headerObj[uploadFilePathHeaderName] = document.getElementById("scriptPath").value;
+		headerObj[uploadFileNameHeaderName] = document.getElementById("scriptName").value;
+		
 		var myDropzone = new Dropzone("div#dropZoneDiv", { 
 			url: "../script/mpfd",
 			maxFiles:1,
@@ -520,10 +544,10 @@ function downloadBinaryButton(){
 
 function  loadBinaryScriptEdit(blob){
 	var name = getQueryParams(document.location.search).name;	
-	var dataUri = window.URL.createObjectURL(blob);	
+	var dataUri = window.URL.createObjectURL(blob);
     var anchor = document.getElementById("downloadBinaryLink");
     anchor.setAttribute('href', dataUri);
-    anchor.setAttribute('download', name);
+    anchor.setAttribute('download', document.getElementById("scriptName").value);
     document.getElementById("loader").style.display="none";
     anchor.click();
 }
@@ -531,14 +555,18 @@ function  loadBinaryScriptEdit(blob){
 function saveScript(){	
 	var textAreaEditor = document.getElementById('editor');
 	var scriptContent = textAreaEditor.editorHandle.getValue();
-	var name = getQueryParams(document.location.search).name;
-	doRequestBody("POST", scriptContent, "text/plain", "../script", scriptSaved, true, true,name);
+	var metaObj={};
+	metaObj.path=document.getElementById("scriptPath").value;
+	metaObj.name=document.getElementById("scriptName").value;
+	doRequestBody("POST", scriptContent, "text/plain", "../script", scriptSaved, true, true,metaObj);
 }
 
 function deleteScript(){
-	var name = getQueryParams(document.location.search).name;
 	if(confirm('Are you sure you want to delete this script?\r\nThis may break existing tests.')){
-		doRequestBody("DELETE", {}, "application/json", "../script", scriptDeleted, true, true, name);
+		var metaObj={};
+		metaObj.path=document.getElementById("scriptPath").value;
+		metaObj.name=document.getElementById("scriptName").value;
+		doRequestBody("DELETE", {}, "application/json", "../script", scriptDeleted, true, true, metaObj);
 	}
 }
 
@@ -552,18 +580,22 @@ function saveNewScript(){
 	var textAreaEditor = document.getElementById('editor');
 	var scriptContent = textAreaEditor.editorHandle.getValue();
 	var name = document.getElementById("scriptName").value;
+	var path = document.getElementById("scriptFolder").value;
+	var meta =  {};
+	meta.name=name;
+	meta.path=path;
 	if(name==""){
 		alert("Empty file name")
 	}else{
-		doRequestBody("POST", scriptContent, "text/plain", "../script", goToScript, [name], true,name);		
+		doRequestBody("POST", scriptContent, "text/plain", "../script", goToScript, [], true,meta);		
 	}
 }
 
-function goToScript(res,filename){
+function goToScript(res){
 	if(res.status!=200){
 		alert(JSON.parse(response.responseText).error);
 	}else{
-		window.location.replace("index.html?page=script&name="+filename);		
+		window.location.replace("index.html?page=script&name="+encodeURIComponent(res.responseText));		
 	}
 }
 
@@ -1007,6 +1039,31 @@ function listGroups(groups){
 	}
 }
 
+function fillScripts(res){
+	var scriptSelects = document.getElementsByClassName("scriptSelect");
+	for(let i = 0; i < scriptSelects.length; i++){
+		if(scriptSelects[i].wasFilled===undefined){
+			for(let y = 0; y < res.length; y++){
+				scriptSelects[i].wasFilled=true;
+				var scriptName = res[y];
+				var option = document.createElement("option");
+				option.setAttribute("value", scriptName);			
+				var text = document.createTextNode(scriptName);
+				option.appendChild(text);
+				scriptSelects[i].appendChild(option);
+			}
+			if(scriptSelects[i].preselectScript!==undefined){
+				console.log(scriptSelects[i].preselectScript+"!!!");
+				scriptSelects[i].value=scriptSelects[i].preselectScript;
+				if(scriptSelects[i].value==""){
+					alert("The script \""+scriptSelects[i].preselectScript+"\" does not exist (anymore)");
+				}
+			}
+		}
+	}
+}
+
+
 function fillUsers(res){
 	var userSelects = document.getElementsByClassName("userSelect");
 	for(let i = 0; i < userSelects.length; i++){
@@ -1020,6 +1077,30 @@ function fillUsers(res){
 		}
 	}
 }
+
+
+function fillFolders(res){
+	var folderSelects = document.getElementsByClassName("folderSelect");
+	for(let i = 0; i < folderSelects.length; i++){
+		fillFoldersInternal(res,folderSelects[i]);
+	}
+}
+
+function fillFoldersInternal(res,select){
+	for(let y = 0; y < res.length; y++){
+		if(res[y]._children!==undefined){
+			var path= res[y].path;
+			var option = document.createElement("option");
+			option.setAttribute("value", path);			
+			var text = document.createTextNode(path);
+			option.appendChild(text);
+			select.appendChild(option);		
+			fillFoldersInternal(res[y]._children,select);
+		}
+	}
+}
+
+
 
 function loadMore(){
 	var paramName;
@@ -1140,6 +1221,8 @@ function listResults(results,paramName) {
 		}
 		table.setData(results);
 	}
+	doRequest("GET", "../script", fillScripts);
+
 }
 
 function killSession(){
@@ -1200,6 +1283,7 @@ function editTestContent(result){
 	var form = createTestMask(result,false);
 	var testContent = document.getElementById("testContent");
 	testContent.append(form);
+	doRequest("GET", "../script", fillScripts);
 }
 
 // ***********
@@ -1208,7 +1292,7 @@ function editTestContent(result){
 
 window.errorReported=false;
 
-function doRequestBody(method, data, type, url, callback, params, sendAuth, uploadHeaderPath) {
+function doRequestBody(method, data, type, url, callback, params, sendAuth, uploadMeta) {
 	var request = new XMLHttpRequest();
 	request.ontimeout = function() {
 		if(!window.errorReported){
@@ -1253,8 +1337,12 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth, uplo
 	request.open(method, url);
 	request.timeout = 5000;
 
-	if(typeof uploadHeaderPath !== undefined){
-		request.setRequestHeader(uploadFilePathHeaderName, uploadHeaderPath);
+	if(uploadMeta !== undefined &&  uploadMeta.path !==undefined &&  uploadMeta.name !== undefined){
+		 // when running under unix, empty request headers will throw a nullpointer exception (while empty headers work on windows..)
+		var res = uploadMeta.path==""?"/":uploadMeta.path;
+		console.log("uploadMeta path = "+res);
+		request.setRequestHeader(uploadFilePathHeaderName, res);
+		request.setRequestHeader(uploadFileNameHeaderName, uploadMeta.name);
 	}
 	if(sendAuth){
 		request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
@@ -1458,8 +1546,14 @@ function createTaskDiv(task, i, disabled){
 	var taskName = createInput("Name", task.name, "taskName_"+i, disabled,false,  true);
 	tasksDiv.append(taskName);
 	tasksDiv.append(document.createElement("br"));
-	var taskPath = createInput("Path", task.path, "taskPath_"+i, disabled,false, true);
-	tasksDiv.append(taskPath);
+		
+	var select = createSelect("-- Choose a Script --", task.path, "taskPath_"+i,disabled,true); 
+	tasksDiv.append(select);	
+	
+	//var taskPath = createInput("Path", task.path, "taskPath_"+i, disabled,false, true);
+	//tasksDiv.append(taskPath);
+	
+	
 	tasksDiv.append(document.createElement("br"));
 	var taskArgs = createInput("Arguments", task.args, "taskArgs_"+i, disabled,false,false);
 	tasksDiv.append(taskArgs);
@@ -1490,6 +1584,7 @@ function deleteTest(){
 	}
 }
 
+
 function addTask(){
 	var task = {};
 	task.name="";
@@ -1499,6 +1594,7 @@ function addTask(){
 	var markSpan = document.getElementById("maskSpan");
 	var taskDiv = createTaskDiv(task, getCurrentTaskIndex(), false);
 	maskSpan.append(taskDiv);
+	doRequest("GET", "../script", fillScripts);
 }
 
 function getCurrentTaskIndex(){
@@ -1537,6 +1633,27 @@ function initNewTestPage(){
 	addTask();
 }
 
+function createSelect(title, script, id, disabled,required){ 
+
+	var select = document.createElement("select");
+	select.classList.add("form-control");
+	select.classList.add("scriptSelect");
+	select.id=id;
+	select.disabled=disabled;
+	select.required=required;
+	
+	var option = document.createElement("option");
+	option.text = title;
+	option.disabled=true;
+	if(script!==undefined&&script!==null){
+		option.selected=true;
+		select.preselectScript=script;
+	}
+	option.value="";
+	select.add(option);
+	return select;
+}
+	
 function createInput(title, value, id, disabled, bold, required){
 	var resultSpan = document.createElement("span");
 	

@@ -79,7 +79,6 @@ public class ScriptService {
 	// we are using a query param as it contains / and or \
 	public Response getScript(@Context HttpHeaders headers, @QueryParam("name") String path) throws Exception {
 		String scriptsPathStrng = PathFinder.getScriptsFolder() + path;
-		Persistence.validateFileNameSafe(path,true);
 		if (!PathFinder.isPathSafe(scriptsPathStrng, PathFinder.getScriptsFolder())) {
 			Log.log(Level.WARNING, "Get script failed due to unsafe path '" + path + "'");
 			return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
@@ -116,27 +115,95 @@ public class ScriptService {
 	public Response uploadScriptMPFD(@Context HttpHeaders headers, @FormDataParam("file") InputStream fileInputStream) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
-		String fileName;
-		String filePath;
 		byte[] buf;
+		String filePath;
+		String fileName;
+		String relativePath;
 		try {
 			buf = IOUtils.toByteArray(fileInputStream);
-			fileName = headers.getRequestHeader(Settings.getSingleton().getFilePathHeader()).get(0);
-			filePath = PathFinder.getScriptsFolder() + fileName;
+			fileName = headers.getRequestHeader(Settings.getSingleton().getFileNameHeader()).get(0);
+			String filePathHeaderValue = headers.getRequestHeader(Settings.getSingleton().getFilePathHeader()).get(0);
+			relativePath = fileName;
+			if(!filePathHeaderValue.equals("/") && !filePathHeaderValue.equals("")){
+				relativePath = filePathHeaderValue+File.separator+fileName;				
+			}
+			filePath = PathFinder.getScriptsFolder() + relativePath;
+			
 		}catch (Exception e) {
+			e.printStackTrace();
 			return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
 		}
 		Persistence.validateFileNameSafe(fileName,true);
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
 			Persistence.writeByteArrToFile(filePath, buf, "Uploaded binary script '"+fileName+"'",userName);
-			return Response.status(201).entity("OK").type(MediaType.TEXT_PLAIN).build();
+			new File(filePath).setExecutable(true);
+			return Response.status(201).entity(relativePath).type(MediaType.TEXT_PLAIN).build();
 		}
 		Log.log(Level.WARNING, "Upload Script failed due to unsafe path '" + filePath + "'");
 		return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
 	}
+	
+	@LogRequest
+	@Authenticate("READ")
+	@GET
+	@Path("/folder")
+	@ApiOperation( value = "[READ] Return the script folder contents")
+	public Response getFolders(@Context HttpHeaders headers) throws Exception {
+		File scriptsFolder = new File(PathFinder.getScriptsFolder());
+		File[] scriptFolderFiles = scriptsFolder.listFiles();
+		
+		JsonArray folderHierarchy = listDirectories(scriptFolderFiles);
+		
+		return Response.status(200).entity(folderHierarchy.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	
+	
+	// TODO move to Helper class
+	public static JsonArray listDirectories(File[] files) {
+		JsonArray folderHierarchy = new JsonArray();
+		folderHierarchy = listDirectoriesInternal(files, folderHierarchy,null);
+		return folderHierarchy;
+	}
+		
+	public static JsonArray listDirectoriesInternal(File[] files, JsonArray folderHierarchy, JsonObject whereToAdd) {
+		String scriptsPathStrng;
+		int scriptsPathLength=0;
+		try {
+			scriptsPathStrng = PathFinder.getScriptsFolder();
+			scriptsPathLength = scriptsPathStrng.length();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
+		for (File file : files) {
+			if (file.isDirectory() && !file.getName().startsWith(".")) {
+				JsonObject a = new JsonObject();
+				a.addProperty("name",file.getName());
+				a.addProperty("path",file.getPath().substring(scriptsPathLength));
+				
+				a.add("_children",new JsonArray());
+				if(whereToAdd==null) {
+					folderHierarchy.add(a);		
+				}else {
+					whereToAdd.get("_children").getAsJsonArray().add(a);
+				}
+				listDirectoriesInternal(file.listFiles(),folderHierarchy,a);
+			}else {
+				JsonObject a = new JsonObject();
+				a.addProperty("name",file.getName());
+				a.addProperty("path",file.getPath().substring(scriptsPathLength));
 
-
+				if(whereToAdd==null) {
+					folderHierarchy.add(a);
+				}else {
+					whereToAdd.get("_children").getAsJsonArray().add(a);					
+				}
+			}
+		}
+		return folderHierarchy;
+	}
+	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@POST
@@ -145,15 +212,32 @@ public class ScriptService {
     @ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
 	public Response uploadScript(@Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-		String fileName = headers.getRequestHeader("X-File-Path").get(0);
-		String filePath = PathFinder.getScriptsFolder() + fileName;
-		Persistence.validateFileNameSafe(fileName,true);
-		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder()) && fileName.length() > 0) {
-			Log.log(Level.INFO, "Upload Script failed '" + filePath + "'");
-			Persistence.writeUTF8StringToFile(body, filePath, "Uploaded  script '"+fileName+"'", userName);
-			return Response.status(200).entity("OK").type(MediaType.TEXT_PLAIN).build();
+		try {
+			// TODO use singleton
+			String fileName = headers.getRequestHeader("X-File-Name").get(0);
+			String filePathHeaderValue = headers.getRequestHeader("X-File-Path").get(0);
+			String relativePath=fileName;
+			if(!filePathHeaderValue.equals("/") && !filePathHeaderValue.equals("")){
+				relativePath = filePathHeaderValue+File.separator+fileName;				
+			}
+			String filePath = PathFinder.getScriptsFolder() + relativePath;
+			
+			if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder()) && fileName.length() > 0) {
+				Log.log(Level.INFO, "Upload Script failed '" + filePath + "'");
+				File script = new File(filePath);
+				if(script.exists()) {
+					Persistence.writeUTF8StringToFile(body, filePath, "Edited script '"+fileName+"'", userName);				
+				}else {
+					Persistence.writeUTF8StringToFile(body, filePath, "Uploaded script '"+fileName+"'", userName);
+				}
+				new File(filePath).setExecutable(true); // new file as we need the new handle
+				return Response.status(200).entity(relativePath).type(MediaType.TEXT_PLAIN).build();
+			}
+			Log.log(Level.WARNING, "Upload Script failed due to unsafe path '" + filePath + "'");
+		}catch (Exception e) {
+			e.printStackTrace();
+			// missing params
 		}
-		Log.log(Level.WARNING, "Upload Script failed due to unsafe path '" + filePath + "'");
 		return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
 	}
 	
@@ -164,9 +248,15 @@ public class ScriptService {
 	@ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
 	public Response deleteScript(@Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-		String fileName = headers.getRequestHeader(Settings.getSingleton().getFilePathHeader()).get(0);
-		String filePath = PathFinder.getScriptsFolder() + fileName;
-		Persistence.validateFileNameSafe(fileName,true);
+
+		// TODO use singleton
+		String fileName = headers.getRequestHeader("X-File-Name").get(0);
+		String filePathHeaderValue = headers.getRequestHeader("X-File-Path").get(0);
+		String relativePath=fileName;
+		if(!filePathHeaderValue.equals("/") && !filePathHeaderValue.equals("")){
+			relativePath = filePathHeaderValue+File.separator+fileName;				
+		}
+		String filePath = PathFinder.getScriptsFolder() + relativePath;
 		
 		if (PathFinder.isPathSafe(filePath, PathFinder.getScriptsFolder())) {
 			boolean res = Persistence.deleteFile(filePath,userName);
@@ -185,8 +275,18 @@ public class ScriptService {
 	@Path("/type")
 	@ApiOperation(value = "[READWRITEEXECUTE] Returns script type, either 'text' or 'binary'")
 	public Response getScriptType(@Context HttpHeaders headers, @QueryParam("name") String path) throws Exception {
+	
+		String scriptsPathStrng = PathFinder.getScriptsFolder();		
 		JsonObject res = new JsonObject();
 		res.addProperty("type", isTextFile(path) ? "text" : "binary");
+		File fileObj = new File(scriptsPathStrng+path);
+		res.addProperty("name", fileObj.getName());
+		int endIndex =  path.length()-fileObj.getName().length()-1;
+		if(endIndex<0) {
+			res.addProperty("path", "");
+		}else {
+			res.addProperty("path", path.substring(0,endIndex));			
+		}
 		return Response.status(200).entity(res.toString()).type(MediaType.APPLICATION_JSON).build();
 	}
 

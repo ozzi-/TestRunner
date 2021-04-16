@@ -421,4 +421,5 @@ public class ManagementService {
 		Persistence.deleteCategory(categoryName, userName);
 		return Response.status(200).build();
 	}
+
 }

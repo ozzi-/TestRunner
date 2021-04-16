@@ -5,12 +5,20 @@
   <li class="nav-item">
     <a class="nav-link" id="navFE" href="#" onclick="scriptAddBtn('fe')">File Editor</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" id="navFO" href="#" onclick="scriptAddBtn('fo')">Folders</a>
+  </li>
 </ul>
 
-<div id="scriptEditor" style="display:none">
+<div id="scriptEditorTab" style="display:none">
 	<textarea id="editor"></textarea>
 	<div class="container">
   		<div class="row">
+  		    <div class="col-sm">
+  				<select class="form-control folderSelect" id="scriptFolder" required>
+					<option selected value="/">/</option>
+				</select>
+			</div>
     		<div class="col-sm">
 				<input type="text" class="form-control" id="scriptName" placeholder="Script Name (including file ending)">
 			</div>
@@ -20,7 +28,7 @@
 		</div>
 	</div>
 </div>
-<div id="scriptUpload" style="display:none">
+<div id="scriptUploadTab" style="display:none">
 	<div id="scriptAddDropZoneDiv">
 		<div class="container">
 			<div class="row">
@@ -30,7 +38,28 @@
 					</div>
 				</div>
 			</div>
+			Choose upload directory:
+			<select class="form-control folderSelect" id="scriptFolderBinary" required>
+				<option selected value="/">/</option>
+			</select>
 		</div>
 	</div>
 </div>
+<div id="scriptFolderTab" style="display:none">
+	<br>
+	Choose parent folder:
+	<select class="form-control folderSelect" id="scriptFolderBinary" required>
+		<option selected value="/">/</option>
+	</select>
+	Choose a folder name:
+	<input type="text" class="form-control" id="folderCreate" placeholder="Folder Name">
+	<br>
+	<button class="btn btn-primary" type="submit" onclick="createNewFolder()">Create Folder</button>
+	<br><br><hr><br>
+	<select class="form-control folderSelect" id="scriptFolderBinary" required>
+	</select>
+	<br>
+	<button class="btn btn-danger" type="submit" onclick="removeFolder()">Remove Folder and its content</button>
+</div>
+
 
