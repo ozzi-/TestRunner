@@ -1053,9 +1053,9 @@ function fillScripts(res){
 				scriptSelects[i].appendChild(option);
 			}
 			if(scriptSelects[i].preselectScript!==undefined){
-				console.log(scriptSelects[i].preselectScript+"!!!");
 				scriptSelects[i].value=scriptSelects[i].preselectScript;
-				if(scriptSelects[i].value==""){
+				// check if it is an exiting test, if the script can't be selected, it is an invalid value
+				if(getQueryParams(document.location.search).name !==undefined && scriptSelects[i].value==""){
 					alert("The script \""+scriptSelects[i].preselectScript+"\" does not exist (anymore)");
 				}
 			}
