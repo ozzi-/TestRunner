@@ -203,7 +203,7 @@ public class ManagementService {
 		JSONObject testJO;
 		try {
 			testJO =  new JSONObject(body);	
-			Helpers.parseTest(testJO,testName);
+			Helpers.parseTest(testJO,testName,false);
 		}catch (Exception e) {
 			throw new Exception("Error parsing test - "+e.getMessage());
 		}
@@ -224,7 +224,7 @@ public class ManagementService {
 		JSONObject testJO;
 		try {
 			testJO =  new JSONObject(body);	
-			Helpers.parseTest(testJO,testName);
+			Helpers.parseTest(testJO,testName,false);
 		}catch (Exception e) {
 			throw new Exception("Error parsing test - "+e.getMessage());
 		}

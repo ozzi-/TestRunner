@@ -20,6 +20,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.MalformedJsonException;
 
+import persistence.Persistence;
+import pojo.Commit;
 import pojo.GroupTestAbstraction;
 import pojo.LastRunCache;
 import pojo.Task;
@@ -112,7 +114,7 @@ public class TRHelper {
 		Settings.getSingleton().setRunningCount(Settings.getSingleton().getRunningCount()+1);
 		
 		JSONObject obj = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testName));
-		Test test = Helpers.parseTest(obj, testName);
+		Test test = Helpers.parseTest(obj, testName,true);
 
 		ArrayList<Task> tasks = test.tasks;
 		for (Task task : tasks) {
@@ -141,6 +143,13 @@ public class TRHelper {
 		long curMil = System.currentTimeMillis();
 		String handle = String.valueOf(curMil);
 		Test test = new Test();
+		// TODO refactor gathering commits:
+		for (Object testObj : tests) {
+			JSONObject testToAdd = (JSONObject) testObj;
+			String testToAddName = testToAdd.getString(TEST);
+			test.commit.add(new Commit(testToAddName, Persistence.getCurrentCommitOfTest(testToAddName)));
+		}
+		
 		test.description = "Group Test '" + groupName + "' consisting of tests: ";
 		test.name = groupName;
 		test.tag = tag;
@@ -418,7 +427,7 @@ public class TRHelper {
 			test.description += testToAddName + ", ";
 			addedTest = true;
 			JSONObject objd = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testToAddName));
-			Test testD = Helpers.parseTest(objd, testToAddName);
+			Test testD = Helpers.parseTest(objd, testToAddName,true);
 			if (testD.successHook != null) {
 				test.successHook = testD.successHook;
 			}

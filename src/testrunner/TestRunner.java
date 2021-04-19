@@ -13,17 +13,22 @@ import persistence.Persistence;
 
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
-	
-	// TODO when running tests, save meta data current commit of test config & script involved
-	// TODO revert to old versions of file via UI?
-	// TODO dropdown when choosing test scripts?
 
+	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// TODO ?page=new --> SCRIPT DOES NOT EXIST ANYMORE
+	
+	// TODO WIP - - revert to old versions of file via UI? --> function revert(){ fe.js --> TODO backend call
+	// https://dev.to/lofiandcode/git-and-github-how-to-revert-a-single-file-dha
+
+	
+	
 	// TODO frontend JS refactoring 
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
 	// TODO different OS -> TestRunner satellite agents 
 	// TODO create script text button -> repeat error
 	// TODO scriptadd -> folder create & delete functionality
 	// TODO timeout gives "unknown error" instead of properly handled by frontend
+	// TODO creating results gives git error (check log for potential others)
 	
 	@Override
 	public void onReload(Container container) {

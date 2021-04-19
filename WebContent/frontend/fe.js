@@ -1225,6 +1225,14 @@ function listResults(results,paramName) {
 
 }
 
+function revert(){
+	alert("TODO");
+	// TODO URL param file path & commit id
+	var commitID = getQueryParams(document.location.search).id;
+
+	doRequest("POST", "../manage/checkout", alert,[]);		
+}
+
 function killSession(){
 	var userName = document.getElementById("sessionKillUsername").value;
 	if(userName!=""){
@@ -1257,13 +1265,25 @@ function listResult(result) {
 	// TODO remove innerHTML here
 	var infoSpan = document.getElementById("info");
 	infoSpan.innerHTML = ("<h3"+style+">" + escapeHtml(result.testName) + " - "+ result.testStartString + "</h3>");
-	infoSpan.innerHTML += "<b>Run by</b>: "+escapeHtml(result.testRunBy)+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description) + "<br><hr>";
+	infoSpan.innerHTML += "<b>Run by</b>: "+escapeHtml(result.testRunBy)+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description)+"<br><br><b>Test Commits:</b><br>";
+	if(result.commits==undefined){
+		infoSpan.innerHTML+="-";
+	}else{
+		for (var i = 0; i < result.commits.length; i++) {
+			infoSpan.innerHTML += result.commits[i].name+" - "+result.commits[i].commit+"<br>";
+		}		
+	}
+	infoSpan.innerHTML +="<hr>";
 
 	var resultsSpan = document.getElementById("results");
 	for (var i = 0; i < result.results.length; i++) {
 		// tests in groups have a descriptive name
+		if(result.results[i].commit==undefined){
+			result.results[i].commit="-";
+		}
 		var descriptiveName =  result.results[i].descriptiveName==undefined?"":result.results[i].descriptiveName+ " - ";
 		resultsSpan.innerHTML += "<h3>"+escapeHtml(descriptiveName+result.results[i].name) + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
+				+ "<b>Script Commit</b>: <i>"+ escapeHtml(result.results[i].commit) + "</i><br>"
 				+ "<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>"
 				+ "<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " 
 				+ "<b>Error Output:</b><br> " + escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />") + "<br>"

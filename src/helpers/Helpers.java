@@ -18,6 +18,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import persistence.Persistence;
+import pojo.Commit;
 import pojo.Task;
 import pojo.Test;
 
@@ -155,7 +157,7 @@ public class Helpers {
 		return dtf.format(System.currentTimeMillis());
 	}
 
-	public static Test parseTest(JSONObject jo, String name) throws Exception {
+	public static Test parseTest(JSONObject jo, String name, boolean getCommitInfo) throws Exception {
 		JSONObject settings;
 		JSONObject test;
 		Test testElem = new Test();
@@ -173,6 +175,9 @@ public class Helpers {
 			}
 			test = (JSONObject) jo.get(TRHelper.TEST);
 			testElem.name = name;
+			if(getCommitInfo) {
+				testElem.commit.add(new Commit(name, Persistence.getCurrentCommitOfTest(name)));				
+			}
 			testElem.description = test.getString(TRHelper.DESCRIPTION);
 			JSONArray tasks = (JSONArray) test.get(TRHelper.TASKS);
 			for (Object taskObj : tasks) {
@@ -180,6 +185,9 @@ public class Helpers {
 				Task taskElem = new Task();
 				taskElem.name = task.getString(TRHelper.NAME);
 				taskElem.path = task.getString(TRHelper.PATH);
+				if(getCommitInfo) {
+					taskElem.commit = Persistence.getCurrentCommitOfScript(taskElem.path);					
+				}
 				if (task.has(TRHelper.ARGS)) {
 					JSONArray args = task.getJSONArray(TRHelper.ARGS);
 					for (Object argObj : args) {

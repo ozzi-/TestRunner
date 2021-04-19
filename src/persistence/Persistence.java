@@ -47,6 +47,7 @@ import helpers.Helpers;
 import helpers.Log;
 import helpers.PathFinder;
 import helpers.TRHelper;
+import pojo.Commit;
 import pojo.Result;
 import pojo.Results;
 import pojo.Test;
@@ -200,7 +201,7 @@ public class Persistence {
 	private static String getDiffOfCommit(RevCommit newCommit) throws IOException {
 	    RevCommit oldCommit = getPrevHash(newCommit);
 	    if(oldCommit == null){
-	        return "Start of repo";
+	        return "Start of Repository";
 	    }
 	    AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(oldCommit);
 	    AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(newCommit);
@@ -261,8 +262,15 @@ public class Persistence {
 	
 	public static String getTestRunAsJSON(Test test, Results results, String userName) {
 		JsonObject res = new JsonObject();
-		Log.log(Level.FINE, "Persisting test "+test.name+" as JSON");
 		res.addProperty("testName", test.name);
+		JsonArray commits = new JsonArray();
+		for (Commit commit : test.commit) {
+			JsonObject commitJO = new JsonObject();
+			commitJO.addProperty("name", commit.getNameOfFile());
+			commitJO.addProperty("commit", commit.getRevisionOfFile());
+			commits.add(commitJO);
+		}
+		res.add("commits", commits);
 		res.addProperty("testStartTimestamp", test.start);
 		res.addProperty("testRunBy", userName);
 		res.addProperty("testStartString", Helpers.getDateFromUnixTimestamp(test.start));
@@ -278,6 +286,7 @@ public class Persistence {
 	}
 	
 	public static String persistTestRunAsJSONFile(Test test, Results results, boolean group, String userName) throws Exception {
+		Log.log(Level.FINE, "Persisting test "+test.name+" as JSON");
 		String json = getTestRunAsJSON(test, results, userName);
 		String handle = String.valueOf(test.start);
 		String fullPersistencePath;
@@ -527,4 +536,24 @@ public class Persistence {
 				throw new Exception("Cannot write to the TestRunner directories under \""+PathFinder.getBasePath()+"\". Please make sure Tomcat has RWX permissions for all files under said directory.");
 			}
 	}
+
+	public static String getCurrentCommitOfTest(String name) throws Exception {
+		String filePath = PathFinder.getTestFolderName()+"/"+name+PathFinder.getTestLabel();
+		return getLatestCommit(filePath);
+	}
+
+	public static String getCurrentCommitOfScript(String path) throws Exception {		
+		String filePath = PathFinder.getTestFolderName()+"/"+PathFinder.getScriptFolderName()+"/"+(path.replace("\\", "/"));
+		
+		return getLatestCommit(filePath);
+	}
+	
+	private static String getLatestCommit(String filePath) throws Exception {
+		LogCommand logCommand = git.log().setMaxCount(1)
+		        .add(git.getRepository().resolve(Constants.HEAD))
+		        .addPath(filePath);
+
+		return logCommand.call().iterator().next().getName();
+	}
+
 }

@@ -121,20 +121,24 @@ function pageLogic (response){
 			document.getElementById("showMoreBtn").remove();
 			doRequest("GET", "../manage/history/test/"+testname, showHistory, [true]);
 			title="Commits of test '"+testname+"'";
+			document.getElementById("revertCommit").remove();
 		}else if(groupname!==undefined){
 			document.getElementById("commitSpan").remove();
 			document.getElementById("showMoreBtn").remove();
 			doRequest("GET", "../manage/history/testgroup/"+groupname, showHistory,[true]);
 			title="Commits of group '"+groupname+"'";
+			document.getElementById("revertCommit").remove();
 		}else if(scriptname!==undefined){
 			document.getElementById("commitSpan").remove();
 			document.getElementById("showMoreBtn").remove();
 			doRequest("GET", "../manage/history/script/?name="+encodeURIComponent(scriptname), showHistory, [true]);
 			title="Commits of script '"+scriptname+"'";
+			document.getElementById("revertCommit").remove();
 		}else{
 			document.getElementById("commitSpan").remove();
 			doRequest("GET", "../manage/history/0", showHistory,[true]);
-			title="Commit history"
+			title="Commit history";
+			document.getElementById("revertCommit").remove();
 		}
 		document.getElementById("titleSpan").textContent=title;
 	}

@@ -20,6 +20,8 @@ public class Result {
 	public long runTimeInMS;
 	public long timestampStart;
 	public long timestampEnd;
+	public String path;
+	public String commit;
 
 	@Override
 	public String toString() {
@@ -29,6 +31,8 @@ public class Result {
 	public JsonObject toJsonObject() {
 		JsonObject res = new JsonObject();
 		res.addProperty(TRHelper.NAME, name);
+		res.addProperty("commit", commit);
+		res.addProperty("path", path);
 		res.addProperty("descriptiveName", descriptiveName);
 		res.addProperty(TRHelper.PASSED, pass);
 		res.addProperty(TRHelper.DESCRIPTION, text);

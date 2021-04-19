@@ -86,12 +86,14 @@ public class Testing {
 		Log.log(Level.INFO, "Starting test "+task.name);
 
 		Result result = new Result();
+		result.path=task.path;
+		result.commit=task.commit;
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ByteArrayOutputStream errout = new ByteArrayOutputStream();
 		long startTime = System.nanoTime();
 		result.timestampStart=System.currentTimeMillis();
 		ProcBuilder builder = null;
-		try {		
+		try {
 			String procPath = isAbsolute(task.path)?task.path:PathFinder.getScriptsFolder()+task.path;
 			builder = new ProcBuilder(procPath, Helpers.getStringArray(task.args))
 					.withTimeoutMillis(task.timeoutInSeconds*1000)
