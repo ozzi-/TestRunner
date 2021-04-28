@@ -191,7 +191,12 @@ public class Helpers {
 				if (task.has(TRHelper.ARGS)) {
 					JSONArray args = task.getJSONArray(TRHelper.ARGS);
 					for (Object argObj : args) {
-						taskElem.args.add(argObj.toString());
+						if(!argObj.toString().equals("")) {
+							Log.log(Level.FINEST, "Adding cli arg "+argObj.toString());
+							taskElem.args.add(argObj.toString());
+						}else {
+							Log.log(Level.FINEST, "Ignoring cli arg as equals empty");
+						}
 					}
 				}
 				if (task.has(TRHelper.TIMEOUT)) {

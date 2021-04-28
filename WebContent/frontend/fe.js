@@ -284,7 +284,10 @@ function saveTest(){
 		}
 		taskCounter++;
 	}
-	
+	// since an empty string results in split returning an array with one empty string entry, clean up:
+	if(task.args.length==1 && task.args[0]==""){
+		task.args=[];
+	}
 	var testName = getQueryParams(document.location.search).name;
 	if(testName==undefined){
 		testName = document.getElementById("testName").value;
