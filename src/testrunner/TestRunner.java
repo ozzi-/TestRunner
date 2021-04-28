@@ -20,9 +20,7 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	// TODO scriptadd -> folder create & delete functionality
 	// TODO results create but don't change a file -> this logs git warning, improve code or exclude check for ADD result
 	// TODO CLI args are comma seperated in test, additional tags via space!
-	
-	// TODO rerun button after test fail?  ask jonaske
-	
+		
 	// TODO frontend JS refactoring 
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
 

@@ -1171,6 +1171,28 @@ function addResults(results,paramName){
 	document.getElementById("loadmore").disabled = false;
 }
 
+
+function reRunLink() {
+	removeLoader();
+	var runLink = document.getElementById("runLink");
+
+	
+	var isGroup=false;
+	var name = getQueryParams(document.location.search).name;
+	if(name === undefined || name == "undefined"){
+		name = getQueryParams(document.location.search).groupname;
+		isGroup=true;
+	}
+
+	if(localStorage.getItem(trRole)!=="r"){
+		if(isGroup){
+			createNavButton("runLink","Rerun Test Group &#9654;", 'index.html?page=run&groupname='+encodeURIComponent(name));
+		}else{
+			createNavButton("runLink","Rerun Test &#9654;", 'index.html?page=run&name='+encodeURIComponent(name));
+		}
+	}
+}
+
 function listResults(results,paramName) {
 	removeLoader();
 	var testName = document.getElementById("testName");

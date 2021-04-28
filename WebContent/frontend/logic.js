@@ -68,6 +68,7 @@ function pageLogic (response){
 	if(page=="result"){
 		var handle = getQueryParams(document.location.search).handle;
 		var name = getQueryParams(document.location.search).name;
+		reRunLink();
 		if(name === undefined || name == "undefined"){
 			name = getQueryParams(document.location.search).groupname;
 			doRequest("GET", "../tr/result/group/" + name + "/" + handle, listResult);
