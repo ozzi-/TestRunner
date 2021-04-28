@@ -86,6 +86,29 @@ public class ManagementService {
 	}
 	
 	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
+	@POST
+	@Path("/history/revert/{id}")
+	@Produces("application/json; charset=UTF-8")
+	@ApiOperation( value = "[READWRITEEXECUTE] Revert to a specific commit")
+	public Response revertFileToCommit(@Context HttpHeaders headers, @PathParam("id") String id) throws Exception {
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		Log.log(Level.INFO, "'"+userName+"' is reverting to commit '"+id+"'");
+		
+		RevCommit rev = Persistence.getCommit(id);
+		if(rev==null) {
+			return Response.status(404).build();
+		}
+		
+		Persistence.revertCommit(rev.getName(),userName);
+		JsonObject res = new JsonObject();
+		res.addProperty("reverted", true);
+
+		return Response.status(200).entity(res.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	
+	@LogRequest
 	@Authenticate("READ")
 	@GET
 	@Path("/history/commit/{id}")

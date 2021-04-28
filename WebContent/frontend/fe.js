@@ -166,6 +166,14 @@ function scriptDeleted(response){
 	}
 }
 
+function revertedTo(response,a){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Reverted to commit");
+		window.location.replace("index.html?page=history");
+	}
+}
 
 function proccessPasswordChangeForUser(response){
 	if(response.status!=200){
@@ -608,13 +616,16 @@ function showCommit(rev){
 	var textAreaEditor = document.getElementById('editor');
 	textAreaEditor.value=rev.diff;
 	
+	if(rev.diff=="Start of Repository"){
+		document.getElementById("revertCommit").remove();
+	}
 	var editor = CodeMirror.fromTextArea(textAreaEditor, {
 		mode: "diff",
 		readOnly: true,
 		lineWrapping: true,
 		lineNumbers: true,
 	});
-	editor.setSize("100%","55vh");
+	editor.setSize("100%","50vh");
 	
 	
 	removeLoader();
@@ -627,7 +638,7 @@ function loadTextScriptEdit(scriptContent){
 
 	if(name.endsWith(".md")){
 		mode="markdown";
-	}else if(name.endsWith(".js")){
+	}else if(name.endsWith(".js") || name.endsWith(".json")){
 		mode="text/javascript";
 	}else if(name.endsWith(".java")){
 		mode="jsx";
@@ -663,14 +674,20 @@ function loadTextScriptEdit(scriptContent){
 		mode="xml";
 	}else if(name.endsWith(".yaml")){
 		mode="yaml";
-	}	
+	}
 	
 	var textAreaEditor = document.getElementById('editor');
-	
-	var editor = CodeMirror.fromTextArea(textAreaEditor, {
-		mode: mode,
-		lineNumbers: true,
-	});
+	var editor;
+	if(name.endsWith(".bat")){
+		editor = CodeMirror.fromTextArea(textAreaEditor, {
+			lineNumbers:true,
+		});
+	}else{
+		editor = CodeMirror.fromTextArea(textAreaEditor, {
+			mode: mode,
+			lineNumbers: true,
+		});		
+	}
 	editor.setSize("100%","73vh");
 	textAreaEditor.editorHandle=editor;
 	removeLoader();
@@ -861,7 +878,7 @@ function listTestCategories(categories, tests){
 	    layout:"fitDataFill",
 	    groupValues:[plainCategories],
 	    columns:[
-	        {title:"Test", field:"name", width:400},
+	        {title:"Categories", field:"name", width:400},
 	        {formatter:"buttonCross", align:"center", title:"", headerSort:false, cellClick:function(e, cell){
 	        	if(confirm('Are you sure you want to remove this test from the category?'))
 	        		var testName = cell.getRow()._row.data.name;
@@ -1035,11 +1052,12 @@ function listGroups(groups){
 	if(localStorage.getItem(trRole)==="rwx" || localStorage.getItem(trRole)==="a" ){
 		document.getElementById("testGroupsSettings").style.display="";
 		document.getElementById("testSettings").style.display="";
+		document.getElementById("testAdd").style.display="";
 		document.getElementById("scriptAdd").style.display="";
 	}
 }
 
-function fillScripts(res){
+function fillScripts(res, checkScriptExistent){
 	var scriptSelects = document.getElementsByClassName("scriptSelect");
 	for(let i = 0; i < scriptSelects.length; i++){
 		if(scriptSelects[i].wasFilled===undefined){
@@ -1055,7 +1073,7 @@ function fillScripts(res){
 			if(scriptSelects[i].preselectScript!==undefined){
 				scriptSelects[i].value=scriptSelects[i].preselectScript;
 				// check if it is an exiting test, if the script can't be selected, it is an invalid value
-				if(getQueryParams(document.location.search).name !==undefined && scriptSelects[i].value==""){
+				if(checkScriptExistent && getQueryParams(document.location.search).name !==undefined && scriptSelects[i].value==""){
 					alert("The script \""+scriptSelects[i].preselectScript+"\" does not exist (anymore)");
 				}
 			}
@@ -1221,16 +1239,12 @@ function listResults(results,paramName) {
 		}
 		table.setData(results);
 	}
-	doRequest("GET", "../script", fillScripts);
-
+	doRequest("GET", "../script", fillScripts,[true]);
 }
 
 function revert(){
-	alert("TODO");
-	// TODO URL param file path & commit id
 	var commitID = getQueryParams(document.location.search).id;
-
-	doRequest("POST", "../manage/checkout", alert,[]);		
+	doRequestBody("POST", "", "application/json", "../manage/history/revert/"+commitID, revertedTo, true ,true);
 }
 
 function killSession(){
@@ -1303,7 +1317,7 @@ function editTestContent(result){
 	var form = createTestMask(result,false);
 	var testContent = document.getElementById("testContent");
 	testContent.append(form);
-	doRequest("GET", "../script", fillScripts);
+	doRequest("GET", "../script", fillScripts,[true]);
 }
 
 // ***********
@@ -1345,7 +1359,12 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth, uplo
 						if(isJsonString(e.message)){
 							alert("Error ("+request.status+"): "+e.message);							
 						}else{
-							alert("Unknown error ("+request.status+"): "+request.responseText);	
+							if(request.responseText=="NOK"){
+								window.errorReported=false;
+								alert("Invalind input received ("+request.status+"): "+request.responseText);	
+							}else{
+								alert("Unknown error ("+request.status+"): "+request.responseText);
+							}
 						}
 					}
 				}
@@ -1578,7 +1597,7 @@ function createTaskDiv(task, i, disabled){
 	var taskArgs = createInput("Arguments", task.args, "taskArgs_"+i, disabled,false,false);
 	tasksDiv.append(taskArgs);
 	tasksDiv.append(document.createElement("br"));
-	var taskTimeout = createInput("Timeout", task.timeout, "taskTimeout_"+i, disabled,false, true);
+	var taskTimeout = createInput("Timeout", task.timeout, "taskTimeout_"+i, disabled,false, true,true);
 	tasksDiv.append(taskTimeout);
 	tasksDiv.append(document.createElement("br"));
 	
@@ -1605,7 +1624,7 @@ function deleteTest(){
 }
 
 
-function addTask(){
+function addTask(checkExistence){
 	var task = {};
 	task.name="";
 	task.path="";
@@ -1614,7 +1633,7 @@ function addTask(){
 	var markSpan = document.getElementById("maskSpan");
 	var taskDiv = createTaskDiv(task, getCurrentTaskIndex(), false);
 	maskSpan.append(taskDiv);
-	doRequest("GET", "../script", fillScripts);
+	doRequest("GET", "../script", fillScripts,[checkExistence]);
 }
 
 function getCurrentTaskIndex(){
@@ -1650,7 +1669,7 @@ function initNewTestPage(){
 
 	var form = createTestMask(null,null);
 	testContent.append(form);
-	addTask();
+	addTask(true);
 }
 
 function createSelect(title, script, id, disabled,required){ 
@@ -1674,7 +1693,7 @@ function createSelect(title, script, id, disabled,required){
 	return select;
 }
 	
-function createInput(title, value, id, disabled, bold, required){
+function createInput(title, value, id, disabled, bold, required, isInt){
 	var resultSpan = document.createElement("span");
 	
 	var descriptionSpan = document.createElement("span");
@@ -1690,6 +1709,9 @@ function createInput(title, value, id, disabled, bold, required){
 	var valueInput = document.createElement("input");
 	value = value == undefined? "":value;
 	valueInput.setAttribute("value", value);
+	if(isInt !== undefined){
+		valueInput.type="number";
+	}
 	valueInput.disabled = disabled;
 	valueInput.required = required;
 	valueInput.setAttribute("id",id);

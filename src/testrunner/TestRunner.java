@@ -13,22 +13,23 @@ import persistence.Persistence;
 
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
-
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	// TODO ?page=new --> SCRIPT DOES NOT EXIST ANYMORE
 	
-	// TODO WIP - - revert to old versions of file via UI? --> function revert(){ fe.js --> TODO backend call
-	// https://dev.to/lofiandcode/git-and-github-how-to-revert-a-single-file-dha
-
+	// TODO synchronize all git operations!
+	// TODO copy test
+	// TODO edit test name
+	// TODO scriptadd -> folder create & delete functionality
+	// TODO results create but don't change a file -> this logs git warning, improve code or exclude check for ADD result
+	// TODO CLI args are comma seperated in test, additional tags via space!
 	
+	// TODO rerun button after test fail?  ask jonaske
 	
 	// TODO frontend JS refactoring 
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
+
 	// TODO different OS -> TestRunner satellite agents 
-	// TODO create script text button -> repeat error
-	// TODO scriptadd -> folder create & delete functionality
-	// TODO timeout gives "unknown error" instead of properly handled by frontend
 	// TODO creating results gives git error (check log for potential others)
+	// TODO frontend - collapsed groups will have too low column width
+	// TODO frontend -> show and edit users role
 	
 	@Override
 	public void onReload(Container container) {

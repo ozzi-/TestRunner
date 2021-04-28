@@ -83,7 +83,7 @@ public class Testing {
 	}
 
 	private static Result runTask(Task task) {
-		Log.log(Level.INFO, "Starting test "+task.name);
+		Log.log(Level.INFO, "Starting task "+task.name);
 
 		Result result = new Result();
 		result.path=task.path;
@@ -93,9 +93,15 @@ public class Testing {
 		long startTime = System.nanoTime();
 		result.timestampStart=System.currentTimeMillis();
 		ProcBuilder builder = null;
+		String[] argArray = Helpers.getStringArray(task.args);
+		String args="";
+		for (String arg : argArray) {
+			args += arg+";";
+		}
+		Log.log(Level.FINER, "Task Args = "+args);
 		try {
 			String procPath = isAbsolute(task.path)?task.path:PathFinder.getScriptsFolder()+task.path;
-			builder = new ProcBuilder(procPath, Helpers.getStringArray(task.args))
+			builder = new ProcBuilder(procPath, argArray)
 					.withTimeoutMillis(task.timeoutInSeconds*1000)
 					.withOutputStream(out)
 					.withErrorStream(errout);

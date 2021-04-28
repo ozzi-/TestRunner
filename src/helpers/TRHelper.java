@@ -119,8 +119,10 @@ public class TRHelper {
 		ArrayList<Task> tasks = test.tasks;
 		for (Task task : tasks) {
 			ArrayList<String> argsList = task.args;
-			Collections.addAll(argsList, args.split("\\s+"));
-			Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to test '" + testName+"'");
+			if(args!="") {
+				Collections.addAll(argsList, args.split("\\s+"));
+				Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to task '"+task.name+"' of test '" + testName+"'");				
+			}
 		}
 		test.tag = tag;
 		test.start = System.currentTimeMillis();

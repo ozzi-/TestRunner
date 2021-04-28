@@ -24,12 +24,18 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.errors.AmbiguousObjectException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
@@ -95,6 +101,10 @@ public class Persistence {
 	    }
 	}
 	
+	public static Repository gitRepo() {
+		return git.getRepository();
+	}
+	
 	public static void gitClose() {
 		git.getRepository().close();
 		git.close();
@@ -124,6 +134,9 @@ public class Persistence {
 				}
 		        Status status = git.status().call();
 		        if(status.getChanged().size()<1 && status.getRemoved().size()<1) {
+		        	System.out.println(status.getChanged());
+		        	System.out.println(status.getChanged().size());		        	
+		        	// TODO CREATION OF RESULT TRIGGERS THIS ERROR
 					Log.log(Level.WARNING, "Git reporting no changed file, something must have gone wrong for commit: "+commitMessage+" and path "+gitPath+"!");
 		        }
 		        git.commit().setMessage(commitMessage).setCommitter(author, "TESTRUNNER").call();
@@ -177,13 +190,18 @@ public class Persistence {
 	}
 	
 	public static String diffCommit(String hashID) throws IOException {
-	    RevCommit newCommit;
+	    RevCommit newCommit = getRevByID(hashID);
+	    String res = getDiffOfCommit(newCommit,false);
+	    res = res.replace("\\ No newline at end of file", "");
+	    return res; 
+	}
+
+	private static RevCommit getRevByID(String hashID) throws MissingObjectException, IncorrectObjectTypeException, IOException, AmbiguousObjectException {
+		RevCommit newCommit;
 	    try (RevWalk walk = new RevWalk(git.getRepository())) {
 	        newCommit = walk.parseCommit(git.getRepository().resolve(hashID));
 	    }
-	    String res = getDiffOfCommit(newCommit);
-	    res = res.replace("\\ No newline at end of file", "");
-	    return res; 
+		return newCommit;
 	}
 	
 	public static List<RevCommit> getCommitsForFile(String filePath) throws Exception {
@@ -198,8 +216,45 @@ public class Persistence {
 		return commitsList;
 	}
 	
-	private static String getDiffOfCommit(RevCommit newCommit) throws IOException {
+	
+	
+	public static void revertCommit(String revertToCommit, String userName) throws Exception {		
+		RevCommit toRevert = getRevByID(revertToCommit);
+		ArrayList<String> toRevertFiles = getChangedFiles(toRevert);
+		System.out.println(toRevertFiles.toString());
+		git.checkout().addPaths(toRevertFiles).setStartPoint(toRevert).call();
+		git.commit().setMessage("Reverted to commit "+revertToCommit).setCommitter(userName, "TESTRUNNER").call();
+	}
+
+	private static ArrayList<String> getChangedFiles(RevCommit toRevert) throws Exception {
+	    RevCommit oldCommit = getPrevHash(toRevert);
+
+	    ArrayList<String> filesChanges = magic(toRevert, oldCommit);
+		if(filesChanges.size()==1 && filesChanges.contains("/dev/null")) {
+			ObjectId id = git.getRepository().resolve(Constants.HEAD);
+		    filesChanges = magic(toRevert, getCommit(id.getName()));
+		}
+		return filesChanges;
+	}
+
+	private static ArrayList<String> magic(RevCommit toRevert, RevCommit oldCommit) throws IOException {
+		ArrayList<String> filesChanges = new ArrayList<String>();
+		ByteArrayOutputStream put = new ByteArrayOutputStream(1024);
+		DiffFormatter df = new DiffFormatter(put);
+		df.setRepository(git.getRepository());
+		df.setDiffComparator(RawTextComparator.DEFAULT);
+		df.setDetectRenames(true);
+		List<DiffEntry> diffs = df.scan(toRevert.getTree(), oldCommit.getTree());
+		for (DiffEntry diffEntry : diffs) {
+			filesChanges.add(diffEntry.getNewPath());
+		}
+		df.close();
+		return filesChanges;
+	}
+	
+	private static String getDiffOfCommit(RevCommit newCommit,boolean filePath) throws IOException {
 	    RevCommit oldCommit = getPrevHash(newCommit);
+	    
 	    if(oldCommit == null){
 	        return "Start of Repository";
 	    }
@@ -229,9 +284,14 @@ public class Persistence {
 	        }
 	        walk.dispose();
 	    }
-	    //Reached end and no previous commits.
 	    return null;
+	    //Reached end and no previous commits -> use empty tree hash
+	    //return getRevByID("4b825dc642cb6eb9a060e54bf8d69288fbee4904");
+	    // this magic string could be returned by calling 'git hash-object -t tree /dev/null' - how does that work with jgit though ?
+	    // https://stackoverflow.com/questions/9765453/is-gits-semi-secret-empty-tree-object-reliable-and-why-is-there-not-a-symbolic
 	}
+	
+	
 	
 	// Written by Rüdiger Herrmann -> www.codeaffine.com
 	private static AbstractTreeIterator getCanonicalTreeParser(ObjectId commitId) throws IOException {
@@ -555,5 +615,6 @@ public class Persistence {
 
 		return logCommand.call().iterator().next().getName();
 	}
+
 
 }
