@@ -164,11 +164,10 @@ public class Helpers {
 		Log.log(Level.FINE, "Parsing test config file '"+name+"'");
 		try {
 			settings = (JSONObject) jo.get(TRHelper.SETTINGS);
+			// TODO check with settings.get(x) != null instead of this
 			try {
 				testElem.successHook = settings.getString(TRHelper.SUCCESS_HOOK);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			} catch (Exception e) {}
 			try {
 				testElem.failureHook = settings.getString(TRHelper.FAILURE_HOOK);
 			} catch (Exception e) {
@@ -205,10 +204,14 @@ public class Helpers {
 				testElem.tasks.add(taskElem);
 			}
 		} catch (Exception e) {
+			String exClass = e.getClass().getName();
 			if (e instanceof JSONException) {
+				e.printStackTrace();
 				throw new Exception("Could not load test due to JSON error: " + e.getMessage());
 			} else {
-				throw new Exception("Could not load settings and / or tests from test json: " + e.getMessage());
+				// TODO this needs to be more accurate
+				e.printStackTrace();
+				throw new Exception("Could not load settings and / or tests from test json due to "+exClass+" ("+e.getMessage()+"-"+e.getCause()+")");
 			}
 		}
 		return testElem;

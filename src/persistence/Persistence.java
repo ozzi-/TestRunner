@@ -123,7 +123,7 @@ public class Persistence {
 		gitCommitInternal(commitMessage, author, filePath,true);
 	}
 	
-	private static void gitCommitInternal(String commitMessage, String author, String filePath, boolean doRM) {
+	private static synchronized void gitCommitInternal(String commitMessage, String author, String filePath, boolean doRM) {
 		String gitPath = pathToGitPath(filePath);
 		if(gitReady) {
 			try {
@@ -133,11 +133,8 @@ public class Persistence {
 					git.add().addFilepattern(gitPath).call();
 				}
 		        Status status = git.status().call();
-		        if(status.getChanged().size()<1 && status.getRemoved().size()<1) {
-		        	System.out.println(status.getChanged());
-		        	System.out.println(status.getChanged().size());		        	
-		        	// TODO CREATION OF RESULT TRIGGERS THIS ERROR
-					Log.log(Level.WARNING, "Git reporting no changed file, something must have gone wrong for commit: "+commitMessage+" and path "+gitPath+"!");
+		        if(status.getChanged().size()<1 && status.getRemoved().size()<1 && status.getAdded().size() <1) {
+					Log.log(Level.WARNING, "Git status reports no files changed, removed or added. Something must have gone wrong for commit: "+commitMessage+" and path "+gitPath+"!");
 		        }
 		        git.commit().setMessage(commitMessage).setCommitter(author, "TESTRUNNER").call();
 				Log.log(Level.INFO, "Git commit - \""+commitMessage+"\" - \""+gitPath+"\"");
@@ -218,7 +215,7 @@ public class Persistence {
 	
 	
 	
-	public static void revertCommit(String revertToCommit, String userName) throws Exception {		
+	public static synchronized void revertCommit(String revertToCommit, String userName) throws Exception {		
 		RevCommit toRevert = getRevByID(revertToCommit);
 		ArrayList<String> toRevertFiles = getChangedFiles(toRevert);
 		System.out.println(toRevertFiles.toString());
@@ -597,23 +594,28 @@ public class Persistence {
 			}
 	}
 
-	public static String getCurrentCommitOfTest(String name) throws Exception {
+	public static String getCurrentCommitOfTest(String name) {
 		String filePath = PathFinder.getTestFolderName()+"/"+name+PathFinder.getTestLabel();
 		return getLatestCommit(filePath);
 	}
 
-	public static String getCurrentCommitOfScript(String path) throws Exception {		
+	public static String getCurrentCommitOfScript(String path){		
 		String filePath = PathFinder.getTestFolderName()+"/"+PathFinder.getScriptFolderName()+"/"+(path.replace("\\", "/"));
 		
 		return getLatestCommit(filePath);
 	}
 	
-	private static String getLatestCommit(String filePath) throws Exception {
-		LogCommand logCommand = git.log().setMaxCount(1)
-		        .add(git.getRepository().resolve(Constants.HEAD))
-		        .addPath(filePath);
-
-		return logCommand.call().iterator().next().getName();
+	private static String getLatestCommit(String filePath) {
+		try {
+			LogCommand logCommand = git.log().setMaxCount(1)
+					.add(git.getRepository().resolve(Constants.HEAD))
+					.addPath(filePath);
+			
+			String commit = logCommand.call().iterator().next().getName();
+			return commit;
+		}catch (Exception e) {
+			return "<Commit could not be found due to: "+e.getClass().getName()+"-"+e.getMessage()+">";
+		}
 	}
 
 

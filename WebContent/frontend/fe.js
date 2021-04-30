@@ -13,6 +13,8 @@ var htmlFormatter = function(cell, formatterParams){
     return cell.getValue();
 }
 
+window.onunload = function(){}; 
+
 // TODO move all JS into its own folder, split this file into multiple
 
 // ************
@@ -828,7 +830,7 @@ function addTestGroupEntry(){
 	var group = document.getElementById("testGroupSelect").value;
 	var name = document.getElementById("testName").value;
 	testGroupsTableHandle.addRow([{test: test, name:name, group:group}], false);
-	addTestGroupMappingForm.reset();
+	document.getElementById("addTestGroupMappingForm").reset();
 	
 	var obj = {};
 	obj.test=test;
@@ -1614,12 +1616,8 @@ function createTaskDiv(task, i, disabled){
 	var select = createSelect("-- Choose a Script --", task.path, "taskPath_"+i,disabled,true); 
 	tasksDiv.append(select);	
 	
-	//var taskPath = createInput("Path", task.path, "taskPath_"+i, disabled,false, true);
-	//tasksDiv.append(taskPath);
-	
-	
 	tasksDiv.append(document.createElement("br"));
-	var taskArgs = createInput("Arguments", task.args, "taskArgs_"+i, disabled,false,false);
+	var taskArgs = createInput("Arguments (Comma-seperated)", task.args, "taskArgs_"+i, disabled,false,false);
 	tasksDiv.append(taskArgs);
 	tasksDiv.append(document.createElement("br"));
 	var taskTimeout = createInput("Timeout", task.timeout, "taskTimeout_"+i, disabled,false, true,true);
