@@ -46,11 +46,11 @@ public class Testing {
 						allPassed=false;
 					}
 				}
-				if(allPassed && test.successHook != null) {
+				if(allPassed && test.successHook != null && test.successHook != "") {
 					Log.log(Level.INFO, "Running success hook '"+test.successHook+"' for test '"+test.name+"'");
 					runPostHook(test.successHook);
 				}
-				if(!allPassed && test.failureHook != null) {
+				if(!allPassed && test.failureHook != null && test.failureHook != "") {
 					Log.log(Level.INFO, "Running failure hook '"+test.failureHook+"' for test '"+test.name+"'");
 					runPostHook(test.failureHook);
 				}
