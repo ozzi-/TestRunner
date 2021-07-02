@@ -24,7 +24,6 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	// TODO show running tasks as list?
 	// TODO make Logger.log entries viewable through frontend (we can't read from catalina out but maybe in memory?)
 	// TODO different OS -> TestRunner satellite agents 
-	// TODO creating results gives git error (check log for potential others)
 	// TODO frontend - collapsed groups will have too low column width
 	// TODO frontend -> show and edit users role
 	
