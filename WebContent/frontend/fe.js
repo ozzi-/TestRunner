@@ -1149,7 +1149,7 @@ function loadMore(){
 		doRequest("GET", "../tr/result/group/"+name+"/page/"+pageIndex, addResults,[paramName]);
 	}else{
 		paramName="name";
-		doRequest("GET", "../tr/result/test//"+name+"/page/"+pageIndex, addResults,[paramName]);
+		doRequest("GET", "../tr/result/test/"+name+"/page/"+pageIndex, addResults,[paramName]);
 	}
 }
 
