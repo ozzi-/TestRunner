@@ -258,6 +258,29 @@ public class ManagementService {
 	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
+	@POST
+	@Path("/test/{testname}/copy")
+	@ApiOperation( value = "[READWRITEEXECUTE] Create a test")
+	public Response copyTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		
+		JSONObject testJO;
+		String newTestName;
+		try {
+			testJO =  new JSONObject(body);	
+			newTestName = testJO.getString("name");
+		}catch (Exception e) {
+			throw new Exception("Error parsing json - "+e.getMessage());
+		}
+		Log.log(Level.INFO, "'"+userName+"' is copying test '"+testName+"' -> '"+newTestName+"'");
+
+		Persistence.copyTest(testName,newTestName, userName);
+		
+		return Response.status(200).build();
+	}
+	
+	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/test/{testname}")
 	@ApiOperation( value = "[READWRITEEXECUTE] Delete a test")

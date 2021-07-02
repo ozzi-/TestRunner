@@ -386,6 +386,34 @@ public class Persistence {
 			throw new Exception("Invalid file name - contains: / , \\ , <, > or \"");
 		}
 	}
+	
+	public static synchronized void copyTest(String testName, String newTestName, String userName) throws Exception {
+		validateFileNameSafe(newTestName,false);
+		validateFileNameSafe(testName,false);
+
+		String originalSavePathStrng = PathFinder.getSpecificTestPath(testName);
+		Path originalSavePath = Paths.get(originalSavePathStrng);
+		if(!Files.exists(originalSavePath)) {
+			throw new Exception("Cannot copy a test '"+newTestName+"' that doesn't exist");
+		}
+		
+		String savePathStrng = PathFinder.getSpecificTestPath(newTestName);
+		Path savePath = Paths.get(savePathStrng);
+		if(Files.exists(savePath)) {
+			throw new Exception("A test with the name '"+newTestName+"' already exists!");
+		}
+		Path resultPath = Paths.get(PathFinder.getTestResultsPath(newTestName));
+		if(Files.isDirectory(resultPath)) {
+			throw new Exception("Results for a now deleted test '"+newTestName+"' already exist - please remove the test results or pick another test name");			
+		}
+		try {
+			String originalTestContent = new String(Files.readAllBytes(originalSavePath));
+			Files.write(savePath, originalTestContent.getBytes());
+			gitCommit("created test \""+testName+"\"",userName,savePathStrng);
+		}catch (Exception e) {
+			throw new Exception("Could not write test '"+testName+"' due to: "+e.getMessage()+" - "+e.getCause()+" - "+e.getClass().getName());
+		}
+	}
 
 	public static synchronized void writeTest(String testName, String body, boolean isEdit, String userName) throws Exception {
 		validateFileNameSafe(testName,false);
@@ -617,6 +645,8 @@ public class Persistence {
 			return "<Commit could not be found due to: "+e.getClass().getName()+"-"+e.getMessage()+">";
 		}
 	}
+
+
 
 
 }

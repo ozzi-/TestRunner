@@ -100,6 +100,11 @@ function pageLogic (response){
 		var name = getQueryParams(document.location.search).name;
 		doRequest("GET", "../tr/test/" + encodeURIComponent(name), editTestContent);
 	}
+	if(page=="copy"){
+		var name = getQueryParams(document.location.search).name;
+		document.getElementById("testName").value=name+" - Copy";
+		removeLoader();
+	}
 	if(page=="new"){
 		initNewTestPage();
 	}

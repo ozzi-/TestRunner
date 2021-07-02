@@ -300,6 +300,13 @@ function saveTest(){
 	return false;
 }
 
+function copyTest(){
+	var test = new Object();
+	test.name = document.getElementById("testName").value;
+	var testName = getQueryParams(document.location.search).name;
+	doRequestBody("POST", JSON.stringify(test), "application/json", "../manage/test/"+testName+"/copy", proccessTestCreated,[test.name], true);
+}
+
 var historyTable;
 
 function showHistory(res,initial){
@@ -1200,6 +1207,7 @@ function listResults(results,paramName) {
 	var testName = document.getElementById("testName");
 	var runLink = document.getElementById("runLink");
 	var editLink = document.getElementById("editLink");
+	var copyLink = document.getElementById("copyLink");
 	var historyLink = document.getElementById("historyLink");	
 
 	
@@ -1230,7 +1238,8 @@ function listResults(results,paramName) {
 		if(isGroup){
 			createNavButton("editLink","Edit Test Group", 'index.html?page=testgroupsettings');			
 		}else{
-			createNavButton("editLink","Edit Test", 'index.html?page=edit&name='+encodeURIComponent(name));		
+			createNavButton("editLink","Edit Test", 'index.html?page=edit&name='+encodeURIComponent(name));
+			createNavButton("copyLink","Copy Test", 'index.html?page=copy&name='+encodeURIComponent(name));
 		}
 	}
 
