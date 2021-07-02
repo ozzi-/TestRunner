@@ -1130,8 +1130,6 @@ function fillFoldersInternal(res,select){
 	}
 }
 
-
-
 function loadMore(){
 	var paramName;
 	pageIndex++;

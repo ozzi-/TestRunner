@@ -38,27 +38,27 @@ public class Testing {
 		new Thread() {
 			@Override
 			public void run() {
-				Results results = Testing.runTest(test);
-				boolean allPassed = true;
-				for (Result result : results.results) {
-					Log.log(Level.FINE,result.toJSONString());
-					if(!result.pass) {
-						allPassed=false;
-					}
-				}
-				if(allPassed && test.successHook != null && test.successHook != "") {
-					Log.log(Level.INFO, "Running success hook '"+test.successHook+"' for test '"+test.name+"'");
-					runPostHook(test.successHook);
-				}
-				if(!allPassed && test.failureHook != null && test.failureHook != "") {
-					Log.log(Level.INFO, "Running failure hook '"+test.failureHook+"' for test '"+test.name+"'");
-					runPostHook(test.failureHook);
-				}
-				
 				try {
+					Results results = Testing.runTest(test);
+					boolean allPassed = true;
+					for (Result result : results.results) {
+						Log.log(Level.FINE,result.toJSONString());
+						if(!result.pass) {
+							allPassed=false;
+						}
+					}
+					if(allPassed && test.successHook != null && test.successHook != "") {
+						Log.log(Level.INFO, "Running success hook '"+test.successHook+"' for test '"+test.name+"'");
+						runPostHook(test.successHook);
+					}
+					if(!allPassed && test.failureHook != null && test.failureHook != "") {
+						Log.log(Level.INFO, "Running failure hook '"+test.failureHook+"' for test '"+test.name+"'");
+						runPostHook(test.failureHook);
+					}
 					Persistence.persistTestRunAsJSONFile(test, results, group, userName);
 				} catch (Exception e) {
-					e.printStackTrace();
+					Log.log(Level.WARNING, "Exception while running test '"+test.name+"' in a thread: "+e.getMessage()+" ("+e.getClass().getName()+")");
+					e.printStackTrace();				
 				} finally {
 					Settings.getSingleton().setRunningCount(Settings.getSingleton().getRunningCount()-1);
 					CacheService.expireLastRunEntry(test.name+(group?PathFinder.getGroupLabel():""));
