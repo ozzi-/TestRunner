@@ -120,6 +120,25 @@ function categoryDeleted(response){
 	}
 }
 
+
+function scriptFolderDeleted(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Script folder deleted");
+		window.location.replace("index.html");
+	}	
+}
+
+function scriptFolderCreated(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Script folder created");
+		window.location.replace("index.html");
+	}	
+}
+
 function categoryCreated(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
@@ -475,11 +494,20 @@ function initScriptAdd(){
 }
 
 function createNewFolder(){
-	alert("TODO UI + Backend call");
+	var folderName = document.getElementById("folderCreate").value;
+	var folderParent = document.getElementById("scriptFolderParent").value;
+	var obj = {};
+	obj.parent = folderParent;
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../script/folder/"+folderName, scriptFolderCreated, true, true);
 }
 
 function removeFolder(){
-	alert("TODO UI + Backend call");
+    if(confirm("Are you sure you wish to delete all test scripts in this folder? This may break your tests")){
+    	var folderDelete = document.getElementById("scriptFolderDelete").value;
+    	var obj={};
+    	obj.path = folderDelete;
+    	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../script/folder/", scriptFolderDeleted, true, true);    	
+    }
 }
 
 var scriptAddEditorInitialized=false;

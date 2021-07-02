@@ -18,6 +18,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -25,8 +26,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -203,6 +206,72 @@ public class ScriptService {
 		}
 		return folderHierarchy;
 	}
+	
+	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
+	@POST
+	@Path("/folder/{foldername}")
+	@ApiOperation(value = "[READWRITEEXECUTE] Create a script folder")
+	public Response createScriptFolder(@PathParam("foldername") String folderName, @Context HttpHeaders headers, String body) throws Exception {
+		
+		JSONObject bodyJO;
+		String folderParent;
+		try {
+			bodyJO =  new JSONObject(body);	
+			folderParent = bodyJO.getString("parent");
+		}catch (Exception e) {
+			throw new Exception("Error parsing json - "+e.getMessage());
+		}
+		
+		File folderParentFile = new File(PathFinder.getScriptsFolder()+folderParent);
+		if(!folderParentFile.exists()) {
+			return Response.status(400).entity("Folder parent does not exists").type(MediaType.TEXT_PLAIN).build();
+		}
+		folderParent = folderParent.equals("/")?"":folderParent+File.separator;
+		
+		String folderPathStrng = PathFinder.getScriptsFolder()+folderParent+folderName;
+		if (PathFinder.isPathSafe(folderPathStrng, PathFinder.getScriptsFolder()) && folderName.length() > 0) {
+			File folderFile = new File(folderPathStrng);
+			if (!folderFile.exists()){
+			    folderFile.mkdirs();
+			    // TODO persist in git history
+			    return Response.status(200).entity("OK").type(MediaType.TEXT_PLAIN).build();				
+			}
+			return Response.status(400).entity("Folder already exists").type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
+	}
+	
+	
+	@LogRequest
+	@Authenticate("READWRITEEXECUTE")
+	@DELETE
+	@Path("/folder")
+	@ApiOperation(value = "[READWRITEEXECUTE] Delete a script folder")
+	public Response deleteScriptFolder(@Context HttpHeaders headers, String body) throws Exception {
+		
+		JSONObject bodyJO;
+		String deleteFolderPath;
+		try {
+			bodyJO =  new JSONObject(body);	
+			deleteFolderPath = bodyJO.getString("path");
+		}catch (Exception e) {
+			throw new Exception("Error parsing json - "+e.getMessage());
+		}
+		
+		String deleteFolderFullPath  = PathFinder.getScriptsFolder()+deleteFolderPath;
+		File deleteFolderFile = new File(deleteFolderFullPath);
+		if(!deleteFolderFile.exists()) {
+			return Response.status(400).entity("Folder does not exists").type(MediaType.TEXT_PLAIN).build();
+		}
+		
+		if (PathFinder.isPathSafe(deleteFolderFullPath, PathFinder.getScriptsFolder()) && deleteFolderPath.length() > 0) {
+			FileUtils.deleteDirectory(deleteFolderFile);
+			return Response.status(200).entity("OK").type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
+	}
+	
 	
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")

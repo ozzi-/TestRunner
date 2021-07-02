@@ -18,14 +18,7 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	// [Violation] 'readystatechange' handler took 4425ms
 	// [Violation] Forced reflow while executing JavaScript took 690ms
 	
-	
-	// TODO edit test name -> not really feasible as rename results too, but how about copy test with new name?
-	// TODO copy test
-	// TODO scriptadd -> folder create & delete functionality
 	// TODO CLI args are comma seperated in create / edit tests, but test run additional tags via space
-	
-	// TODO Running Test Counter not updated on -> Uncaught Exception -  Could not load settings and / or tests from test json: null 	
-	// |_ Catch exception earlier and update counter
 	
 	
 	// TODO frontend JS refactoring 
