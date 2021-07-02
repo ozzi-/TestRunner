@@ -16,6 +16,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.json.JSONObject;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -126,6 +128,28 @@ public class UserService {
 		Log.log(Level.INFO, "'"+userName+"' is changing the password of user '"+userNameToChangePW+"'");
 		UserManagement.changePassword(userNameToChangePW, password.getPassword());
 		return Response.status(200).entity("{\"password\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	@LogRequest
+	@Authenticate("ADMIN")
+	@PUT
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/{user}/role")
+	@ApiOperation( response = Password.class, value = "[ADMIN] Set role of user")
+	public Response changeRoleForUser(@Context HttpHeaders headers, String body, @PathParam("user") String userNameToChangeRole) throws Exception {		
+		String userName = AuthenticationFilter.getUsernameOfSession(headers);
+		// TODO use pojo instead of parsing body
+		String role="";
+		try {
+			JSONObject roleJO =  new JSONObject(body);
+			role = roleJO.getString("role");
+		}catch (Exception e) {
+			throw new Exception("Error parsing role - "+e.getMessage());
+		}
+
+		Log.log(Level.INFO, "'"+userName+"' is changing the role of user '"+userNameToChangeRole+"' to '"+role+"'");
+		UserManagement.changeRole(userNameToChangeRole, role);
+		return Response.status(200).entity("{\"role\" : \"changed\"}").type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 	
 	@LogRequest

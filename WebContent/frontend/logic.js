@@ -156,6 +156,12 @@ function pageLogic (response){
 	    displaySettings();
 		doRequest("GET", "../user", fillUsers);		
 	}
+	if(page=="edituser"){
+		var usrName = getQueryParams(document.location.search).name;
+		document.getElementById("changeUsrName").textContent=usrName;
+		document.getElementById("deleteUsrName").textContent=usrName;
+	    removeLoader();		
+	}
 	if(page=="run"){
 		removeLoader();
 		

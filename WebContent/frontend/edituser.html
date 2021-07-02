@@ -1,0 +1,24 @@
+<h2>Edit '<span id="changeUsrName"></span>'</h2>
+<h4>Password</h4>
+<form onsubmit="return changeOthersPassword()">
+ 	<input class="form-control" type="password" id="changePassword" autocomplete="new-password" placeholder="Enter Password" name="changePassword" required>
+ 	<br> 
+  	<button class="btn btn-success" type="submit">Change password</button>
+</form>
+<br>
+<h4>Role</h4>
+<form onsubmit="return changeRole()">
+	<select class="form-control" id="editRole">
+		<option value="" disabled selected>-- pick role --</option>
+		<option value="r">Read Only</option>
+		<option value="rx">Read and Execute</option>
+		<option value="rwx">Read, Edit and Execute</option>
+		<option value="a">Admin</option>
+	</select>
+	<button class="btn btn-success" type="submit">Change role</button>
+</form>
+
+<br><hr>
+<h2>Delete '<span id="deleteUsrName"></span>'</h2>
+<button class="btn btn-danger" onclick="killSession()">Kill sessions</button>
+<button class="btn btn-danger" onclick="deleteUser()" type="submit">Delete user</button>

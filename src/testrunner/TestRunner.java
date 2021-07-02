@@ -14,7 +14,7 @@ import persistence.Persistence;
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
 	
-	// TODO shabby performance on chrome based browsers - https://testrunner.hinlocal.ch/TR/frontend/index.html?page=testgroupsettings
+	// TODO shabby performance on chrome based browsers - /testrunner/frontend/index.html?page=testgroupsettings
 	// [Violation] 'readystatechange' handler took 4425ms
 	// [Violation] Forced reflow while executing JavaScript took 690ms
 		
@@ -25,7 +25,6 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	// TODO make Logger.log entries viewable through frontend (we can't read from catalina out but maybe in memory?)
 	// TODO different OS -> TestRunner satellite agents 
 	// TODO frontend - collapsed groups will have too low column width
-	// TODO frontend -> show and edit users role
 	
 	@Override
 	public void onReload(Container container) {

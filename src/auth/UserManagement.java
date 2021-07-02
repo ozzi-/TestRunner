@@ -53,6 +53,22 @@ public class UserManagement {
 		return user;
 	}
 	
+	public static synchronized void changeRole(String username, String role) throws Exception {
+		Log.log(Level.FINE, "Changing role for user '"+username+"'");
+		SessionManagement.destorySessionByUserName(username);
+		boolean changed = false;
+		for (User user : Settings.getSingleton().getUsers()) {
+			if(user.getUsername().equals(username)) {
+				user.setRole(role);
+				persistUsers();
+				changed=true;
+			}
+		}
+		if(!changed) {
+			throw new Exception("User '"+username+"' not found, could not change role");
+		}
+	}
+	
 	public static synchronized void changePassword(String username, String password) throws Exception {
 		Log.log(Level.FINE, "Changing password for user '"+username+"'");
 		SessionManagement.destorySessionByUserName(username);

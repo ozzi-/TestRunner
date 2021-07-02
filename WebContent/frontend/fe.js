@@ -22,11 +22,23 @@ window.onunload = function(){};
 // ************
 
 function changeOthersPassword(){
-	var username = document.getElementById("changeUsername").value;
+	var username = getQueryParams(document.location.search).name;
 	var password = document.getElementById("changePassword").value;
 	var changeObj = new Object();
 	changeObj.password  = password;
 	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/password", proccessPasswordChangeForUser, true, true);
+	return false;
+}
+
+function changeRole(){
+	var username = getQueryParams(document.location.search).name;
+	var role = document.getElementById("editRole").value;
+	if(role==""){
+		return false;
+	}
+	var changeObj = new Object();
+	changeObj.role  = role;
+	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/role", proccessRoleChangeForUser, true, true);
 	return false;
 }
 
@@ -44,7 +56,7 @@ function createUser(){
 }
 
 function deleteUser(){
-	var username = document.getElementById("deleteUsername").value;
+	var username = getQueryParams(document.location.search).name;
 	doRequestBody("DELETE", JSON.stringify({}), "application/json", "../user/"+username, processDeleteUser, true, true);
 	return false;
 }
@@ -86,7 +98,7 @@ function processDeleteUser(response){
 		alert(JSON.parse(response.responseText).error);
 	}else{
 		alert("User deleted");
-		location.reload();
+		window.location.replace("index.html?page=settings");
 	}
 }
 
@@ -196,12 +208,21 @@ function revertedTo(response,a){
 	}
 }
 
+function proccessRoleChangeForUser(response){
+	if(response.status!=200){
+		alert(JSON.parse(response.responseText).error);
+	}else{
+		alert("Role changed");
+		window.location.replace("index.html?page=settings");
+	}
+}
+
 function proccessPasswordChangeForUser(response){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
 	}else{
 		alert("Password changed");
-		location.reload();
+		window.location.replace("index.html?page=settings");
 	}
 }
 
@@ -1123,17 +1144,29 @@ function fillScripts(res, checkScriptExistent){
 
 
 function fillUsers(res){
-	var userSelects = document.getElementsByClassName("userSelect");
-	for(let i = 0; i < userSelects.length; i++){
-		for(let y = 0; y < res.length; y++){
-			var usrName= Object.keys(res[y])[0];
-			var option = document.createElement("option");
-			option.setAttribute("value", usrName);			
-			var text = document.createTextNode(usrName);
-			option.appendChild(text);
-			userSelects[i].appendChild(option);		
-		}
+
+	var table = new Tabulator("#usersTable", {
+	    layout:"fitDataFill",
+	    columns:[
+	    	{title:"User", field:"user"},
+	    	{title:"Role", field:"role"},
+		    {title:"Edit", field:"edit",  formatter:htmlFormatter},
+
+	    ],
+	});
+	
+	var users =[];
+	for(let y = 0; y < res.length; y++){
+		var usrName= Object.keys(res[y])[0];
+		var usrRole= Object.values(res[y])[0];
+		var user = {};
+		user.user=usrName;
+		user.role=usrRole;
+		user.edit = "<a href=\"index.html?page=edituser&name="+usrName+"\">&#x270E;</a>";
+		users.push(user);
 	}
+	table.setData(users);
+	
 }
 
 
@@ -1310,7 +1343,8 @@ function revert(){
 }
 
 function killSession(){
-	var userName = document.getElementById("sessionKillUsername").value;
+	var userName = getQueryParams(document.location.search).name;
+
 	if(userName!=""){
 		doRequest("DELETE", "../user/"+userName+"/session", sessionsDeleted,[]);		
 	}
