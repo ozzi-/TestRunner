@@ -1471,7 +1471,7 @@ function doRequest(method, url, callback, params, blob) {
 					}else{
 						if(!window.errorReported){
 							window.errorReported=true;
-							alert("Unknown error");	
+							alert("Unknown error - Exception: "+e.message+" ("+request.status+")");	
 						}
 					}
 				}
