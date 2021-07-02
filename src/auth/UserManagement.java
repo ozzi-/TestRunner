@@ -170,6 +170,7 @@ public class UserManagement {
 			throw new Exception("Cannot delete unknown user '"+userNameToDelete+"'");
 		}
 		persistUsers();
+		SessionManagement.destorySessionByUserName(userNameToDelete);
 	}
 
 
