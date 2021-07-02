@@ -47,11 +47,11 @@ public class Testing {
 							allPassed=false;
 						}
 					}
-					if(allPassed && test.successHook != null && test.successHook != "") {
+					if(allPassed && test.successHook != null && !test.successHook.equals("")) {
 						Log.log(Level.INFO, "Running success hook '"+test.successHook+"' for test '"+test.name+"'");
 						runPostHook(test.successHook);
 					}
-					if(!allPassed && test.failureHook != null && test.failureHook != "") {
+					if(!allPassed && test.failureHook != null && !test.failureHook.equals("")) {
 						Log.log(Level.INFO, "Running failure hook '"+test.failureHook+"' for test '"+test.name+"'");
 						runPostHook(test.failureHook);
 					}

@@ -17,14 +17,10 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 	// TODO shabby performance on chrome based browsers - https://testrunner.hinlocal.ch/TR/frontend/index.html?page=testgroupsettings
 	// [Violation] 'readystatechange' handler took 4425ms
 	// [Violation] Forced reflow while executing JavaScript took 690ms
-	
-	// TODO CLI args are comma seperated in create / edit tests, but test run additional tags via space
-	
-	
+		
 	// TODO frontend JS refactoring 
 	// TODO remove inline CSS and JS etc (i.E. innerHTML) in order to be able to set a strict CSP
 
-	
 	// TODO show running tasks as list?
 	// TODO make Logger.log entries viewable through frontend (we can't read from catalina out but maybe in memory?)
 	// TODO different OS -> TestRunner satellite agents 
