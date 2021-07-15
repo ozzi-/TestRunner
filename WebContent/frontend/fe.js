@@ -7,6 +7,8 @@ var sessionHeaderName ="X-TR-Session-ID";
 var uploadFileNameHeaderName = "X-File-Name";
 var uploadFilePathHeaderName = "X-File-Path";
 var pageIndex=0;
+var roleRWX ="rwx";
+var roleA = "a";
 
 var htmlFormatter = function(cell, formatterParams){
     var data = cell.getData();
@@ -104,14 +106,21 @@ function processDeleteUser(response){
 
 // TODO refactor all the CRUD callbacks . . . 
 
-function groupDeleted(response){
+function crudHandle(response,successMsg,successAction){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
 	}else{
-		alert("Group deleted");
-		location.reload();
+		alert(successMsg);
+		if(successAction!==undefined){
+			successAction();			
+		}
 	}
 }
+
+function reloadPage(){
+	location.reload();
+}
+
 
 function testDeleted(response){
 	if(response.status!=200){
@@ -122,15 +131,6 @@ function testDeleted(response){
 	}
 }
 
-function categoryDeleted(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		// TODO don't really need a reload here, migth as well add the row to tabulator 
-		alert("Category deleted");
-		location.reload();
-	}
-}
 
 
 function scriptFolderDeleted(response){
@@ -151,24 +151,6 @@ function scriptFolderCreated(response){
 	}	
 }
 
-function categoryCreated(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Category created");
-		// TODO don't really need a reload here, migth as well add the row to tabulator 
-		location.reload();
-	}	
-}
-
-function groupCreated(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Group created");
-		location.reload();
-	}
-}
 
 function groupEdited(response){
 	if(response.status!=200){
@@ -182,13 +164,6 @@ function categoryEdited(response){
 	}
 }
 
-function scriptSaved(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Script saved");
-	}
-}
 
 function scriptDeleted(response){
 	if(response.status!=200){
@@ -627,8 +602,9 @@ function saveScript(){
 	var metaObj={};
 	metaObj.path=document.getElementById("scriptPath").value;
 	metaObj.name=document.getElementById("scriptName").value;
-	doRequestBody("POST", scriptContent, "text/plain", "../script", scriptSaved, true, true,metaObj);
+	doRequestBody("POST", scriptContent, "text/plain", "../script", crudHandle, ["Script saved"], true,metaObj);
 }
+
 
 function deleteScript(){
 	if(confirm('Are you sure you want to delete this script?\r\nThis may break existing tests.')){
@@ -977,7 +953,7 @@ function createTestGroup(){
 	var obj =  {};
 	obj.name=groupName;
 	obj.description=groupDescription;
-	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/group/", groupCreated, true, true);
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/group/", crudHandle, ["Group created",pageReload], true);
 
 	return false;
 }
@@ -986,7 +962,7 @@ function createCategory(){
 	var categoryName = document.getElementById("categoryName").value;
 	var obj =  {};
 	obj.name=categoryName;
-	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/category/", categoryCreated, true, true);
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/category/", crudHandle, ["Category created", pageReload], true);
 
 	return false;
 }
@@ -994,7 +970,7 @@ function createCategory(){
 function deleteTestGroup(){
 	var groupName = document.getElementById("testGroupSelectDelete").value
 	var obj={};
-	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName, groupDeleted, true, true);
+	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName, crudHandle, ["Group deleted",reloadPage], true);
 	return false;
 }
 
@@ -1002,9 +978,11 @@ function deleteTestGroup(){
 function deleteCategory(){
 	var categoryName = document.getElementById("categoryNameDelete").value
 	var obj={};
-	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName, categoryDeleted, true, true);
+	// TODO don't really need a reload here, might as well add the row to tabulator 
+	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName, crudHandle, ["Category deleted", reloadPage], true);
 	return false;
 }
+
 
 function listGroupSettings(groups){
 	var groupNames=[];
@@ -1110,7 +1088,7 @@ function listGroups(groups){
 	}
 	table.setData(groups);
 	
-	if(localStorage.getItem(trRole)==="rwx" || localStorage.getItem(trRole)==="a" ){
+	if(localStorage.getItem(trRole)===roleRWX || localStorage.getItem(trRole)===roleA ){
 		document.getElementById("testGroupsSettings").style.display="";
 		document.getElementById("testSettings").style.display="";
 		document.getElementById("testAdd").style.display="";
@@ -1292,8 +1270,7 @@ function listResults(results,paramName) {
 		}
 	}
 	
-	// TODO constants for role labels
-	if(localStorage.getItem(trRole)==="rwx" || localStorage.getItem(trRole)==="a"){
+	if(localStorage.getItem(trRole)===roleRWX || localStorage.getItem(trRole)===roleA){
 		if(isGroup){
 			createNavButton("editLink","Edit Test Group", 'index.html?page=testgroupsettings');			
 		}else{
@@ -1440,6 +1417,7 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth, uplo
 					if(!window.errorReported){
 						window.errorReported=true;
 						alert("Unknown error - could not run callback");
+						console.log(e);
 					}
 				}
 			}else if(request.status==403){
@@ -1672,7 +1650,7 @@ function createTestMask(json,disabled){
 }
 
 function displaySettings(){
-	if(localStorage.getItem(trRole)!=="a"){
+	if(localStorage.getItem(trRole)!==roleA){
 		document.getElementById("settingsAdmin").remove();		
 	}
 }
