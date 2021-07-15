@@ -259,20 +259,12 @@ public class ManagementService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@POST
-	@Path("/test/{testname}/copy")
-	@ApiOperation( value = "[READWRITEEXECUTE] Create a test")
-	public Response copyTest(@PathParam("testname") String testName, @Context HttpHeaders headers, String body) throws Exception {
+	@Path("/test/copy/{testname}/to/{newtestname}")
+	@ApiOperation( value = "[READWRITEEXECUTE] Copies a test")
+	public Response copyTest(@PathParam("testname") String testName, @PathParam("newtestname") String newTestName, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
-		
-		JSONObject testJO;
-		String newTestName;
-		try {
-			testJO =  new JSONObject(body);	
-			newTestName = testJO.getString("name");
-		}catch (Exception e) {
-			throw new Exception("Error parsing json - "+e.getMessage());
-		}
-		Log.log(Level.INFO, "'"+userName+"' is copying test '"+testName+"' -> '"+newTestName+"'");
+
+		Log.log(Level.INFO, "'"+userName+"' is copying test '"+testName+"' to '"+newTestName+"'");
 
 		Persistence.copyTest(testName,newTestName, userName);
 		
