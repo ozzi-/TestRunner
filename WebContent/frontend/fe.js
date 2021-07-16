@@ -28,7 +28,7 @@ function changeOthersPassword(){
 	var password = document.getElementById("changePassword").value;
 	var changeObj = new Object();
 	changeObj.password  = password;
-	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/password", proccessPasswordChangeForUser, true, true);
+	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/password", crudHandle, ["Password changed", () => redirectPage("index.html?page=settings")], true);
 	return false;
 }
 
@@ -40,10 +40,9 @@ function changeRole(){
 	}
 	var changeObj = new Object();
 	changeObj.role  = role;
-	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/role", proccessRoleChangeForUser, true, true);
+	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/role", crudHandle, ["Role changed", () => redirectPage("index.html?page=settings")], true);
 	return false;
 }
-
 
 function createUser(){
 	var username = document.getElementById("createUsername").value;
@@ -104,13 +103,13 @@ function processDeleteUser(response){
 	}
 }
 
-// TODO refactor all the CRUD callbacks . . . 
-
 function crudHandle(response,successMsg,successAction){
 	if(response.status!=200){
 		alert(JSON.parse(response.responseText).error);
 	}else{
-		alert(successMsg);
+		if(successMsg!==undefined){			
+			alert(successMsg);
+		}
 		if(successAction!==undefined){
 			successAction();			
 		}
@@ -121,103 +120,8 @@ function reloadPage(){
 	location.reload();
 }
 
-
-function testDeleted(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Test deleted");
-		window.location.replace("index.html");
-	}
-}
-
-
-
-function scriptFolderDeleted(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Script folder deleted");
-		window.location.replace("index.html");
-	}	
-}
-
-function scriptFolderCreated(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Script folder created");
-		window.location.replace("index.html");
-	}	
-}
-
-
-function groupEdited(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}
-}
-
-function categoryEdited(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}
-}
-
-
-function scriptDeleted(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Script deleted");
-		window.location.replace("index.html");
-	}
-}
-
-function revertedTo(response,a){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Reverted to commit");
-		window.location.replace("index.html?page=history");
-	}
-}
-
-function proccessRoleChangeForUser(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Role changed");
-		window.location.replace("index.html?page=settings");
-	}
-}
-
-function proccessPasswordChangeForUser(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Password changed");
-		window.location.replace("index.html?page=settings");
-	}
-}
-
-function proccessTestEdited(response){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Edited Test");
-		var testName = getQueryParams(document.location.search).name;
-		window.location.replace("index.html?page=results&name="+testName);
-	}
-}
-
-function proccessTestCreated(response, testName){
-	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
-	}else{
-		alert("Created Test");
-		window.location.replace("index.html?page=results&name="+testName);
-	}
+function redirectPage(uri){
+	window.location.replace(uri);
 }
 
 // *************
@@ -308,18 +212,26 @@ function saveTest(){
 	var testName = getQueryParams(document.location.search).name;
 	if(testName==undefined){
 		testName = document.getElementById("testName").value;
-		doRequestBody("POST", JSON.stringify(test), "application/json", "../manage/test/"+testName, proccessTestCreated,[testName], true);
+		doRequestBody("POST", JSON.stringify(test), "application/json", "../manage/test/"+testName, crudHandle,["Created Test", () =>{
+			window.location.replace("index.html?page=results&name="+testName);
+		}], true);
 	}else{
-		doRequestBody("PUT", JSON.stringify(test), "application/json", "../manage/test/"+testName, proccessTestEdited, true, true);		
+		doRequestBody("PUT", JSON.stringify(test), "application/json", "../manage/test/"+testName, crudHandle, ["Edited Test", () => {
+			var testName = getQueryParams(document.location.search).name;
+			window.location.replace("index.html?page=results&name="+testName);
+		}], true);		
 	}
 	return false;
 }
 
+
 function copyTest(){
-	var test = new Object();
-	test.name = document.getElementById("testName").value;
+	var newTestName =  document.getElementById("testName").value;
 	var testName = getQueryParams(document.location.search).name;
-	doRequestBody("POST", JSON.stringify(test), "application/json", "../manage/test/"+testName+"/copy", proccessTestCreated,[test.name], true);
+	doRequestBody("POST", JSON.stringify({}), "application/json", "../manage/test/copy/"+testName+"/to/"+newTestName, crudHandle,["Created Test", () =>{
+		window.location.replace("index.html?page=results&name="+newTestName);
+	}], true);
+	return false;
 }
 
 var historyTable;
@@ -494,7 +406,7 @@ function createNewFolder(){
 	var folderParent = document.getElementById("scriptFolderParent").value;
 	var obj = {};
 	obj.parent = folderParent;
-	doRequestBody("POST", JSON.stringify(obj), "application/json", "../script/folder/"+folderName, scriptFolderCreated, true, true);
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../script/folder/"+folderName, crudHandle, ["Script folder created",() => redirectPage("index.html")], true);
 }
 
 function removeFolder(){
@@ -502,7 +414,7 @@ function removeFolder(){
     	var folderDelete = document.getElementById("scriptFolderDelete").value;
     	var obj={};
     	obj.path = folderDelete;
-    	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../script/folder/", scriptFolderDeleted, true, true);    	
+    	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../script/folder/", crudHandle, ["Script folder deleted",() => redirectPage("index.html")], true);    	
     }
 }
 
@@ -611,7 +523,7 @@ function deleteScript(){
 		var metaObj={};
 		metaObj.path=document.getElementById("scriptPath").value;
 		metaObj.name=document.getElementById("scriptName").value;
-		doRequestBody("DELETE", {}, "application/json", "../script", scriptDeleted, true, true, metaObj);
+		doRequestBody("DELETE", {}, "application/json", "../script", crudHandle, ["Script deleted", () => redirectPage("index.html")], true, metaObj);
 	}
 }
 
@@ -849,7 +761,7 @@ function addTestCategoryEntry(){
 	testCategoriesTableHandle.addRow([{name: test,category:category}], false);
 	var obj = {};
 	obj.test=test;
-	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/category/"+category, categoryEdited, true, true);
+	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/category/"+category, crudHandle, true, true);
 	var x = document.getElementById("testNameSelect");
 	x.remove(x.selectedIndex); 
 	document.getElementById("addTestGroupMappingForm").reset();
@@ -867,7 +779,7 @@ function addTestGroupEntry(){
 	var obj = {};
 	obj.test=test;
 	obj.name=name;
-	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/group/"+group, groupEdited, true, true);
+	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/group/"+group, crudHandle, [], true);
 
 	return false;
 }
@@ -921,7 +833,7 @@ function listTestCategories(categories, tests){
 	        		var testName = cell.getRow()._row.data.name;
 	        		var categoryName = cell.getRow()._row.data.category;
 	        		var obj={};
-	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName+"/"+testName, categoryEdited, true, true);
+	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName+"/"+testName, crudHandle, [], true);
 	        		var sel = document.getElementById("testNameSelect");
 	        		var option = document.createElement("option");
 	        		option.text = testName;
@@ -1316,8 +1228,9 @@ function listResults(results,paramName) {
 
 function revert(){
 	var commitID = getQueryParams(document.location.search).id;
-	doRequestBody("POST", "", "application/json", "../manage/history/revert/"+commitID, revertedTo, true ,true);
+	doRequestBody("POST", "", "application/json", "../manage/history/revert/"+commitID, crudHandle, ["Reverted to commit", () => redirectPage("index.html?page=history")],true);
 }
+
 
 function killSession(){
 	var userName = getQueryParams(document.location.search).name;
@@ -1693,7 +1606,7 @@ function deleteTest(){
 	var obj={};
 	var testName = getQueryParams(document.location.search).name;
 	if(confirm('Are you sure you want to delete this test?')){
-		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/test/"+testName, testDeleted, true, true);
+		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/test/"+testName, crudHandle, ["Test deleted",() => redirectPage("index.html")], true);
 	}
 }
 
