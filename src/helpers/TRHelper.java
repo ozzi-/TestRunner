@@ -181,8 +181,9 @@ public class TRHelper {
 	 * @param tests
 	 * @param groupName
 	 * @return a group json element consisting of all tests passed to it
+	 * @throws Exception 
 	 */
-	public static JsonElement mergeTests(ArrayList<JsonElement> tests, String groupName) {
+	public static JsonElement mergeTests(ArrayList<JsonElement> tests, String groupName) throws Exception {
 		JsonObject merged = new JsonObject();
 		JsonObject settingsObj = new JsonObject();
 		JsonObject testObj = new JsonObject();
@@ -191,16 +192,24 @@ public class TRHelper {
 		JsonElement finalSuccessHook = null;
 		JsonElement finalFailureHook = null;
 		String description = "Group Test '" + groupName + "'";
+
 		for (JsonElement test : tests) {
-			JsonElement successHook = test.getAsJsonObject().get(SETTINGS).getAsJsonObject().get(TRHelper.SUCCESS_HOOK);
-			JsonElement failureHook = test.getAsJsonObject().get(SETTINGS).getAsJsonObject().get(TRHelper.FAILURE_HOOK);
+			JsonObject testJO = null;
+			try {
+				testJO = test.getAsJsonObject();
+			}catch (Exception e) {
+				throw new Exception("Failed to merge tests to group \""+groupName+"\" due to json error \"" + e.getMessage() + "\" in TRHelper");
+			}
+			
+			JsonElement successHook = testJO.get(SETTINGS).getAsJsonObject().get(TRHelper.SUCCESS_HOOK);
+			JsonElement failureHook = testJO.get(SETTINGS).getAsJsonObject().get(TRHelper.FAILURE_HOOK);
 			if (successHook != null) {
 				finalSuccessHook = successHook;
 			}
 			if (failureHook != null) {
 				finalFailureHook = failureHook;
 			}
-			JsonArray tasks = test.getAsJsonObject().get(TEST).getAsJsonObject().get(TASKS).getAsJsonArray();
+			JsonArray tasks = testJO.get(TEST).getAsJsonObject().get(TASKS).getAsJsonArray();
 			for (JsonElement task : tasks) {
 				tasksArr.add(task);
 			}
