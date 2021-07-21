@@ -1,5 +1,5 @@
 <h4>Change my password</h4>
-<form onsubmit="return changeMyPassword()">
+<form id="changeMyPasswordForm">
 	<input class="form-control" type="password" id="myPassword" autocomplete="new-password" placeholder="Enter Password" name="myPassword" required>
 	<br> 
 	<button class="btn btn-success" type="submit">Change Password</button>
@@ -10,7 +10,7 @@
 	<span id="usersTable"> </span>
 	<br>
 	<h4>Create User</h4>
-	<form onsubmit="return createUser()">
+	<form id="createUserForm">
   		<input class="form-control" type="text" id="createUsername" placeholder="Enter Username" name="createUsername" required><br>
 	 	<input class="form-control" type="password" id="createPassword" autocomplete="new-password" placeholder="Enter Password" name="createPassword" required><br>
 		<select class="form-control" id="createRole">

@@ -34,6 +34,7 @@ function pageLogic (response){
 		doRequest("GET", "../script/folder", listScripts);
 	}
 	if(page=="login"){
+		document.getElementById("loginForm").onsubmit = function(){return doLogin();};
 	    document.getElementById("username").focus();
 	    removeLoader();
 		document.getElementById("settings").remove();
@@ -48,11 +49,23 @@ function pageLogic (response){
 		doLogout();
 	}
 	if(page=="script"){
+		document.getElementById("saveScriptBtn").onclick = function(){saveScript();};
+		document.getElementById("deleteScriptBtn").onclick = function(){deleteScript(); return false;};
+		document.getElementById("binaryDownloadBtn").onclick = function(){downloadBinaryButton();};
+		document.getElementById("deleteBinaryBtn").onclick = function(){deleteScript(); return false;};
+		
 		document.getElementById("scriptNameSpan").textContent=name;
 		doRequest("GET", "../script/type/?name="+encodeURIComponent(name), loadScriptEdit);
 		createNavButton("historyLink","Show History",'index.html?page=history&scriptname='+encodeURIComponent(name));
 	}
 	if(page=="scriptadd"){
+		document.getElementById("navUP").onclick = function(){scriptAddBtn('up');};
+		document.getElementById("navFE").onclick = function(){scriptAddBtn('fe');};
+		document.getElementById("navFO").onclick = function(){scriptAddBtn('fo');};
+		document.getElementById("saveScriptBtn").onclick = function(){saveNewScript();};
+		document.getElementById("createFolderBtn").onclick = function(){createNewFolder();};
+		document.getElementById("removeFolderBtn").onclick = function(){removeFolder();};
+
 		initScriptAdd();
 		scriptAddBtn('up');
 		doRequest("GET", "../script/folder", fillFolders);
@@ -67,6 +80,9 @@ function pageLogic (response){
 		};
 	}
 	if(page=="result"){
+		document.getElementById("printResultsBtn").onclick = function(){printJS('resultPage', 'html');};
+		document.getElementById("backBtn").onclick = function(){back();};
+		
 		var handle = getQueryParams(document.location.search).handle;
 		reRunLink();
 		if(name === undefined || name == "undefined"){
@@ -77,13 +93,25 @@ function pageLogic (response){
 		}
 	}
 	if(page=="testgroupsettings"){
+		document.getElementById("addTestGroupMappingForm").onsubmit = function(){return addTestGroupEntry();};
+		document.getElementById("createGroupMappingForm").onsubmit = function(){return createTestGroup();};
+		document.getElementById("deleteGroupForm").onsubmit = function(){return deleteTestGroup();};
+
 		doRequest("GET", "../tr/group", listGroupSettings);
 		doRequest("GET", "../tr/test", listGroupSettingsTestNames);
 	}
 	if(page=="testsettings"){
+		document.getElementById("createNewTestBtn").onclick = function(){return goToNewTest();};
+		document.getElementById("addTestGroupMappingForm").onsubmit = function(){return addTestCategoryEntry();};
+		document.getElementById("createNewTestForm").onsubmit = function(){return createCategory();};
+		document.getElementById("deleteGroupForm").onsubmit = function(){return deleteCategory();};
+
 		doRequest("GET", "../tr/test", loadTestSettingsPage);
 	}
 	if(page=="results"){
+		document.getElementById("backBtn").onclick = function(){location.assign('index.html');};
+		document.getElementById("loadmore").onclick = function(){loadMoreResults();};
+		
 		if(name=="undefined" || name === undefined ){
 			name = getQueryParams(document.location.search).groupname;
 			paramName="groupname";
@@ -96,19 +124,28 @@ function pageLogic (response){
 		}
 	}
 	if(page=="edit"){
+		document.getElementById("editTestForm").onsubmit = function(){return saveTest();};
+		document.getElementById("addTaskBtn").onclick = function(){addTask(false); return false;};	
+		document.getElementById("deleteTestBtn").onclick = function(){deleteTest(); return false;};		
 		doRequest("GET", "../tr/test/" + encodeURIComponent(name), editTestContent);
 	}
 	if(page=="copy"){
 		document.getElementById("testName").value=name+" - Copy";
+		document.getElementById("copyTestForm").onsubmit = function(){return copyTest();};
 		removeLoader();
 	}
 	if(page=="new"){
+		document.getElementById("createTestForm").onsubmit = function(){return saveTest();};
+		document.getElementById("addTaskBtn").onclick = function(){addTask(); return false;};
 		initNewTestPage();
 	}
 	if(page=="reload"){
 		doRequest("GET", "../user/reload/", reload,[]);
 	}
 	if(page=="history"){
+		document.getElementById("showMoreBtn").onclick = function(){loadMoreHistory();};			
+		document.getElementById("revertCommit").onclick = function(){revert();};			
+		
 		var id = getQueryParams(document.location.search).id;
 		var testname = getQueryParams(document.location.search).testname;
 		var groupname = getQueryParams(document.location.search).groupname;
@@ -146,14 +183,23 @@ function pageLogic (response){
 		document.getElementById("titleSpan").textContent=title;
 	}
 	if(page=="custom"){
+		document.getElementById("runTestBtn").onclick = function(){runCustomTest();};
 		removeLoader();
 	}
 	if(page=="settings"){
+		document.getElementById("changeMyPasswordForm").onsubmit = function(){return changeMyPassword();};
+		document.getElementById("createUserForm").onsubmit = function(){return createUser();};
+
 	    removeLoader();
 	    displaySettings();
 		doRequest("GET", "../user", fillUsers);		
 	}
 	if(page=="edituser"){
+		document.getElementById("changePasswordForm").onsubmit = function(){return changeOthersPassword();};	
+		document.getElementById("changeRoleForm").onsubmit = function(){return changeRole();};	
+		document.getElementById("killSessionBtn").onclick = function(){killSession();};
+		document.getElementById("deleteUserBtn").onclick = function(){deleteUser()};
+		
 		var usrName = getQueryParams(document.location.search).name;
 		document.getElementById("changeUsrName").textContent=usrName;
 		document.getElementById("deleteUsrName").textContent=usrName;

@@ -4,12 +4,12 @@
 Create Test:
 <form id="createTest">
 	<div class="col-sm">
-		<button class="btn btn-primary" onclick="return goToNewTest();">Create</button>
+		<button class="btn btn-primary"  id="createNewTestBtn">Create</button>
 	</div>
 </form>
 <br><br><br>
 Add test to a category:
-<form id="addTestGroupMappingForm" onsubmit="return addTestCategoryEntry()">
+<form id="addTestGroupMappingForm">
 	<div class="container">
 	 	<div class="row">
 			<div class="col-sm">
@@ -30,7 +30,7 @@ Add test to a category:
 </form>
 <br><br><br>
 Create new category:
-<form id="addTestGroupMappingForm" onsubmit="return createCategory()">
+<form id="createNewTestForm">
 	<div class="container">
 	 	<div class="row">
 			<div class="col-sm">
@@ -44,7 +44,7 @@ Create new category:
 </form>
 <br><br><br>
 Delete category:
-<form id="deleteGroupForm" onsubmit="return deleteCategory()">
+<form id="deleteGroupForm">
 	<div class="container">
 	 	<div class="row">
 			<div class="col-sm">

@@ -4,20 +4,20 @@
 <span id="historyLink"></span>
 <br>
 <span id="textEditor" style="display: none">
-	<textarea  id="editor"></textarea>
+	<textarea id="editor"></textarea>
 	<br>
-	<button class="btn btn-primary" type="submit" onclick="saveScript()">Save</button>
-	<button class="btn btn-danger float-right" onclick="deleteScript(); return false;" >Delete Script</button>
+	<button class="btn btn-primary" id="saveScriptBtn">Save</button>
+	<button class="btn btn-danger float-right" id="deleteScriptBtn">Delete Script</button>
 </span>
 <div id="binaryEditor" style="display: none">
 	<div class="container">
 		<div class="row">
 			<div class="col-sm">
-				<div class="btn btn-primary" id="binaryDownloadBtn" onclick="downloadBinaryButton()" >&#128190;Download</div>
+				<div class="btn btn-primary" id="binaryDownloadBtn">&#128190;Download</div>
 				<a id="downloadBinaryLink"></a>				
 			</div>
 			<div class="col-sm">
-				<button class="btn btn-danger" onclick="deleteScript(); return false;" >Delete Binary</button>
+				<button class="btn btn-danger" id="deleteBinaryBtn">Delete Binary</button>
 			</div>
 			<div class="col-sm">
 				<div class="dropzone" id="dropZoneDiv">

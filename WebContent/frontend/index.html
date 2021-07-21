@@ -1,60 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<title>Test Runner</title>
-	<meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="stylesheet" type="text/css" href="res/style.css">
-	<link rel="icon" type="image/png" href="res/TR_logo.png" />
-	<link rel="stylesheet" href="res/print.css">
-	<link rel="stylesheet" href="res/bootstrap.min.css">
-	<link rel="stylesheet" href="res/tabulator_bootstrap.min.css">
-	<link rel="stylesheet" href="res/codemirror.min.css">
-	<link rel="stylesheet" href="res/dropzone.min.css">
-	
-</head>
-<body>
-	<script src="res/print.min.js"></script>
-	<script src="res/jquery-min.js"></script>
-	<script src="res/popper.min.js"></script>
-	<script src="res/bootstrap.min.js"></script>
-	<script src="res/tabulator.min.js"></script>
-	<script src="res/codemirror.min.js"></script>
-	<script src="res/codemirrormodes.js"></script>
-	<script src="res/dropzone.min.js"></script>
-	<script src="js/fe.js"></script>
-	<script src="js/logic.js"></script>
-	<script src="js/list.js"></script>
-	<script src="js/loginout.js"></script>
-	<script src="js/script.js"></script>
-	<script src="js/settings.js"></script>
-	<script src="js/tests.js"></script>
-	<div id="menu" class="container">
-		<div class="row">
-			<div class="col-8">
-				<a href="index.html"><img class="logo" src="res/TR_logo.png"></a>
-				&nbsp;
-				<span class="badge badge-secondary" id="runningTestsSpan">
-  					Tests running <span class="badge badge-light" id="runningTests">0</span>
-				</span>
-				&nbsp;
-				<a href="index.html?page=history" id="historyHref">
-					<span class="badge badge-primary">
-						Change History
+	<head>
+		<title>Test Runner</title>
+		<meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" type="text/css" href="res/style.css">
+		<link rel="icon" type="image/png" href="res/TR_logo.png" />
+		<link rel="stylesheet" href="res/print.css">
+		<link rel="stylesheet" href="res/bootstrap.min.css">
+		<link rel="stylesheet" href="res/tabulator_bootstrap.min.css">
+		<link rel="stylesheet" href="res/codemirror.min.css">
+		<link rel="stylesheet" href="res/dropzone.min.css">
+	</head>
+	<body>
+		<script src="res/print.min.js"></script>
+		<script src="res/jquery-min.js"></script>
+		<script src="res/popper.min.js"></script>
+		<script src="res/bootstrap.min.js"></script>
+		<script src="res/tabulator.min.js"></script>
+		<script src="res/codemirror.min.js"></script>
+		<script src="res/codemirrormodes.js"></script>
+		<script src="res/dropzone.min.js"></script>
+		<script src="js/fe.js"></script>
+		<script src="js/logic.js"></script>
+		<script src="js/list.js"></script>
+		<script src="js/loginout.js"></script>
+		<script src="js/script.js"></script>
+		<script src="js/settings.js"></script>
+		<script src="js/tests.js"></script>
+		<div id="menu" class="container">
+			<div class="row">
+				<div class="col-8">
+					<a href="index.html"><img class="logo" src="res/TR_logo.png"></a>
+					&nbsp;
+					<span class="badge badge-secondary" id="runningTestsSpan">
+	  					Tests running <span class="badge badge-light" id="runningTests">0</span>
 					</span>
-				</a>
+					&nbsp;
+					<a href="index.html?page=history" id="historyHref">
+						<span class="badge badge-primary">
+							Change History
+						</span>
+					</a>
+				</div>
+				<div class="col-2" align="right" style="padding-top:2px;">
+					<a id="settings" href="index.html?page=settings">&#x2699;</a>
+				</div>
+				<div class="col-2" align="right" style="padding-top:2px;">
+					<a id="logout" href="index.html?page=logout">Logout</a>
+				</div>
 			</div>
-			<div class="col-2" align="right" style="padding-top:2px">
-				<a id="settings" href="index.html?page=settings">&#x2699;</a>
-			</div>
-			<div class="col-2"  align="right" style="padding-top:2px">
-				<a id="logout" href="index.html?page=logout">Logout</a>
-			</div>
+			<hr>
 		</div>
-		<hr>
-	</div>
-	<div class="loader" id="loader"></div>
-	<div id="container" class="container"> </div>
-	<br>
-</body>
+		<div class="loader" id="loader"></div>
+		<div id="container" class="container"> </div>
+		<br>
+	</body>
 </html>

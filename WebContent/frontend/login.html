@@ -1,5 +1,5 @@
 <div class="loginDiv">
-	<form onsubmit="return doLogin()">
+	<form id="loginForm">
 	  	<input class="form-control" type="text" id="username" placeholder="Enter Username" name="username" autocomplete="username" required autofocus>
 	  	<br>
 	 	<input class="form-control" type="password" id="password" placeholder="Enter Password" name="password" autocomplete="current-password" required>
@@ -7,9 +7,3 @@
 	  	<button class="btn btn-primary" style="width: 100% !important" type="submit">Login</button>
 	</form>
 </div>
-<script>
-	function doLogin(){
-		return false;
-		// prevents from password being sent as url search param when login.html is directly opened
-	}
-</script>
