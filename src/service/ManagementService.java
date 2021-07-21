@@ -305,6 +305,7 @@ public class ManagementService {
 		}
 
 		Log.log(Level.INFO, "'"+userName+"' is creating a group '"+groupName+"'");
+		
 		Persistence.createGroup(groupName,groupDescription, userName);
 		
 		return Response.status(200).build();
@@ -410,17 +411,21 @@ public class ManagementService {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
 		JsonObject categoryJO;
-		String name;
+		String categoryName;
 		try {
 			categoryJO =  JsonParser.parseString(body).getAsJsonObject();
-			name = categoryJO.get(TRHelper.NAME).getAsString();
+			categoryName = categoryJO.get(TRHelper.NAME).getAsString();
 		}catch (Exception e) {
 			throw new Exception("Error parsing category json - "+e.getMessage());
 		}
-		Log.log(Level.INFO, "'"+userName+"' is creating a category '"+name+"'");
-		Persistence.createCategory(name,userName);
-		return Response.status(200).build();			
-	
+		Log.log(Level.INFO, "'"+userName+"' is creating a category '"+categoryName+"'");
+		
+		if(categoryName.contains("/") || categoryName.contains("\\") || categoryName.contains("'") || categoryName.contains("\"") || categoryName.contains("<") || categoryName.contains(">")) {
+			throw new Exception("Invalid category name - do not use / , \\ , <, >, ' or \"");
+		}
+		
+		Persistence.createCategory(categoryName,userName);
+		return Response.status(200).build();
 	}
 	
 	@LogRequest
