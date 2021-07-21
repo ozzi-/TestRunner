@@ -1,4 +1,5 @@
 'use strict';
+
 var sun = "&#9728";
 var cloud = "&#127785;";
 var trToken = "TR_Token";
@@ -9,6 +10,7 @@ var uploadFilePathHeaderName = "X-File-Path";
 var pageIndex=0;
 var roleRWX ="rwx";
 var roleA = "a";
+var requestTimeoutMS = 5000;
 
 var testGroupsTable, testsTable, scriptsTable, usersTable, testCategoriesTable, historyTable;
 
@@ -68,7 +70,7 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth, uplo
 	};
 	
 	request.open(method, url);
-	request.timeout = 5000;
+	request.timeout = requestTimeoutMS;
 
 	if(uploadMeta !== undefined &&  uploadMeta.path !==undefined &&  uploadMeta.name !== undefined){
 		 // when running under unix, empty request headers will throw a nullpointer exception (while empty headers work on windows..)
@@ -132,7 +134,7 @@ function doRequest(method, url, callback, params, blob) {
 						if(!window.errorReported){
 							window.errorReported=true;
 							if(request.responseText==""){
-								alert("Lost connection to backend (Empty Response)")
+								alert("Lost connection to backend (Empty Response)");
 							}else{
 								alert("Unknown error - Exception: "+e.message+" ("+request.status+")");	
 							}
@@ -152,7 +154,7 @@ function doRequest(method, url, callback, params, blob) {
 	}
 	
 	request.open(method, url);
-	request.timeout = 5000;
+	request.timeout = requestTimeoutMS;
 
 	request.setRequestHeader(sessionHeaderName, localStorage.getItem(trToken));
 	request.send();
@@ -191,26 +193,22 @@ function insertRunningCount(res){
 
 
 var htmlFormatter = function(cell, formatterParams){
-    var data = cell.getData();
     return cell.getValue();
-}
+};
 
 function matchAny(data, filterParams){
-    var match = false;
-    var searchTerm = filterParams[0];
+    var searchTermsRaw = filterParams[0];
     var columnName = filterParams[1];
+    
     // empty search string means all match
     if(searchTerm==""){
     	return true;
     }
    
-	var searchTermRaw = searchTerm.toLowerCase();
-	var searchTerms = searchTermRaw.split(" ");
-	var searchTermsCount = 0;
-	var matches = 0;
+    searchTermsRaw = searchTermsRaw.toLowerCase();
+	var searchTerms = searchTermsRaw.split(" ");
 	
 	for (var i = 0; i < searchTerms.length; i++) {
-		var alreadyMatchedSearchTerm = false;
 		var searchTerm = searchTerms[i];
 		if(searchTerm!="" && searchTerm!=" "){
 			for(var key in data){
@@ -353,7 +351,7 @@ function createTaskDiv(task, i, disabled){
 	if(!disabled){
 		var button = document.createElement("button");
 		button.textContent = "Remove Task";
-		button.onclick=function() { removeTaskDiv(i); return false; }
+		button.onclick=function() { removeTaskDiv(i); return false; };
 		button.classList.add("btn");
 		button.classList.add("btn-danger");
 		button.classList.add("float-right");
@@ -378,7 +376,7 @@ function addTask(checkExistence){
 	task.path="";
 	task.args="";
 	task.timeout="";	
-	var markSpan = document.getElementById("maskSpan");
+	var maskSpan = document.getElementById("maskSpan");
 	var taskDiv = createTaskDiv(task, getCurrentTaskIndex(), false);
 	maskSpan.append(taskDiv);
 	doRequest("GET", "../script", fillScripts,[checkExistence]);
@@ -422,7 +420,7 @@ function createSelect(title, script, id, disabled,required){
 }
 
 function createNavButton(outerspan,label,locAssign){
-	var outerspan = document.getElementById(outerspan);	
+	var outerspanElem = document.getElementById(outerspan);	
 	var btn = document.createElement("BUTTON");
 	btn.classList.add("btn");
 	btn.classList.add("btn-primary");
@@ -431,7 +429,7 @@ function createNavButton(outerspan,label,locAssign){
 	btn.addEventListener("click", function(){
 		location.assign(locAssign);
 	});
-	outerspan.appendChild(btn);
+	outerspanElem.appendChild(btn);
 }
 	
 function createInput(title, value, id, disabled, bold, required, isInt){
@@ -478,7 +476,7 @@ function timeConversion(millisec) {
     var days = (millisec / (1000 * 60 * 60 * 24)).toFixed(1);
     
     if (millisec < 1000) {
-    	return millisec +" ms"
+    	return millisec +" ms";
     } else if (seconds < 60) {
         return seconds + " sec";
     } else if (minutes < 60) {
@@ -486,6 +484,6 @@ function timeConversion(millisec) {
     } else if (hours < 24) {
         return hours + " hrs";
     } else {
-        return days + " days"
+        return days + " days";
     }
 }

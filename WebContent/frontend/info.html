@@ -2,13 +2,13 @@
 	Test Runner allows you to execute automated tests in a comfortable manner while persisting the results.<br>
 	Test Runner consists of two parts, the API which is used to run / monitor tests and retrieve test results, the other being the lightweight UI which uses XHR requests on said API.
 	<br>Further information can be found online on <a href="https://github.com/ozzi-/TestRunner/blob/master/readme.md">the GitHub repository.</a>
-	<br><br>Using <b><span class="basePath"></span></b> as home.
+	<br><br>Using <strong><span class="basePath"></span></strong> as home.
 	<br><br>
 	<h3>Tests</h3>
 	Tests are a collection of 1 to n coherent tasks.<br>
 	A task points to a executable which is then run in the context of the test.<br>
 	Tests are defined in a JSON file ending with .test under "<span class="basePath"></span>tests".
-	<br>Example of a test:<code><pre>
+	<br>Example of a test:<pre><code>
 	{
 	  "settings": {
 	  },
@@ -24,11 +24,11 @@
 	      "timeout": 5
 	      }]
 	  }
-	}</pre></code>
+	}</code></pre>
 	<br><br>
 	<h3>Groups</h3>
 	Groups allow the grouping of multiple tests into one and are defined under "<span class="basePath"></span>groups".
-	<code><pre>{
+	<pre><code>{
 	"description": "test_windows",
 	"tests": [{
 		"test": "windows",
@@ -38,12 +38,12 @@
 		"name": "2/2"
 	}]
 }
-	</pre></code>
+	</code></pre>
 	<br><br>
 	<h3>Results</h3>
 	Results are persisted as a JSON file.<br>
 	Results are saved under "<span class="basePath"></span>results\&lt;TEST_NAME&gt;" or in the case of grouped tests "<span class="basePath"></span>results\groups\&lt;GROUP_NAME&gt;"
-	<code><pre>
+	<pre><code>
 	{
 	   "testName":"windows",
 	   "testStartTimestamp":1558427236097,
@@ -75,4 +75,4 @@
 	      }
 	   ]
 	}
-	</pre></code>
+	</code></pre>

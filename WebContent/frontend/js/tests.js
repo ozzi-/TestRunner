@@ -1,3 +1,5 @@
+'use strict';
+
 function runTest(res,name,paramName) {
 	runInternal(res, name ,paramName, "tr/status/test");
 }
@@ -36,7 +38,7 @@ function runInternal(res, name, paramName, call){
 		var tag = getQueryParams(document.location.search).tag;
 		var handleS = handle;
 		if(tag!="undefined" && tag!==undefined){
-			handleS = handleS+"_"+tag
+			handleS = handleS+"_"+tag;
 		}
 		doRequest("GET", "../"+call+"/" + name + "/" + handleS, poll, [name,paramName, poller, handleS]);
 	}
@@ -58,7 +60,6 @@ function poll(res,name,paramName, poller, handle) {
 
 function reRunLink() {
 	removeLoader();
-	var runLink = document.getElementById("runLink");
 	
 	var isGroup=false;
 	var name = getQueryParams(document.location.search).name;
@@ -88,7 +89,6 @@ function addResults(results,paramName){
 	var table = document.getElementById("resultsSpan").tableHandle;
 	
 	for (var i = 0; i < resultCount; i++) {
-		var a = document.createElement("a");
 		var passed = true;
 		for (var j = 0; j < results[i].result.results.length; j++) {
 			passed = results[i].result.results[j].passed;
@@ -96,7 +96,7 @@ function addResults(results,paramName){
 				break;
 			}
 		}
-		results[i].status = (passed==true ? " "+sun: " "+cloud);
+		results[i].status = (passed ? " "+sun : " "+cloud);
 		results[i].lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
 	}
 	table.addData(results);
@@ -106,7 +106,7 @@ function addResults(results,paramName){
 
 function loadMoreResults(){
 	var paramName;
-	pageIndex++;
+	window.pageIndex++;
 	document.getElementById("loadmore").disabled = true;
 	
 	var isGroup=false;
@@ -151,35 +151,37 @@ function listTestCategories(categories, tests){
 	}
 	
 	var testNameSel = document.getElementById("testNameSelect");
-	for (var i = 0; i <tests.length; i++) {
+	for (i = 0; i <tests.length; i++) {
 		if(!testInCategories.includes(tests[i].name)) {
-			var option = document.createElement("option");
-			option.text = tests[i].name;
-			testNameSel.add(option);
+			var newOption = document.createElement("option");
+			newOption.text = tests[i].name;
+			testNameSel.add(newOption);
 		}
-		var testObj = {name:tests[i].name, category:tests[i].category}
+		var testObj = {name:tests[i].name, category:tests[i].category};
 		testObjs.push(testObj);			
 			
 	}
 	
-	testCategoriesTable = new Tabulator("#testcategories", {
+	window.testCategoriesTable = new Tabulator("#testcategories", {
 	    groupBy:"category",
 	    groupStartOpen:false,
 	    layout:"fitDataFill",
 	    groupValues:[plainCategories],
 	    columns:[
 	        {title:"Categories", field:"name", width:400},
-	        {formatter:"buttonCross", hozAlign:"center", title:"", headerSort:false, cellClick:function(e, cell){
-	        	if(confirm('Are you sure you want to remove this test from the category?'))
-	        		var testName = cell.getRow()._row.data.name;
-	        		var categoryName = cell.getRow()._row.data.category;
-	        		var obj={};
-	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName+"/"+testName, crudHandle, [], true);
-	        		var sel = document.getElementById("testNameSelect");
-	        		var option = document.createElement("option");
-	        		option.text = testName;
-	        		sel.add(option);
-	        		cell.getRow().delete();
+	        {
+	        	formatter:"buttonCross", hozAlign:"center", title:"", headerSort:false, cellClick:function(e, cell){
+		        	if(confirm('Are you sure you want to remove this test from the category?')){
+		        		var testName = cell.getRow()._row.data.name;
+		        		var categoryName = cell.getRow()._row.data.category;
+		        		var obj={};
+		        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName+"/"+testName, crudHandle, [], true);
+		        		var sel = document.getElementById("testNameSelect");
+		        		var testOption = document.createElement("option");
+		        		testOption.text = testName;
+		        		sel.add(testOption);
+		        		cell.getRow().delete();
+		        	}
 	        	}
 	        }
 	     ],
@@ -189,7 +191,7 @@ function listTestCategories(categories, tests){
 
 function showHistory(res,initial){
 	if(initial){
-		historyTable = new Tabulator("#historyTable", {
+		window.historyTable = new Tabulator("#historyTable", {
 			layoutColumnsOnNewData:true,
 			layout:"fitDataFill",
 			columns:[
@@ -200,8 +202,8 @@ function showHistory(res,initial){
 				],
 				
 				rowClick:function(e, id, data, row){
-					var id = id._row.data.id;
-					window.location.href='index.html?page=history&id='+encodeURIComponent(id);
+					var dataID = id._row.data.id;
+					window.location.href='index.html?page=history&id='+encodeURIComponent(dataID);
 				}
 		});
 		historyTable.setData(res);
@@ -229,7 +231,7 @@ function addTestCategoryEntry(){
 }
 
 function saveTest(){
-	var test = new Object();
+	var test = {};
 	test.settings = {};
 	test.settings.successHook = document.getElementById("successHook").value;
 	test.settings.failureHook = document.getElementById("failureHook").value;
@@ -240,18 +242,18 @@ function saveTest(){
 	test.test.tasks = [];
 	while (document.getElementById("taskName_"+taskCounter)!==null) {
 		if(!document.getElementById("taskDiv_"+taskCounter).getAttribute("removed")){
-			var task = new Object();
+			var task = {};
 			task.name = document.getElementById("taskName_"+taskCounter).value;
 			task.path = document.getElementById("taskPath_"+taskCounter).value;
 			task.args = document.getElementById("taskArgs_"+taskCounter).value.split(",");
 			task.timeout = document.getElementById("taskTimeout_"+taskCounter).value;
 			test.test.tasks.push(task);			
+			// since an empty string results in split returning an array with one empty string entry, clean up:
+			if(task.args.length==1 && task.args[0]==""){
+				task.args=[];
+			}
 		}
 		taskCounter++;
-	}
-	// since an empty string results in split returning an array with one empty string entry, clean up:
-	if(task.args.length==1 && task.args[0]==""){
-		task.args=[];
 	}
 	var testName = getQueryParams(document.location.search).name;
 	if(testName==undefined){
@@ -261,7 +263,7 @@ function saveTest(){
 		}], true);
 	}else{
 		doRequestBody("PUT", JSON.stringify(test), "application/json", "../manage/test/"+testName, crudHandle, ["Edited Test", () => {
-			var testName = getQueryParams(document.location.search).name;
+			testName = getQueryParams(document.location.search).name;
 			window.location.replace("index.html?page=results&name="+testName);
 		}], true);		
 	}
@@ -347,24 +349,19 @@ function listResult(result) {
 			result.results[i].commit="-";
 		}
 		var descriptiveName =  result.results[i].descriptiveName==undefined?"":result.results[i].descriptiveName+ " - ";
-		resultsSpan.innerHTML += "<h3>"+escapeHtml(descriptiveName+result.results[i].name) + " " + (result.results[i].passed == false ? cloud : sun) + "</h3>"
-				+ "<b>Script Commit</b>: <i>"+ escapeHtml(result.results[i].commit) + "</i><br>"
-				+ "<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>"
-				+ "<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " 
-				+ "<b>Error Output:</b><br> " + escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />") + "<br>"
-				+ "<b>Runtime: </b> "+ escapeHtml(result.results[i].runTimeInMS) + " ms<br> "
-				+ "<br><hr><br>";
+		resultsSpan.innerHTML += "<h3>"+escapeHtml(descriptiveName+result.results[i].name) + " " + (result.results[i].passed ? sun : cloud) + "</h3>" +
+				"<b>Script Commit</b>: <i>"+ escapeHtml(result.results[i].commit) + "</i><br>" +
+				"<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>" +
+				"<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " + 
+				"<b>Error Output:</b><br> " + escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />") + "<br>" +
+				"<b>Runtime: </b> "+ escapeHtml(result.results[i].runTimeInMS) + " ms<br> "+
+				"<br><hr><br>";
 	}
 }
 
 function listResults(results,paramName) {
 	removeLoader();
 	var testName = document.getElementById("testName");
-	var runLink = document.getElementById("runLink");
-	var editLink = document.getElementById("editLink");
-	var copyLink = document.getElementById("copyLink");
-	var historyLink = document.getElementById("historyLink");	
-
 	
 	var isGroup=false;
 	var name = getQueryParams(document.location.search).name;
@@ -405,7 +402,7 @@ function listResults(results,paramName) {
 	}else{	
 		results = results.sort((a, b) => (a.handle < b.handle) ? 1 : -1);
 
-		resultsTable = new Tabulator("#resultsSpan", {
+		window.resultsTable = new Tabulator("#resultsSpan", {
 		    layout:"fitDataFill",
 		    columns:[
 		    {title:"Status", field:"status", formatter:htmlFormatter},
@@ -423,7 +420,7 @@ function listResults(results,paramName) {
 					break;
 				}
 			}
-			results[i].status = (passed==true ? " "+sun: " "+cloud);
+			results[i].status = (passed ? " "+sun: " "+cloud);
 			results[i].tagS = results[i].tag !== undefined ? results[i].tag : "";
 			results[i].lastRun = "<a href=\"index.html?page=result&"+paramName+"="+results[i].result.testName+"&handle="+ results[i].handle+"\">"+results[i].result.testStartString+"</a>";
 		}
@@ -450,7 +447,7 @@ function listGroupSettings(groups){
 	}
 	removeLoader();
 	
-	testGroupsTable = new Tabulator("#testgroups", {
+	window.testGroupsTable = new Tabulator("#testgroups", {
 	    groupBy:"group",
 	    groupStartOpen:false,
 	    layout:"fitDataFill",
@@ -458,19 +455,21 @@ function listGroupSettings(groups){
 	    columns:[
 	        {title:"Test", field:"test", width:400},
 	        {title:"Name", field:"name", width:400},
-	        {formatter:"buttonCross", hozAlign:"center", title:"", headerSort:false, cellClick:function(e, cell){
-	        	if(confirm('Are you sure you want to remove this test from the group?'))
-	        		var testName = cell.getRow()._row.data.test;
-	        		var groupName = cell.getRow()._row.data.group;
-	        		var obj={};
-	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName+"/"+testName, crudHandle, [], true);
-	        		cell.getRow().delete();
+	        {
+	        	formatter:"buttonCross", hozAlign:"center", title:"", headerSort:false, cellClick:function(e, cell){
+		        	if(confirm('Are you sure you want to remove this test from the group?')){
+		        		var testName = cell.getRow()._row.data.test;
+		        		var groupName = cell.getRow()._row.data.group;
+		        		var obj={};
+		        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName+"/"+testName, crudHandle, [], true);
+		        		cell.getRow().delete();
+		        	}
 	        	}
 	        }
 	     ],
 	});
 	// TODO refactor to use setData and prepare array first
-	for (var i = 0; i < groups.length; i++) {
+	for (i = 0; i < groups.length; i++) {
 		var groupTests = groups[i].tests;
 		for (var x = 0; x < groupTests.length; x++) {
 			testGroupsTable.addRow([{test:groupTests[x].test, name:groupTests[x].name, group:groups[i].name}], false);

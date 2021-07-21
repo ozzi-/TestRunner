@@ -16,6 +16,7 @@ setTimeout(function() {
 
 function pageLogic (response){
 	var paramName;
+	var name = getQueryParams(document.location.search).name;
 
 	document.getElementById("container").innerHTML = response;
 
@@ -47,14 +48,13 @@ function pageLogic (response){
 		doLogout();
 	}
 	if(page=="script"){
-		var name = getQueryParams(document.location.search).name;
 		document.getElementById("scriptNameSpan").textContent=name;
 		doRequest("GET", "../script/type/?name="+encodeURIComponent(name), loadScriptEdit);
-		createNavButton("historyLink","Show History",'index.html?page=history&scriptname='+encodeURIComponent(name))
+		createNavButton("historyLink","Show History",'index.html?page=history&scriptname='+encodeURIComponent(name));
 	}
 	if(page=="scriptadd"){
 		initScriptAdd();
-		scriptAddBtn('up')
+		scriptAddBtn('up');
 		doRequest("GET", "../script/folder", fillFolders);
 	}
 	if(page=="hash"){
@@ -64,11 +64,10 @@ function pageLogic (response){
 		hashInputField.oninput = function(){
 			var toHash = "TR_"+hashInputField.value;
 			sha512(toHash).then(x => hashOutputField.value=x.toUpperCase());
-		}
+		};
 	}
 	if(page=="result"){
 		var handle = getQueryParams(document.location.search).handle;
-		var name = getQueryParams(document.location.search).name;
 		reRunLink();
 		if(name === undefined || name == "undefined"){
 			name = getQueryParams(document.location.search).groupname;
@@ -85,24 +84,21 @@ function pageLogic (response){
 		doRequest("GET", "../tr/test", loadTestSettingsPage);
 	}
 	if(page=="results"){
-		var name = getQueryParams(document.location.search).name;
 		if(name=="undefined" || name === undefined ){
 			name = getQueryParams(document.location.search).groupname;
 			paramName="groupname";
 			doRequest("GET", "../tr/result/group/"+name+"/page/0", listResults,[paramName]);
-			doRequest("GET", "../tr/group/" + name , listTestContent)
+			doRequest("GET", "../tr/group/" + name , listTestContent);
 		}else{
 			paramName="name";
 			doRequest("GET", "../tr/result/test/" + name+"/page/0", listResults,[paramName]);
-			doRequest("GET", "../tr/test/" + name , listTestContent)
+			doRequest("GET", "../tr/test/" + name , listTestContent);
 		}
 	}
 	if(page=="edit"){
-		var name = getQueryParams(document.location.search).name;
 		doRequest("GET", "../tr/test/" + encodeURIComponent(name), editTestContent);
 	}
 	if(page=="copy"){
-		var name = getQueryParams(document.location.search).name;
 		document.getElementById("testName").value=name+" - Copy";
 		removeLoader();
 	}
@@ -173,7 +169,6 @@ function pageLogic (response){
 		if(tag != "undefined" && tag !== undefined && args !="undefined" && args !== undefined){
 			additional="/"+tag+"/"+args;
 		}
-		var name = getQueryParams(document.location.search).name;
 		if(name=="undefined" || name === undefined){
 			name = getQueryParams(document.location.search).groupname;
 			paramName = "groupname";

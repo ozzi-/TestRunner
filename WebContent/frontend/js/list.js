@@ -4,7 +4,7 @@ function listGroups(groups){
 	var groupCount = groups.length;
 	removeLoader();
 	if(localStorage.getItem(trRole)==="r"){
-		testGroupsTable = new Tabulator("#testGroupsTable", {
+		window.testGroupsTable = new Tabulator("#testGroupsTable", {
 		    pagination:"local", 
 		    paginationSize:10,
 		    layout:"fitDataFill",
@@ -18,7 +18,7 @@ function listGroups(groups){
 		    ],
 		});
 	}else{
-		testGroupsTable = new Tabulator("#testGroupsTable", {
+		window.testGroupsTable = new Tabulator("#testGroupsTable", {
 		    pagination:"local", 
 		    paginationSize:10,
 		    layout:"fitDataFill",
@@ -74,7 +74,7 @@ function listTests(tests) {
 	}
 		
 	if(localStorage.getItem(trRole)==="r"){
-		testsTable = new Tabulator("#testsTable", {
+		window.testsTable = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
@@ -91,7 +91,7 @@ function listTests(tests) {
 		    ],
 		});
 	}else{
-		testsTable = new Tabulator("#testsTable", {
+		window.testsTable = new Tabulator("#testsTable", {
 			layoutColumnsOnNewData:true,
 		    layout:"fitDataFill",
 		    groupBy:"category",
@@ -127,20 +127,19 @@ function listTests(tests) {
 	var timer;
 	filterInput.onkeyup = function(){
 		timer = setTimeout(function() {	
-			var filterInput = document.getElementById("filterInputTests");
 			testsTable.setFilter(matchAny, [filterInput.value,"name"]);
-		},700)
-	}
+		},700);
+	};
 	filterInput.onkeydown = function(){
 		clearTimeout(timer);
-	}
+	};
 }
 
 
 function listScripts(scripts){
 	removeLoader();
 
-	scriptsTable = new Tabulator("#scriptsTable", {
+	window.scriptsTable = new Tabulator("#scriptsTable", {
 		layoutColumnsOnNewData:true,
 	    layout:"fitDataFill",
 	    pagination:"local", 

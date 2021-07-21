@@ -74,7 +74,7 @@ function createCategory(){
 }
 
 function deleteTestGroup(){
-	var groupName = document.getElementById("testGroupSelectDelete").value
+	var groupName = document.getElementById("testGroupSelectDelete").value;
 	var obj={};
 	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName, crudHandle, ["Group deleted",reloadPage], true);
 	return false;
@@ -82,7 +82,7 @@ function deleteTestGroup(){
 
 
 function deleteCategory(){
-	var categoryName = document.getElementById("categoryNameDelete").value
+	var categoryName = document.getElementById("categoryNameDelete").value;
 	var obj={};
 	// TODO don't really need a reload here, might as well add the row to tabulator 
 	doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/category/"+categoryName, crudHandle, ["Category deleted", reloadPage], true);
@@ -189,7 +189,6 @@ function downloadBinaryButton(){
 }
 
 function  loadBinaryScriptEdit(blob){
-	var name = getQueryParams(document.location.search).name;	
 	var dataUri = window.URL.createObjectURL(blob);
     var anchor = document.getElementById("downloadBinaryLink");
     anchor.setAttribute('href', dataUri);
@@ -338,7 +337,7 @@ function loadTextScriptEdit(scriptContent){
 
 function fillScripts(res, checkScriptExistent){
 	var scriptSelects = document.getElementsByClassName("scriptSelect");
-	for(let i = 0; i < scriptSelects.length; i++){
+	for(var i = 0; i < scriptSelects.length; i++){
 		if(scriptSelects[i].wasFilled===undefined){
 			for(let y = 0; y < res.length; y++){
 				scriptSelects[i].wasFilled=true;
@@ -362,13 +361,13 @@ function fillScripts(res, checkScriptExistent){
 
 function fillFolders(res){
 	var folderSelects = document.getElementsByClassName("folderSelect");
-	for(let i = 0; i < folderSelects.length; i++){
+	for(var i = 0; i < folderSelects.length; i++){
 		fillFoldersInternal(res,folderSelects[i]);
 	}
 }
 
 function fillFoldersInternal(res,select){
-	for(let y = 0; y < res.length; y++){
+	for(var y = 0; y < res.length; y++){
 		if(res[y]._children!==undefined){
 			var path= res[y].path;
 			var option = document.createElement("option");

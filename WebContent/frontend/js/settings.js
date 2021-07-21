@@ -3,7 +3,7 @@
 function changeOthersPassword(){
 	var username = getQueryParams(document.location.search).name;
 	var password = document.getElementById("changePassword").value;
-	var changeObj = new Object();
+	var changeObj = {};
 	changeObj.password  = password;
 	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/password", crudHandle, ["Password changed", () => redirectPage("index.html?page=settings")], true);
 	return false;
@@ -12,12 +12,11 @@ function changeOthersPassword(){
 function changeRole(){
 	var username = getQueryParams(document.location.search).name;
 	var role = document.getElementById("editRole").value;
-	if(role==""){
-		return false;
+	if(role!=""){
+		var changeObj = {};
+		changeObj.role  = role;
+		doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/role", crudHandle, ["Role changed", () => redirectPage("index.html?page=settings")], true);
 	}
-	var changeObj = new Object();
-	changeObj.role  = role;
-	doRequestBody("PUT", JSON.stringify(changeObj), "application/json", "../user/"+username+"/role", crudHandle, ["Role changed", () => redirectPage("index.html?page=settings")], true);
 	return false;
 }
 
@@ -25,7 +24,7 @@ function createUser(){
 	var username = document.getElementById("createUsername").value;
 	var password = document.getElementById("createPassword").value;
 	var role = document.getElementById("createRole").value;
-	var changeObj = new Object();
+	var changeObj = {};
 	changeObj.username = username;
 	changeObj.password  = password;
 	changeObj.role  = role;
@@ -42,7 +41,7 @@ function deleteUser(){
 
 function changeMyPassword(){
 	var password = document.getElementById("myPassword").value;
-	var passwordObj = new Object();
+	var passwordObj = {};
 	passwordObj.password  = password;
 	doRequestBody("PUT", JSON.stringify(passwordObj), "application/json", "../user/password", proccessPasswordChange, true, true);
 	return false;
@@ -82,7 +81,7 @@ function processDeleteUser(response){
 
 function fillUsers(res){
 
-	usersTable = new Tabulator("#usersTable", {
+	window.usersTable = new Tabulator("#usersTable", {
 	    layout:"fitDataFill",
 	    columns:[
 	    	{title:"User", field:"user"},
