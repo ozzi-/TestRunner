@@ -828,7 +828,7 @@ function listTestCategories(categories, tests){
 	    groupValues:[plainCategories],
 	    columns:[
 	        {title:"Categories", field:"name", width:400},
-	        {formatter:"buttonCross", align:"center", title:"", headerSort:false, cellClick:function(e, cell){
+	        {formatter:"buttonCross", hozAlign:"center", title:"", headerSort:false, cellClick:function(e, cell){
 	        	if(confirm('Are you sure you want to remove this test from the category?'))
 	        		var testName = cell.getRow()._row.data.name;
 	        		var categoryName = cell.getRow()._row.data.category;
@@ -923,7 +923,7 @@ function listGroupSettings(groups){
 	    columns:[
 	        {title:"Test", field:"test", width:400},
 	        {title:"Name", field:"name", width:400},
-	        {formatter:"buttonCross", align:"center", title:"", headerSort:false, cellClick:function(e, cell){
+	        {formatter:"buttonCross", hozAlign:"center", title:"", headerSort:false, cellClick:function(e, cell){
 	        	if(confirm('Are you sure you want to remove this test from the group?'))
 	        		var testName = cell.getRow()._row.data.test;
 	        		var groupName = cell.getRow()._row.data.group;
