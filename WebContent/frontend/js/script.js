@@ -59,7 +59,7 @@ function createTestGroup(){
 	var obj =  {};
 	obj.name=groupName;
 	obj.description=groupDescription;
-	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/group/", crudHandle, ["Group created",pageReload], true);
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/group/", crudHandle, ["Group created",reloadPage], true);
 
 	return false;
 }
@@ -68,7 +68,7 @@ function createCategory(){
 	var categoryName = document.getElementById("categoryName").value;
 	var obj =  {};
 	obj.name=categoryName;
-	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/category/", crudHandle, ["Category created", pageReload], true);
+	doRequestBody("POST", JSON.stringify(obj), "application/json", "../manage/category/", crudHandle, ["Category created", reloadPage], true);
 
 	return false;
 }

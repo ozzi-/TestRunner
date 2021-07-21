@@ -221,7 +221,7 @@ function addTestCategoryEntry(){
 	testCategoriesTable.addRow([{name: test,category:category}], false);
 	var obj = {};
 	obj.test=test;
-	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/category/"+category, crudHandle, true, true);
+	doRequestBody("PUT", JSON.stringify(obj), "application/json", "../manage/category/"+category, crudHandle, [], true);
 	var x = document.getElementById("testNameSelect");
 	x.remove(x.selectedIndex); 
 	document.getElementById("addTestGroupMappingForm").reset();
@@ -413,7 +413,7 @@ function listResults(results,paramName) {
 		    {title:"Tag", field:"tagS", minWidth:50},
 		    ],
 		});
-		document.getElementById("resultsSpan").tableHandle = table;
+		document.getElementById("resultsSpan").tableHandle = resultsTable;
 		
 		for (var i = 0; i < resultCount; i++) {
 			var passed = true;
@@ -463,7 +463,7 @@ function listGroupSettings(groups){
 	        		var testName = cell.getRow()._row.data.test;
 	        		var groupName = cell.getRow()._row.data.group;
 	        		var obj={};
-	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName+"/"+testName, groupEdited, true, true);
+	        		doRequestBody("DELETE", JSON.stringify(obj), "application/json", "../manage/group/"+groupName+"/"+testName, crudHandle, [], true);
 	        		cell.getRow().delete();
 	        	}
 	        }
