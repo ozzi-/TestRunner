@@ -1,4 +1,5 @@
 'use strict';
+
 var page = getQueryParams(document.location.search).page;
 if(page === undefined || page == "undefined" || page == "index" ){
 	page = "main";
