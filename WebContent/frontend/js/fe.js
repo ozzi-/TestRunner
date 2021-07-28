@@ -14,7 +14,14 @@ var requestTimeoutMS = 5000;
 
 var testGroupsTable, testsTable, scriptsTable, usersTable, testCategoriesTable, historyTable;
 
+//prevent bug of JS not running on page back, thus no XHR triggered and "stale" data shown
+//https://stackoverflow.com/questions/2638292/after-travelling-back-in-firefox-history-javascript-wont-run
 window.onunload = function(){}; 
+
+var path = window.location.pathname;
+if(path.indexOf('//')!==-1){
+	window.location.replace(path.replace('//','/'));
+}
 
 // ***********
 // * Network *

@@ -322,16 +322,15 @@ function editTestContent(result){
 
 function listResult(result) {
 	removeLoader();
-	// TODO use a class
-	var style = ' style="color:green;" ';
+	var className = 'color-pass';
 	for (var i = 0; i < result.results.length; i++) {
 		if(! result.results[i].passed){
-			style=' style="color:red;" ';
+			className = 'color-fail';
 		}
 	}
 	// TODO remove innerHTML here
 	var infoSpan = document.getElementById("info");
-	infoSpan.innerHTML = ("<h3"+style+">" + escapeHtml(result.testName) + " - "+ result.testStartString + "</h3>");
+	infoSpan.innerHTML = ("<h3 class=\""+className+"\">" + escapeHtml(result.testName) + " - "+ result.testStartString + "</h3>");
 	infoSpan.innerHTML += "<b>Run by</b>: "+escapeHtml(result.testRunBy)+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description)+"<br><br><b>Test Commits:</b><br>";
 	if(result.commits==undefined){
 		infoSpan.innerHTML+="-";

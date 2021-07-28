@@ -13,15 +13,11 @@ import persistence.Persistence;
 
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
-	
-	// TODO shabby performance on chrome based browsers - /testrunner/frontend/index.html?page=testgroupsettings
-	// [Violation] 'readystatechange' handler took 4425ms
-	// [Violation] Forced reflow while executing JavaScript took 690ms
-		
-	// TODO Solve todos in tests.js
-
+			
 	// TODO show running tasks as list?
+	
 	// TODO different OS -> TestRunner satellite agents 
+	
 	// TODO frontend - collapsed groups will have too low column width
 	
 	@Override
@@ -40,7 +36,7 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 
 	@Override
 	public void onStartup(Container container) {
-		final String version = "1.5";
+		final String version = "1.6";
 		try {
 			String logBasePath = PathFinder.getLogPath();
 			PathFinder.createFolderPath(logBasePath);

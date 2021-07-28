@@ -55,6 +55,14 @@
 	width: 100% !important
 }
 
+.color-pass{
+	color:green;	
+}
+
+.color-fail{
+	color:red;
+}
+
 .no-padding-right {
 	padding-right: 0px !important;
 }
