@@ -27,7 +27,6 @@ function pageLogic (response){
 		}, 2000);
 		
 	}
-
 	if(page=="main"){
 		doRequest("GET", "../tr/test", listTests);
 		doRequest("GET", "../tr/group", listGroups);
@@ -41,6 +40,12 @@ function pageLogic (response){
 		document.getElementById("logout").remove();
 		document.getElementById("runningTestsSpan").remove();
 		document.getElementById("historyHref").remove();
+	}
+	if(page=="log"){
+		document.getElementById("logReloadBtn").onclick = function(){
+			doRequest("GET", "../tr/log", displayLog);		
+		};
+		doRequest("GET", "../tr/log", displayLog);
 	}
 	if(page=="info"){
 		doRequest("GET", "../tr/basepath", basePath);
@@ -203,7 +208,7 @@ function pageLogic (response){
 		var usrName = getQueryParams(document.location.search).name;
 		document.getElementById("changeUsrName").textContent=usrName;
 		document.getElementById("deleteUsrName").textContent=usrName;
-	    removeLoader();		
+	    removeLoader();
 	}
 	if(page=="run"){
 		removeLoader();

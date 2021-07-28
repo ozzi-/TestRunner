@@ -171,3 +171,11 @@ function listScripts(scripts){
 		//window.scrollTo(0,document.body.scrollHeight);
 	});
 }
+
+
+function displayLog(logs){
+	removeLoader();
+	var logField = document.getElementById("logfield");
+	logField.value=logs;
+	logField.scrollTop = logField.scrollHeight;
+}

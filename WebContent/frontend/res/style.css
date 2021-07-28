@@ -55,6 +55,10 @@
 	width: 100% !important
 }
 
+.no-padding-right {
+	padding-right: 0px !important;
+}
+
 .break-word {
 	word-wrap: break-word
 }
