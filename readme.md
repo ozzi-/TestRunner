@@ -21,6 +21,20 @@ TR enables you to do all of this by giving you a unified way of running tests & 
 ![TR](https://i.imgur.com/1szWsK1.png)
 
 # TR Principles
+
+## Full transparency 
+Every change to any test and or script is kept in a local GIT repository. This allows for tranparency on any changes as well as a chain of evidence of your test results.
+
+<img src="https://i.imgur.com/htbhBLR.png" width="500">
+
+<img src="https://i.imgur.com/zcjJwyJ.png" width="500">
+
+<img src="https://i.imgur.com/12Stnky.png" width="300">
+
+
+
+
+
 ## Tests
 Tests are a collection of one or more tasks.
 
