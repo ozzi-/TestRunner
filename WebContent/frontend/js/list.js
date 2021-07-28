@@ -9,12 +9,12 @@ function listGroups(groups){
 		    paginationSize:10,
 		    layout:"fitDataFill",
 		    columns:[
-			    {title:"Group", field:"groupLink", formatter:htmlFormatter},
-			    {title:"Description", field:"description", formatter:htmlFormatter},
-			    {title:"Tests", field:"tests",  width:300},
+			    {title:"Group", field:"groupLink", maxWidth:240,  formatter:htmlFormatter},
+			    {title:"Description", field:"description", maxWidth:290, formatter:htmlFormatter},
+			    {title:"Tests", field:"tests", tooltip: true, width:290},
 			    {title:"Status", field:"runState", formatter:htmlFormatter},
 			    {title:"Last Run", field:"lastRunDate" },
-			    {title:"Last Run Time", field:"lastRunTime"},
+			    {title:"LRT", field:"lastRunTime", headerTooltip:"Last Run Time"},
 		    ],
 		});
 	}else{
@@ -22,16 +22,15 @@ function listGroups(groups){
 		    pagination:"local", 
 		    paginationSize:10,
 		    layout:"fitDataFill",
-
 		    columns:[
-		    {title:"Group", field:"groupLink",  formatter:htmlFormatter},
-		    {title:"Description", field:"description", formatter:htmlFormatter},
-		    {title:"Tests", field:"tests", width:300},
+		    {title:"Group", field:"groupLink",maxWidth:240, formatter:htmlFormatter},
+		    {title:"Description", field:"description", maxWidth:290, formatter:htmlFormatter},
+		    {title:"Tests", field:"tests", tooltip: true,  width:290},
 		    {title:"Run", field:"runLink", minWidth:70, formatter:htmlFormatter},
 		    {title:"Custom", field:"runTLink", minWidth:70, formatter:htmlFormatter},
 		    {title:"Status", field:"runState", formatter:htmlFormatter},
 		    {title:"Last Run", field:"lastRunDate"},
-		    {title:"Last Run Time", field:"lastRunTime"},
+		    {title:"LRT", field:"lastRunTime", headerTooltip:"Last Run Time"},
 		    ],
 		});
 	}
@@ -55,10 +54,10 @@ function listGroups(groups){
 	testGroupsTable.setData(groups);
 	
 	if(localStorage.getItem(trRole)===roleRWX || localStorage.getItem(trRole)===roleA ){
-		document.getElementById("testGroupsSettings").style.display="";
-		document.getElementById("testSettings").style.display="";
-		document.getElementById("testAdd").style.display="";
-		document.getElementById("scriptAdd").style.display="";
+		document.getElementById("testGroupsSettings").classList.remove("display-none");
+		document.getElementById("testSettings").classList.remove("display-none");
+		document.getElementById("testAdd").classList.remove("display-none");
+		document.getElementById("scriptAdd").classList.remove("display-none");
 	}
 }
 
@@ -68,9 +67,9 @@ function listTests(tests) {
 	
 	var collapse = getQueryParams(document.location.search).collapse;
 	if(collapse==undefined){
-		document.getElementById("collapseGroupsHref").style="";
+		document.getElementById("collapseGroupsHref").classList.remove("display-none");
 	}else{
-		document.getElementById("expandGroupsHref").style="";
+		document.getElementById("expandGroupsHref").classList.remove("display-none");
 	}
 		
 	if(localStorage.getItem(trRole)==="r"){
@@ -87,7 +86,7 @@ function listTests(tests) {
 		    {title:"Test", field:"testLink", minWidth:300, formatter:htmlFormatter},
 		    {title:"Status", field:"runState", minWidth:70, formatter:htmlFormatter},
 		    {title:"Last Run", field:"lastRunDate" , minWidth:170},
-		    {title:"Last Run Time", field:"lastRunTime"},
+		    {title:"LRT", field:"lastRunTime", headerTooltip:"Last Run Time"},
 		    ],
 		});
 	}else{
@@ -106,7 +105,7 @@ function listTests(tests) {
 		    {title:"Custom", field:"runTLink",  minWidth:70, formatter:htmlFormatter},
 		    {title:"Status", field:"runState", minWidth:70, formatter:htmlFormatter},
 		    {title:"Last Run", field:"lastRunDate"},
-		    {title:"Last Run Time", field:"lastRunTime"},
+		    {title:"LRT", field:"lastRunTime", headerTooltip:"Last Run Time"},
 		    ],
 		});
 	}
@@ -144,7 +143,7 @@ function listScripts(scripts){
 	    layout:"fitDataFill",
 	    pagination:"local", 
 	    dataTree:true,
-	    dataTreeStartExpanded:false,
+	    dataTreeStartExpanded:true,
 	    paginationSize:10,
 	    columns:[
 	    	{title:"Name", field:"name", formatter:htmlFormatter, width: 700},

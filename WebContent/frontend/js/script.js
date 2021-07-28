@@ -113,16 +113,16 @@ var scriptAddEditorInitialized=false;
 // TODO beautify this
 function scriptAddBtn(id){
 	if(id=="up"){
-		document.getElementById("scriptUploadTab").style="";
-		document.getElementById("scriptEditorTab").style.display="none";
-		document.getElementById("scriptFolderTab").style.display="none";
+		document.getElementById("scriptUploadTab").classList.remove("display-none");
+		document.getElementById("scriptEditorTab").classList.add("display-none");
+		document.getElementById("scriptFolderTab").classList.add("display-none");
 		document.getElementById("navUP").classList.add("active");
 		document.getElementById("navFE").classList.remove("active");
 		document.getElementById("navFO").classList.remove("active");
 	}else if(id=="fe"){
-		document.getElementById("scriptEditorTab").style="";
-		document.getElementById("scriptUploadTab").style.display="none";
-		document.getElementById("scriptFolderTab").style.display="none";
+		document.getElementById("scriptEditorTab").classList.remove("display-none");
+		document.getElementById("scriptUploadTab").classList.add("display-none");
+		document.getElementById("scriptFolderTab").classList.add("display-none");
 		document.getElementById("navFE").classList.add("active");
 		document.getElementById("navUP").classList.remove("active");
 		document.getElementById("navFO").classList.remove("active");
@@ -137,9 +137,9 @@ function scriptAddBtn(id){
 			editorElem.editorHandle=editor;
 		}
 	}else{
-		document.getElementById("scriptFolderTab").style="";
-		document.getElementById("scriptEditorTab").style.display="none";
-		document.getElementById("scriptUploadTab").style.display="none";
+		document.getElementById("scriptFolderTab").classList.remove("display-none");
+		document.getElementById("scriptEditorTab").classList.add("display-none");
+		document.getElementById("scriptUploadTab").classList.add("display-none");
 		document.getElementById("navFO").classList.add("active");
 		document.getElementById("navUP").classList.remove("active");
 		document.getElementById("navFE").classList.remove("active");
@@ -153,9 +153,9 @@ function loadScriptEdit(res){
 	document.getElementById("scriptName").value=res.name;
 	if(res.type=="text"){
 		doRequest("GET", "../script/download/?name="+encodeURIComponent(name), loadTextScriptEdit);
-		document.getElementById("textEditor").style="";
+		document.getElementById("textEditor").classList.remove("display-none");
 	}else{
-		document.getElementById("binaryEditor").style="";
+		document.getElementById("binaryEditor").classList.remove("display-none");
 		
 		var headerObj={};
 		headerObj[sessionHeaderName] = localStorage.getItem(trToken);
@@ -193,7 +193,7 @@ function  loadBinaryScriptEdit(blob){
     var anchor = document.getElementById("downloadBinaryLink");
     anchor.setAttribute('href', dataUri);
     anchor.setAttribute('download', document.getElementById("scriptName").value);
-    document.getElementById("loader").style.display="none";
+    document.getElementById("loader").classList.add("display-none");
     anchor.click();
 }
 
