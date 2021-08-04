@@ -47,6 +47,8 @@ public class TRHelper {
 	public static final String SUCCESS_HOOK = "successHook";
 	public static final String FAILURE_HOOK = "failureHook";
 	public static final String SETTINGS = "settings";
+	public static final String ARCHIVEPATH = "archivePath";
+	public static final String ARCHIVENAME = "archiveName";
 
 	/**
 	 * 

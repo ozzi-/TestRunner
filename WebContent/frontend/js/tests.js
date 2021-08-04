@@ -245,6 +245,7 @@ function saveTest(){
 			var task = {};
 			task.name = document.getElementById("taskName_"+taskCounter).value;
 			task.path = document.getElementById("taskPath_"+taskCounter).value;
+			task.archivePath = document.getElementById("taskArchive_"+taskCounter).value;
 			task.args = document.getElementById("taskArgs_"+taskCounter).value.split(",");
 			task.timeout = document.getElementById("taskTimeout_"+taskCounter).value;
 			test.test.tasks.push(task);			
@@ -347,14 +348,88 @@ function listResult(result) {
 		if(result.results[i].commit==undefined){
 			result.results[i].commit="-";
 		}
+
+		if(i>0){
+			resultsSpan.appendChild(document.createElement("br"));
+			resultsSpan.appendChild(document.createElement("br"));
+			resultsSpan.appendChild(document.createElement("br"));
+		}
+
 		var descriptiveName =  result.results[i].descriptiveName==undefined?"":result.results[i].descriptiveName+ " - ";
-		resultsSpan.innerHTML += "<h3>"+escapeHtml(descriptiveName+result.results[i].name) + " " + (result.results[i].passed ? sun : cloud) + "</h3>" +
-				"<b>Script Commit</b>: <i>"+ escapeHtml(result.results[i].commit) + "</i><br>" +
-				"<b>Result</b>: <i>"+ escapeHtml(result.results[i].description) + "</i><br>" +
-				"<b>Output:</b><br> "+ escapeHtml(result.results[i].output).replace(/\n/g, "<br />") + " <br> " + 
-				"<b>Error Output:</b><br> " + escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />") + "<br>" +
-				"<b>Runtime: </b> "+ escapeHtml(result.results[i].runTimeInMS) + " ms<br> "+
-				"<br><hr><br>";
+		var header = document.createElement("H3");
+		header.innerHTML = escapeHtml(descriptiveName+result.results[i].name)+ " " + (result.results[i].passed ? sun : cloud);
+		resultsSpan.appendChild(header);
+
+		var b = document.createElement("b");
+		b.textContent="Script Commit: ";
+		resultsSpan.appendChild(b);
+		var res = document.createElement("i");
+		res.innerHTML=escapeHtml(result.results[i].commit);
+		resultsSpan.appendChild(res);
+		resultsSpan.appendChild(document.createElement("br"));
+		
+		b = document.createElement("b");
+		b.textContent="Result: ";
+		resultsSpan.appendChild(b);
+		res = document.createElement("span");
+		res.innerHTML=escapeHtml(result.results[i].description);
+		resultsSpan.appendChild(res);
+		resultsSpan.appendChild(document.createElement("br"));
+
+		
+		if(result.results[i].archiveContent!=undefined){
+			var btn = document.createElement("button");
+			btn.id="downloadArchiveBtn_"+i;
+			btn.classList.add("btn");
+			btn.classList.add("btn-primary");
+			btn.innerHTML="Show archived content";
+			resultsSpan.appendChild(btn);
+			
+			var href = document.createElement("a");
+			href.id="downloadArchiveHref_"+i;
+			resultsSpan.appendChild(href);
+			resultsSpan.appendChild(document.createElement("br"));
+		}
+
+
+		b = document.createElement("b");
+		b.textContent="Output: ";
+		resultsSpan.appendChild(b);
+		res = document.createElement("span");
+		res.innerHTML=escapeHtml(result.results[i].output).replace(/\n/g, "<br />");
+		resultsSpan.appendChild(res);
+		resultsSpan.appendChild(document.createElement("br"));
+
+		b = document.createElement("b");
+		b.textContent="Error Output: ";
+		resultsSpan.appendChild(b);
+		res = document.createElement("span");
+		res.innerHTML=escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />");
+		resultsSpan.appendChild(res);
+		resultsSpan.appendChild(document.createElement("br"));
+
+		
+		b = document.createElement("b");
+		b.textContent="Runtime: ";
+		resultsSpan.appendChild(b);
+		res = document.createElement("span");
+		res.innerHTML=escapeHtml(escapeHtml(result.results[i].runTimeInMS) + " ms");
+		resultsSpan.appendChild(res);
+		
+		if(result.results[i].archiveContent!=null){
+			document.getElementById("downloadArchiveBtn_"+i).index = i;
+			document.getElementById("downloadArchiveBtn_"+i).onclick = function(){
+				var myblob = new Blob([result.results[this.index].archiveContent], {
+					type: 'text/plain'
+				});
+				var dataUri = window.URL.createObjectURL(myblob);
+				var anchor = document.getElementById("downloadArchiveHref_"+this.index);
+				anchor.setAttribute('href', dataUri);
+				anchor.setAttribute('download', result.results[this.index].archiveName);
+				document.getElementById("loader").classList.add("display-none");
+				anchor.click();
+			}
+		}
 	}
 }
 

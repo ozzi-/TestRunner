@@ -164,7 +164,7 @@ public class Helpers {
 		Log.log(Level.FINE, "Parsing test config file '"+name+"'");
 		try {
 			settings = (JSONObject) jo.get(TRHelper.SETTINGS);
-			// TODO check with settings.get(x) != null instead of this
+			// TODO check with settings.has instead of this
 			try {
 				testElem.successHook = settings.getString(TRHelper.SUCCESS_HOOK);
 			} catch (Exception e) {}
@@ -184,6 +184,9 @@ public class Helpers {
 				Task taskElem = new Task();
 				taskElem.name = task.getString(TRHelper.NAME);
 				taskElem.path = task.getString(TRHelper.PATH);
+				if(task.has(TRHelper.ARCHIVEPATH)) {
+					taskElem.archivePath = task.getString(TRHelper.ARCHIVEPATH);
+				}
 				if(getCommitInfo) {
 					taskElem.commit = Persistence.getCurrentCommitOfScript(taskElem.path);					
 				}

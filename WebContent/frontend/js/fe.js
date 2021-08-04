@@ -351,6 +351,9 @@ function createTaskDiv(task, i, disabled){
 	var taskArgs = createInput("Arguments (Comma-seperated)", task.args, "taskArgs_"+i, disabled,false,false);
 	tasksDiv.append(taskArgs);
 	tasksDiv.append(document.createElement("br"));
+	var taskArchive = createInput("Archive Path", task.archivePath, "taskArchive_"+i, disabled,false,false);
+	tasksDiv.append(taskArchive);
+	tasksDiv.append(document.createElement("br"));
 	var taskTimeout = createInput("Timeout", task.timeout, "taskTimeout_"+i, disabled,false, true,true);
 	tasksDiv.append(taskTimeout);
 	tasksDiv.append(document.createElement("br"));

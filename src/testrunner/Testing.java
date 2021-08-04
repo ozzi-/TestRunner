@@ -30,6 +30,15 @@ public class Testing {
 		for (Task task : test.tasks) {
 			Result result = runTask(task);
 			results.results.add(result);
+			
+			if(task.archivePath!=null) {
+				try {
+					result.archiveContent = Helpers.readFile(task.archivePath);
+					result.archiveName = new File(task.archivePath).getName();
+				} catch (Exception e) {
+					Log.log(Level.WARNING,"Failed to read archive path "+task.archivePath+" for task "+task.descriptiveName+" in test "+test.name+": "+e.getClass().getName());
+				}
+			}
 		}
 		return results;
 	}
@@ -47,6 +56,7 @@ public class Testing {
 							allPassed=false;
 						}
 					}
+
 					if(allPassed && test.successHook != null && !test.successHook.equals("")) {
 						Log.log(Level.INFO, "Running success hook '"+test.successHook+"' for test '"+test.name+"'");
 						runPostHook(test.successHook);
