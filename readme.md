@@ -4,115 +4,93 @@
 
 
 # TR - Test Runner
-Do you have a bunch of scripts that test applications / services during runtime?
+Do you have a bunch of scripts that test your applications and services at runtime?
 
 Do you wish to have a unified interface for running those tests instead of using the command line?
 
-Do you require testing evidence?
+Do you require evidence of test runs?
 
-TR enables you to do all of this by giving you a unified way of running tests & storing results!
+TR enables you to do all of this by providing an unified way of running tests & storing results through a convinient web UI and REST API!
 
-![s](https://i.imgur.com/oronXja.png) meep meep
+<img src="https://i.imgur.com/oronXja.png" width="300"> meep meep
 
+# Screenshots
 ## Main Page
-![TR](https://i.imgur.com/kan52as.png)
+<img src="https://i.imgur.com/kan52as.png" width="750">
 
 ## Results Page
-![TR](https://i.imgur.com/1szWsK1.png)
+<img src="https://i.imgur.com/1szWsK1.png" width="750">
 
 # TR Principles
 
 ## Full transparency 
-Every change to any test and or script is kept in a local GIT repository. This allows for tranparency on any changes as well as a chain of evidence of your test results.
+Every change to your test and scripts is kept in a local GIT repository. This allows to have full transparency, ensuring that for every test result it is clear what exactly was tested, providing a chain of evidence of your test results.
 
-<img src="https://i.imgur.com/htbhBLR.png" width="500">
+<img src="https://i.imgur.com/htbhBLR.png" width="550">
 
-<img src="https://i.imgur.com/zcjJwyJ.png" width="500">
+<img src="https://i.imgur.com/zcjJwyJ.png" width="550">
 
-<img src="https://i.imgur.com/12Stnky.png" width="300">
-
-
-
+<img src="https://i.imgur.com/12Stnky.png" width="350">
 
 
 ## Tests
-Tests are a collection of one or more tasks.
+A test is a collection of one or more tasks.
 
-        +-----------+
-        | some test |
-        +-----+-----+
+           +------+
+           | Test |
+           +------+
               |
       +---------------+
       |       |       |
       v       v       v
-    task1   task2   task3
+    Task1   Task2   Task3
 
 
-A task defines the path to the exectuable (the actual test) and a optional timeout. When TR runs a test, all of its tasks will be executed and judging by their exit code and runtime as a success or fail.
+A task defines the path to the exectuable (the actual test). TR will run all tasks subsequently while capturing their output.
 
-Example of a test config:
-
-      {
-        "settings": {},
-        "test": {
-          "description": "Example",
-          "tasks" : [{
-            "name":"task1",
-            "path":"scripts/task1.sh",
-            "timeout": 1
-          },{
-            "name":"task2",
-            "path":"scripts/task2.sh",
-            "args":["--force"],
-            "timeout": 2
-          }]
-        }
-      }
-
-### Task Results
-A task knows two states, passed "true" or "false".
-However there are different reasons why a task can fail:
+## Task Results
+A task knows two states, success or failure.
+However, there are different reasons why a task can fail:
 - The task ran longer than the defined timeout and was killed
 - The task returned a non zero exit code
 
 If one task failes, the whole test will be marked as failed.
-![example result](https://i.imgur.com/iULtQ1A.png)
+<img src="https://i.imgur.com/iULtQ1A.png" width="550">
+
+### Archiving result files
+For every task you can provide a path pointing to an arbitrary file. If the task is run, the file under said path is copied into the result and is thus archived by TestRunner. This is helpful if your task does not print all results to stdout/err but as an example into a HTML report file.
+<img src="https://i.imgur.com/u61O317.png" width="320">
 
 
 ## Test Groups
 Test Groups allow to run multiple tests in one go and one report.
 
                       +-------+
-                      | group |
+                      | Group |
                       +---+---+
                           |
               +-----------+-----------+
               |                       |
         +-----+-----+           +-----+-----+
-        | mail test |           | auth test |
+        | Mail Test |           | Auth Test |
         +-----+-----+           +-----+-----+
               |                       |
       +---------------+       +---------------+
       |       |       |       |       |       |
       v       v       v       v       v       v
-    task1   task2   task3   auth1   auth2   auth3
+    Task1   Task2   Task3   Auth1   Auth2   Auth3
     
     
-### Archiving result files
-For every task you can provide a path pointing to an arbitrary file. If the task is run, the file under said path is copied into the result and is thus archived by TestRunner. This is helpful if your task does not print all results to stdout/err but as an example into a HTML report file.
-<img src="https://i.imgur.com/u61O317.png" width="320">
-
-
-
 
 # Configuration
 Under Windows, TR will create a folder called "TR" in your %APPDATA% folder. Under Linux, TR will create a folder called "/var/lib/TR". This is later referenced as "base path".
 All configuration is saved as JSON files.
 
-## Setup
+## Deployment
 Build your own war file using maven or get the newest binary from the projects GitHub page under the tab "Releases". Deploy it in your tomcat webapps folder.
 Make sure the user running tomcat can create a folder "TR" under "/var/lib" (or "%APPDATA%" when using windows).
 Now TR is ready to run your tests under localhost:8080/TR/frontend/index.html.
+
 ### Example configuration  for lighttpd
 ```
 $HTTP["host"] == "testrunner.your.domain.com" {
@@ -138,126 +116,20 @@ $HTTP["host"] == "testrunner.your.domain.com" {
 }
 ```
 ## Users
-Users are stored in basePath/users.json.
 If you run TR the first time, a users.json file will be automatically generated.
-Default login credentials are "admin" with the password "letmein".
+Default login credentials are "admin" with the password "letmein". All passwords are hashed and use unique salts.
 
-Example of two defined users:
-
-	[
-	  {
-		"username": "ozzi",
-		"password": "6DA7851E78C929C04AF5D2750965E3D8A96E1F2F709B0FB9864D2A5C4703F43F58A5D0E17C6FC8578B41BD22373694791D3EFB053FD80830603D2B076DD7A9FA",
-        "salt" : "5ZuIIFgezD",
-		"role": "a"
-	  },{
-		"username": "read",
-		"password": "BBFA187429F9C089455B8195896DC9EB10FE07AC0BB09954BD23CFD0721E1207ECA457BCF1BBA350E96C42A21C8503B2D6006B731AFE177E84A61F088CD596F2",
-        "salt" : "JKbWLZo0IY",
-		"role": "r"
-	  }
-	]
-
+### Roles
 The role "r" - READ can only view results, "rx" READEXECUTE can additionally run the defined tests.
 
 The role "rwx" READWRITEEXECUTE can additionally edit (write) test and testgroups.
 
 The role "a" ADMIN can additionally administer users.
 
-![settings page](https://i.imgur.com/i34HCAT.png)
 
-## Tests
-All tests are stored in basePath/tests/. Each test is defined in its own file.
-The test files need to use the file extension ".test".
-Example of a test file called "windows.test". The test name is taken from the filename, hence this tests name is "windows".
-
-	{
-	  "settings": {
-	  },
-	  "test": {
-		"description": "Tests Windows",
-		"tasks": [{
-		  "name": "task1",
-		  "path": "script1.bat",
-		  "timeout": 10
-		  },{
-		  "name": "task2",
-		  "path": "script2.bat",
-                  "args": ["--force"],
-		  "timeout": 3
-		  },{
-		  "name": "task3",
-		  "path": "script3.bat",
-                  "args": ["--force","--silent"],
-		  "timeout": 5
-		  }]
-	  } 
-	}
-
-The paths defined can be absolute or relative (to the current directory).
-
-### Hooks
-You can define optional hooks which will be ran if the tests succeeds (successHook) or fails (failureHook).
-Example of a test which will, when it runs successfully, execute "sendmail.exe" with a command line argument.
-
-	{
-	  "settings": {
-		"successHook": "C:\\Program Files (x86)\\Mailer\\sendmail.exe \"windows test succeeded\""
-	  },
-	  "test": {
-		"description": "test_windows",
-		"tasks": [{
-		  "name": "task1",
-		  "path": "script1.bat",
-		  "timeout": 1
-		  }]
-	  } 
-	}
-
-When using groups, the last hooks in order will be used. 
-
-Example: The group consists of three tests: "1", "2", "3".
-
-"1" defines a success hook
-
-"2" defines a success hook and a failure hook
-
-"3" defines a failure hook
-
-This means the used success hook is from "2" and the failure hook from "3".
-
-### Categories
-Categories allow to group tests on the main page, as seen in the screenshot (Mail and SAML), in order to keep the overview when many tests are configured. In order to create categories, create a file called test.categories in your tests folder.
-It follows the following syntax:
-```
-{
-	"Mail" : ["MAIL_Performance", "MAIL_Smoke_Test"],
-	"SAML": ["SAML_Preprod", "SAML_Prod", "SAML_Rebind"]
-}
-```
-All tests that are not mapped are automatically assigned to the category "-". Tests can only be part of one category.
-
-
-## Groups
-Groups are stored in basePath/groups/. Every Group is defined in its own file.
-The group files need to use the file extension ".group".
-Example of a group file called "auth.test". The test name is taken from the filename, hence this tests name is "auth".
-This group contains the two tests "auth_sso" and "auth_mail".
-
-	{
-	  "description": "Grouping all auth tests",
-	  "tests": [{
-		"test": "auth_sso",
-		"name": "SSO"
-	  },{
-		"test": "auth_mail",
-		"name": "Mail"
-	  }]
-	}
-	
 ## Logs
-Extensive logs are saved in the basePath/logs folder.
-
+Extensive logs are saved in the basePath/logs folder. The logs are visible too under the web UI for all administrators:
+<img src="https://i.imgur.com/taa9w6q.png" width="550">
 
 # API
-You can find a swagger.json under https://github.com/ozzi-/TestRunner/blob/master/WebContent/swagger.json or when deployed hosted on http://127.0.0.1:8080/testrunner/api/swagger.json
+You can find a swagger.json under https://github.com/ozzi-/TestRunner/blob/master/WebContent/swagger.json or when during runtime under http://127.0.0.1:8080/testrunner/api/swagger.json
