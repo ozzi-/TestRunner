@@ -96,6 +96,13 @@ Test Groups allow to run multiple tests in one go and one report.
       |       |       |       |       |       |
       v       v       v       v       v       v
     task1   task2   task3   auth1   auth2   auth3
+    
+    
+### Archiving result files
+For every task you can provide a path pointing to an arbitrary file. If the task is run, the file under said path is copied into the result and is thus archived by TestRunner. This is helpful if your task does not print all results to stdout/err but as an example into a HTML report file.
+<img src="https://i.imgur.com/u61O317.png" width="320">
+
+
 
 
 # Configuration
