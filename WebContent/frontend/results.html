@@ -1,16 +1,15 @@
-<span id="runLink"></span><span id="editLink"></span><span id="copyLink"></span><span id="historyLink"></span><button type="button" onclick="location.assign('index.html')" class="btn btn-secondary ml-1">Back</button>
-<br>
-<hr>
-<br>
+<span id="runLink"></span><span id="editLink"></span><span id="copyLink"></span><span id="historyLink"></span>
+<button type="button" id="backBtn" class="btn btn-secondary ml-1">Back</button>
+<br><hr><br>
 <div class="row">
 	<div class="col-4">
-			<b>Results of "<span style="word-wrap: break-word" id="testName"></span>"</b><br><br>
+			<strong>Results of "<span class="break-word" id="testName"></span>"</strong><br><br>
 			<span id="resultsSpan"></span>
 			<br>
-			<button class="btn btn-secondary" style="width: 100%" id="loadmore" onclick="loadMore()">load more</button>
+			<button class="btn btn-secondary width-100" id="loadmore">load more</button>
 	</div>
 	<div class="col-8">
-			<b>Test Configuration</b><br><br>
+			<strong>Test Configuration</strong><br><br>
 			<span id="testContent"></span>
 	</div>
 </div>

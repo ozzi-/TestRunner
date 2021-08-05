@@ -380,7 +380,7 @@ public class Persistence {
         	fullPersistencePathRunning = PathFinder.getSpecificTestResultStatusPath(test.name, handle+tag, true);
         }
 		File runningFile = new File(fullPersistencePathRunning);
-		Log.log(Level.FINE, "Deleting running file");
+		Log.log(Level.FINE, "Deleting running file for "+test.name);
 		runningFile.delete();
 		
         return fullPersistencePath;

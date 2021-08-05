@@ -212,7 +212,7 @@ public class PathFinder {
 	}
 	
 	public static String getLogPath() throws Exception {
-		return getBasePath()+File.separator+"logs"+File.separator;
+		return getBasePath()+"logs"+File.separator;
 	}
 
 }

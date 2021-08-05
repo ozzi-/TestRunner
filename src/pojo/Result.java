@@ -22,6 +22,8 @@ public class Result {
 	public long timestampEnd;
 	public String path;
 	public String commit;
+	public String archiveContent;
+	public String archiveName;
 
 	@Override
 	public String toString() {
@@ -38,6 +40,8 @@ public class Result {
 		res.addProperty(TRHelper.DESCRIPTION, text);
 		res.addProperty("output", output);
 		res.addProperty("errorOutput", errorOutput);
+		res.addProperty("archiveContent", archiveContent);
+		res.addProperty("archiveName", archiveName);
 		res.addProperty(TRHelper.RUN_TIME_IN_MS, runTimeInMS);
 		res.addProperty("startTimestamp", timestampStart);
 		res.addProperty("endTimestamp", timestampEnd);

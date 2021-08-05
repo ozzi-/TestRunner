@@ -1,16 +1,16 @@
 <ul class="nav nav-tabs">
   <li class="nav-item">
-    <a class="nav-link" id="navUP" href="#" onclick="scriptAddBtn('up')">Upload</a>
+    <a class="nav-link" id="navUP" href="#">Upload</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="navFE" href="#" onclick="scriptAddBtn('fe')">File Editor</a>
+    <a class="nav-link" id="navFE" href="#">File Editor</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="navFO" href="#" onclick="scriptAddBtn('fo')">Folders</a>
+    <a class="nav-link" id="navFO" href="#">Folders</a>
   </li>
 </ul>
 
-<div id="scriptEditorTab" style="display:none">
+<div id="scriptEditorTab" class="display-none">
 	<textarea id="editor"></textarea>
 	<div class="container">
   		<div class="row">
@@ -23,12 +23,12 @@
 				<input type="text" class="form-control" id="scriptName" placeholder="Script Name (including file ending)">
 			</div>
 			<div class="col-sm">
-				<button class="btn btn-primary" type="submit" onclick="saveNewScript()">Save</button>
+				<button class="btn btn-primary" type="submit" id="saveScriptBtn">Save</button>
 			</div>
 		</div>
 	</div>
 </div>
-<div id="scriptUploadTab" style="display:none">
+<div id="scriptUploadTab" class="display-none">
 	<div id="scriptAddDropZoneDiv">
 		<div class="container">
 			<div class="row">
@@ -45,7 +45,7 @@
 		</div>
 	</div>
 </div>
-<div id="scriptFolderTab" style="display:none">
+<div id="scriptFolderTab" class="display-none">
 	<br>
 	Choose parent folder:
 	<select class="form-control folderSelect" id="scriptFolderParent" required>
@@ -54,12 +54,12 @@
 	Choose a folder name:
 	<input type="text" class="form-control" id="folderCreate" placeholder="Folder Name">
 	<br>
-	<button class="btn btn-primary" type="submit" onclick="createNewFolder()">Create Folder</button>
+	<button class="btn btn-primary" type="submit" id="createFolderBtn">Create Folder</button>
 	<br><br><hr><br>
 	<select class="form-control folderSelect" id="scriptFolderDelete" required>
 	</select>
 	<br>
-	<button class="btn btn-danger" type="submit" onclick="removeFolder()">Remove Folder and its content</button>
+	<button class="btn btn-danger" type="submit" id="removeFolderBtn">Remove Folder and its content</button>
 </div>
 
 

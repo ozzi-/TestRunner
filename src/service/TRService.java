@@ -21,6 +21,7 @@ import com.google.gson.JsonObject;
 import annotations.Authenticate;
 import annotations.LogRequest;
 import helpers.Helpers;
+import helpers.Log;
 import helpers.PathFinder;
 import helpers.TRHelper;
 import io.swagger.annotations.Api;
@@ -231,6 +232,16 @@ public class TRService {
 	public Response getRunningCount(@Context HttpHeaders headers) throws Exception {
 		return Response.status(200).entity("{\"count\":" + 	helpers.Settings.getSingleton().getRunningCount() + "}")
 				.type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+
+	@Authenticate("READWRITEEXECUTE")
+	@GET
+	@Path("/log")
+	@ApiOperation(value = "[READWRITEEXECUTE] Returns recent log entries")
+	public Response getLog(@Context HttpHeaders headers) throws Exception {
+		String logEntries = Log.getRecentLogEntries();
+		return Response.status(200).entity(logEntries).type(MediaType.TEXT_PLAIN).build();
 	}
 
 	@LogRequest
