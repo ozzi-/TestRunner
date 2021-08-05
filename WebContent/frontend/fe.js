@@ -324,6 +324,11 @@ function poll(res,name,paramName, poller, handle) {
 			clearInterval(poller);			
 		}
 		window.location.replace("index.html?page=result&"+paramName+"="+ name + "&handle="+ handle);
+	}else if(res.state!="running"){
+		if(poller === undefined || poller == "undefined" || poller != null){
+			clearInterval(poller);			
+		}
+		alert(res.state);
 	}
 }
 
@@ -1425,7 +1430,7 @@ function doRequest(method, url, callback, params, blob) {
 						if(!window.errorReported){
 							window.errorReported=true;
 							if(request.responseText==""){
-								alert("Lost connection to backend (Empty Response)")
+								alert("Lost connection to backend (timed out)")
 							}else{
 								alert("Unknown error - Exception: "+e.message+" ("+request.status+")");	
 							}

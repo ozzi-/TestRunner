@@ -306,6 +306,16 @@ public class Persistence {
 		gitCommit(commitMessage,userName, filePath);
 	}
 	
+	public static void writeUTF8StringToFile(String body, String filePath)	throws UnsupportedEncodingException, FileNotFoundException, IOException {
+		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath), "UTF-8"));
+		try {
+			out.write(body);
+		} finally {
+			out.close();
+		}
+	}
+	
+	
 	public static void writeUTF8StringToFile(String body, String filePath, String commitMessage, String userName)
 			throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath), "UTF-8"));

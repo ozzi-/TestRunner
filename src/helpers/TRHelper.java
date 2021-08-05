@@ -89,17 +89,18 @@ public class TRHelper {
 	 * is deleted as soon as the test is done, which creates a .data result file
 	 * 
 	 * @param test
+	 * @return 
 	 * @throws Exception
 	 * @throws IOException
 	 */
-	public static void createRunningFile(Test test, boolean group) throws Exception {
+	public static String createRunningFile(String testName, String testTag, long handle, boolean group) throws Exception {
 		String basePath;
-		String tag = test.tag.equals("") ? "" : "_" + test.tag;
+		String tag = testTag.equals("") ? "" : "_" + testTag;
 
 		if (group) {
-			basePath = PathFinder.getSpecificTestGroupResultStatusPath(test.name, String.valueOf(test.start) + tag, true);
+			basePath = PathFinder.getSpecificTestGroupResultStatusPath(testName, String.valueOf(handle) + tag, true);
 		} else {
-			basePath = PathFinder.getSpecificTestResultStatusPath(test.name, String.valueOf(test.start) + tag, true);
+			basePath = PathFinder.getSpecificTestResultStatusPath(testName, String.valueOf(handle) + tag, true);
 		}
 		File runningFile = new File(basePath);
 		try {
@@ -107,31 +108,45 @@ public class TRHelper {
 		} catch (IOException e) {
 			throw new Exception("Could not create running file: " + e.getMessage() + " - " + basePath);
 		}
+		return basePath;
 	}
 
 	public static JsonObject runTestInternal(String testName, String userName, String tag, String args) throws Exception {
 		Log.log(Level.INFO, "User " + userName + " running test " + testName + " with tag = " + tag + " and additional args = " + args);
 		Settings.getSingleton().setRunningCount(Settings.getSingleton().getRunningCount()+1);
-		
-		JSONObject obj = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testName));
-		Test test = Helpers.parseTest(obj, testName,true);
+		long handle = System.currentTimeMillis(); 
+		String runningFilePath = createRunningFile(testName,tag,handle,false);
 
-		ArrayList<Task> tasks = test.tasks;
-		for (Task task : tasks) {
-			ArrayList<String> argsList = task.args;
-			if(args!="") {
-				Collections.addAll(argsList, args.split("\\s+"));
-				Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to task '"+task.name+"' of test '" + testName+"'");				
+		new Thread(() -> {
+			try {
+				JSONObject obj = Helpers.parsePathToJSONObj(PathFinder.getSpecificTestPath(testName));
+				Test test = Helpers.parseTest(obj, testName,true);
+				
+				ArrayList<Task> tasks = test.tasks;
+				for (Task task : tasks) {
+					ArrayList<String> argsList = task.args;
+					if(args!="") {
+						Collections.addAll(argsList, args.split("\\s+"));
+						Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to task '"+task.name+"' of test '" + testName+"'");				
+					}
+				}
+				test.tag = tag;
+				test.start = handle;
+				Testing.runTestInThread(test, false, userName);
+			}catch (Exception e) {
+				String exception = "Exception occured during test preparation - "+e.getClass().getName()+": "+e.getMessage();
+				try {
+					Persistence.writeUTF8StringToFile(exception, runningFilePath);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
 			}
-		}
-		test.tag = tag;
-		test.start = System.currentTimeMillis();
-		createRunningFile(test, false);
-		Testing.runTestInThread(test, false, userName);
+		}).start();
+		
 
 		JsonObject resp = new JsonObject();
-		resp.addProperty(NAME, test.name);
-		resp.addProperty("handle", String.valueOf(test.start));
+		resp.addProperty(NAME, testName);
+		resp.addProperty("handle", String.valueOf(handle));
 		
 		return resp;
 	}
@@ -140,35 +155,45 @@ public class TRHelper {
 		Log.log(Level.INFO, "User " + userName + " running group test " + groupName + " with tag = " + tag + " and addtional args = " + args);
 		Settings.getSingleton().setRunningCount(Settings.getSingleton().getRunningCount()+1);
 		
-		JSONObject group = Helpers.parsePathToJSONObj(PathFinder.getSpecificGroupPath(groupName));
-		JSONArray tests = (JSONArray) group.get(TESTS);
-		long curMil = System.currentTimeMillis();
-		String handle = String.valueOf(curMil);
-		Test test = new Test();
-		// TODO refactor gathering commits:
-		for (Object testObj : tests) {
-			JSONObject testToAdd = (JSONObject) testObj;
-			String testToAddName = testToAdd.getString(TEST);
-			test.commit.add(new Commit(testToAddName, Persistence.getCurrentCommitOfTest(testToAddName)));
-		}
-		
-		test.description = "Group Test '" + groupName + "' consisting of tests: ";
-		test.name = groupName;
-		test.tag = tag;
-		test.start = curMil;
-		
-		mergeTestsToGroupTest(tests, test);
-		ArrayList<Task> tasks = test.tasks;
-		for (Task task : tasks) {
-			ArrayList<String> argsList = task.args;
-			if(args!="") {
-				Collections.addAll(argsList, args.split("\\s+"));
-				Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to test " + groupName);				
-			}
-		}
+		long handle = System.currentTimeMillis(); 
+		String runningFilePath = createRunningFile(groupName,tag,handle,true);
 
-		createRunningFile(test, true);
-		Testing.runTestInThread(test, true, userName);
+		new Thread(() -> {
+			try {
+				JSONObject group = Helpers.parsePathToJSONObj(PathFinder.getSpecificGroupPath(groupName));
+				JSONArray tests = (JSONArray) group.get(TESTS);
+				Test test = new Test();
+				// TODO refactor gathering commits:
+				for (Object testObj : tests) {
+					JSONObject testToAdd = (JSONObject) testObj;
+					String testToAddName = testToAdd.getString(TEST);
+					test.commit.add(new Commit(testToAddName, Persistence.getCurrentCommitOfTest(testToAddName)));
+				}
+				
+				test.description = "Group Test '" + groupName + "' consisting of tests: ";
+				test.name = groupName;
+				test.tag = tag;
+				test.start = handle;
+				
+				mergeTestsToGroupTest(tests, test);
+				ArrayList<Task> tasks = test.tasks;
+				for (Task task : tasks) {
+					ArrayList<String> argsList = task.args;
+					if(args!="") {
+						Collections.addAll(argsList, args.split("\\s+"));
+						Log.log(Level.FINEST, "Added " + (Arrays.toString(args.split("\\s+"))) + " command line args to test " + groupName);				
+					}
+				}
+				Testing.runTestInThread(test, true, userName);
+			}catch (Exception e) {
+				String exception = "Exception occured during test preparation - "+e.getClass().getName()+": "+e.getMessage();
+				try {
+					Persistence.writeUTF8StringToFile(exception, runningFilePath);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+		}).start();
 		
 		JsonObject resp = new JsonObject();
 		resp.addProperty(NAME, groupName);
@@ -247,11 +272,17 @@ public class TRHelper {
 
 		String state = "";
 		if (runningFile.exists()) {
-			state = "running";
+			String runningFileContent = Helpers.readFile(runningFile.toString());
+			if(runningFileContent.equals("")) {
+				state = "running";				
+			}else {
+				state = runningFileContent;
+			}
 		} else if (dataFile.exists()) {
 			state = "done";
 		} else {
-			throw new Exception("Could not find test!");
+			Log.log(Level.WARNING, "Could not find running or result file for test - "+pathRunning+"-"+path);
+			throw new Exception("Could not determine status as neither running nor result file exist!");
 		}
 		JsonObject test = new JsonObject();
 		test.addProperty("state", state);

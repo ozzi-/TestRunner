@@ -26,7 +26,7 @@ import io.swagger.annotations.ApiOperation;
 public class RunService {
 	
 	private String tagValidRegexp="[a-zA-Z0-9_]+";
-	
+
 	@LogRequest
 	@Authenticate("READEXECUTE")
 	@POST

@@ -34,7 +34,7 @@ public class Testing {
 		return results;
 	}
 	
-	public static void runTestInThread(Test test, boolean group, String userName) throws Exception {
+	public static void runTestInThread(Test test, boolean group, String userName) {
 		new Thread() {
 			@Override
 			public void run() {
