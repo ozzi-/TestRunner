@@ -11,12 +11,20 @@ function runTestGroup(res,name,paramName) {
 function runCustomTest(){
 	var tag = document.getElementById("tag").value;
 	if(tag.length<1){
-		alert("Please provide a string to tag this test run.");
+		Swal.fire({
+			title: 'Input validation',
+			text: "Please provide a string to tag this test run.",
+			icon: 'warning'
+		});
 		return;
 	}
 	var tagValid = document.getElementById("tag").checkValidity();
 	if(!tagValid){
-		alert("Tags may only contain letters, numbers and underscores.");
+		Swal.fire({
+			title: 'Input validation',
+			text: "Tags may only contain letters, numbers and underscores.",
+			icon: 'warning'
+		});
 		return;
 	}
 
@@ -59,7 +67,6 @@ function poll(res,name,paramName, poller, handle) {
 		if(poller === undefined || poller == "undefined" || poller != null){
 			clearInterval(poller);			
 		}
-		alert(res.state);
 	}
 }
 
