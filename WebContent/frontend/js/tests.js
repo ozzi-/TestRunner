@@ -326,7 +326,13 @@ function editTestContent(result){
 	doRequest("GET", "../script", fillScripts,[true]);
 }
 
-function listResult(result) {
+function listResult(result){
+	listResultInternal(result, false);
+	listResultInternal(result, true);
+}
+
+function listResultInternal(result, printable) {
+	var printableIDPrefix=printable?"printable_":"";
 	removeLoader();
 	var className = 'color-pass';
 	for (var i = 0; i < result.results.length; i++) {
@@ -335,7 +341,7 @@ function listResult(result) {
 		}
 	}
 	// TODO remove innerHTML here
-	var infoSpan = document.getElementById("info");
+	var infoSpan = document.getElementById(printableIDPrefix+"info");
 	infoSpan.innerHTML = ("<h3 class=\""+className+"\">" + escapeHtml(result.testName) + " - "+ result.testStartString + "</h3>");
 	infoSpan.innerHTML += "<b>Run by</b>: "+escapeHtml(result.testRunBy)+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description)+"<br><br><b>Test Commits:</b><br>";
 	if(result.commits==undefined){
@@ -347,7 +353,7 @@ function listResult(result) {
 	}
 	infoSpan.innerHTML +="<hr>";
 
-	var resultsSpan = document.getElementById("results");
+	var resultsSpan = document.getElementById(printableIDPrefix+"results");
 	for (var i = 0; i < result.results.length; i++) {
 		// tests in groups have a descriptive name
 		if(result.results[i].commit==undefined){
@@ -381,38 +387,48 @@ function listResult(result) {
 		resultsSpan.appendChild(res);
 		resultsSpan.appendChild(document.createElement("br"));
 
-		
-		if(result.results[i].archiveContent!=undefined){
-			var btn = document.createElement("button");
-			btn.id="downloadArchiveBtn_"+i;
-			btn.classList.add("btn");
-			btn.classList.add("btn-primary");
-			btn.innerHTML="Show archived content";
-			resultsSpan.appendChild(btn);
-			
-			var href = document.createElement("a");
-			href.id="downloadArchiveHref_"+i;
-			resultsSpan.appendChild(href);
-			resultsSpan.appendChild(document.createElement("br"));
+		if(!printable){
+			if(result.results[i].archiveContent!=undefined){
+				var btn = document.createElement("button");
+				btn.id="downloadArchiveBtn_"+i;
+				btn.classList.add("btn");
+				btn.classList.add("btn-primary");
+				btn.innerHTML="Show archived content";
+				resultsSpan.appendChild(btn);
+				
+				var href = document.createElement("a");
+				href.id="downloadArchiveHref_"+i;
+				resultsSpan.appendChild(href);
+				resultsSpan.appendChild(document.createElement("br"));
+			}
 		}
 
+		if(!printable){
+			var accordion = createAccordion("Output",result.results[i].output);
+			resultsSpan.appendChild(accordion);
+			resultsSpan.appendChild(document.createElement("br"));
+		
+			accordion = createAccordion("Error Output",result.results[i].errorOutput);
+			resultsSpan.appendChild(accordion);
+			resultsSpan.appendChild(document.createElement("br"));
+		}else{
+			b = document.createElement("b");
+			b.textContent="Output: ";
+			resultsSpan.appendChild(b);
+			res = document.createElement("span");
+			res.innerHTML=escapeHtml(result.results[i].output).replace(/\n/g, "<br />");
+			resultsSpan.appendChild(res);
+			resultsSpan.appendChild(document.createElement("br"));
 
-		b = document.createElement("b");
-		b.textContent="Output: ";
-		resultsSpan.appendChild(b);
-		res = document.createElement("span");
-		res.innerHTML=escapeHtml(result.results[i].output).replace(/\n/g, "<br />");
-		resultsSpan.appendChild(res);
-		resultsSpan.appendChild(document.createElement("br"));
+			b = document.createElement("b");
+			b.textContent="Error Output: ";
+			resultsSpan.appendChild(b);
+			res = document.createElement("span");
+			res.innerHTML=escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />");
+			resultsSpan.appendChild(res);
+			resultsSpan.appendChild(document.createElement("br"));
 
-		b = document.createElement("b");
-		b.textContent="Error Output: ";
-		resultsSpan.appendChild(b);
-		res = document.createElement("span");
-		res.innerHTML=escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />");
-		resultsSpan.appendChild(res);
-		resultsSpan.appendChild(document.createElement("br"));
-
+		}
 		
 		b = document.createElement("b");
 		b.textContent="Runtime: ";
@@ -421,7 +437,7 @@ function listResult(result) {
 		res.innerHTML=escapeHtml(escapeHtml(result.results[i].runTimeInMS) + " ms");
 		resultsSpan.appendChild(res);
 		
-		if(result.results[i].archiveContent!=null){
+		if(!printable && result.results[i].archiveContent!=null){
 			document.getElementById("downloadArchiveBtn_"+i).index = i;
 			document.getElementById("downloadArchiveBtn_"+i).onclick = function(){
 				var myblob = new Blob([result.results[this.index].archiveContent], {
@@ -436,6 +452,40 @@ function listResult(result) {
 			}
 		}
 	}
+}
+
+function createAccordion(title,content){
+	var uuid = uuidv4();
+	var accDiv = document.createElement("div");
+	accDiv.id="accordion_"+uuid;
+	var cardDiv = document.createElement("div");
+	cardDiv.classList.add("card");
+	var cardHeadDiv = document.createElement("div");
+	cardHeadDiv.classList.add("card-header");
+	var cardh5 = document.createElement("h5");
+	cardh5.classList.add("mb-0");
+	var collapseCardBtn = document.createElement("button");
+	collapseCardBtn.classList.add("btn");
+	collapseCardBtn.classList.add("btn-link");
+	collapseCardBtn.classList.add("collapsed");
+	collapseCardBtn.setAttribute("data-toggle","collapse");
+	collapseCardBtn.setAttribute("data-target","#cardCollapse_"+uuid);
+	collapseCardBtn.textContent = title;
+	accDiv.appendChild(cardDiv);
+	cardDiv.appendChild(cardHeadDiv);
+	cardHeadDiv.appendChild(cardh5);
+	cardh5.appendChild(collapseCardBtn);
+	
+	var collapseDiv = document.createElement("div");
+	collapseDiv.id="cardCollapse_"+uuid;
+	collapseDiv.setAttribute("data-parent","#accordion_"+uuid);
+	collapseDiv.classList.add("collapse");
+	var cardBodyDiv = document.createElement("div");
+	cardBodyDiv.classList.add("card-body");
+	cardBodyDiv.innerHTML=escapeHtml(content).replace(/\n/g, "<br />");
+	collapseDiv.appendChild(cardBodyDiv);
+	cardDiv.appendChild(collapseDiv);
+	return accDiv;
 }
 
 function listResults(results,paramName) {
