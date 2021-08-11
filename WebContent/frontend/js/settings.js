@@ -49,33 +49,64 @@ function changeMyPassword(){
 
 function proccessPasswordChange(response){
 	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
+		Swal.fire({
+			title: 'Error '+response.status,
+			text: JSON.parse(response.responseText).error,
+			icon: 'error'
+		});
 	}else{
-		alert("Password changed successfully - for security reasons, you will now be logged out");
-		doLogout();
+		Swal.fire({
+			title: 'Password changed successfully',
+			text: "For security reasons, you will now be logged out",
+			icon: 'success'
+		}).then(function () {
+			doLogout();			
+		});
 	}
 }
 
 function sessionsDeleted(){
-	alert("Sessions Deleted");
+	Swal.fire({
+		title: 'Success',
+		text: "Session(s) deleted",
+		icon: 'success'
+	});
 }
 
 function processCreateUser(response){
 	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
+		Swal.fire({
+			title: 'Error ('+response.status+')',
+			text: JSON.parse(response.responseText).error,
+			icon: 'error'
+		});
 	}else{
-		alert("User created");
-		location.reload();
+		Swal.fire({
+			title: 'Success',
+			text: "User created",
+			icon: 'success'
+		}).then(function(){
+			location.reload();			
+		});
 	}
 }
 
 
 function processDeleteUser(response){
 	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
+		Swal.fire({
+			title: 'Error ('+response.status+')',
+			text: JSON.parse(response.responseText).error,
+			icon: 'error'
+		});
 	}else{
-		alert("User deleted");
-		window.location.replace("index.html?page=settings");
+		Swal.fire({
+			title: 'Success',
+			text: "User deleted",
+			icon: 'success'
+		}).then(function(){
+			window.location.replace("index.html?page=settings");
+		});
 	}
 }
 

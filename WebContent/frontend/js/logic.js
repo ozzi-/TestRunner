@@ -85,7 +85,13 @@ function pageLogic (response){
 		};
 	}
 	if(page=="result"){
-		document.getElementById("printResultsBtn").onclick = function(){printJS('resultPage', 'html');};
+		document.getElementById("printResultsBtn").onclick = function(){
+			printJS({
+					printable: 'printable_resultPage',
+					type: 'html',
+					style: ' .printableResultPage { display: block!important; } '
+			});
+		};
 		document.getElementById("backBtn").onclick = function(){back();};
 		
 		var handle = getQueryParams(document.location.search).handle;

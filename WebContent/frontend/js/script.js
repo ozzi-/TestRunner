@@ -231,7 +231,11 @@ function saveNewScript(){
 	meta.name=name;
 	meta.path=path;
 	if(name==""){
-		alert("Empty file name")
+		Swal.fire({
+			title: 'Input validation',
+			text: "Empty file name provided.",
+			icon: 'warning'
+		});
 	}else{
 		doRequestBody("POST", scriptContent, "text/plain", "../script", goToScript, [], true,meta);		
 	}
@@ -239,7 +243,11 @@ function saveNewScript(){
 
 function goToScript(res){
 	if(res.status!=200){
-		alert(JSON.parse(response.responseText).error);
+		Swal.fire({
+			title: 'Error',
+			text: JSON.parse(response.responseText).error,
+			icon: 'error'
+		});
 	}else{
 		window.location.replace("index.html?page=script&name="+encodeURIComponent(res.responseText));		
 	}
@@ -352,7 +360,11 @@ function fillScripts(res, checkScriptExistent){
 				scriptSelects[i].value=scriptSelects[i].preselectScript;
 				// check if it is an exiting test, if the script can't be selected, it is an invalid value
 				if(checkScriptExistent && getQueryParams(document.location.search).name !==undefined && scriptSelects[i].value==""){
-					alert("The script \""+scriptSelects[i].preselectScript+"\" does not exist (anymore)");
+					Swal.fire({
+						title: 'Error',
+						text: "The script \""+scriptSelects[i].preselectScript+"\" does not exist (anymore)",
+						icon: 'error'
+					});
 				}
 			}
 		}

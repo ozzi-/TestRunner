@@ -11,12 +11,20 @@ function runTestGroup(res,name,paramName) {
 function runCustomTest(){
 	var tag = document.getElementById("tag").value;
 	if(tag.length<1){
-		alert("Please provide a string to tag this test run.");
+		Swal.fire({
+			title: 'Input validation',
+			text: "Please provide a string to tag this test run.",
+			icon: 'warning'
+		});
 		return;
 	}
 	var tagValid = document.getElementById("tag").checkValidity();
 	if(!tagValid){
-		alert("Tags may only contain letters, numbers and underscores.");
+		Swal.fire({
+			title: 'Input validation',
+			text: "Tags may only contain letters, numbers and underscores.",
+			icon: 'warning'
+		});
 		return;
 	}
 
@@ -59,7 +67,6 @@ function poll(res,name,paramName, poller, handle) {
 		if(poller === undefined || poller == "undefined" || poller != null){
 			clearInterval(poller);			
 		}
-		alert(res.state);
 	}
 }
 
@@ -326,7 +333,13 @@ function editTestContent(result){
 	doRequest("GET", "../script", fillScripts,[true]);
 }
 
-function listResult(result) {
+function listResult(result){
+	listResultInternal(result, false);
+	listResultInternal(result, true);
+}
+
+function listResultInternal(result, printable) {
+	var printableIDPrefix=printable?"printable_":"";
 	removeLoader();
 	var className = 'color-pass';
 	for (var i = 0; i < result.results.length; i++) {
@@ -335,7 +348,7 @@ function listResult(result) {
 		}
 	}
 	// TODO remove innerHTML here
-	var infoSpan = document.getElementById("info");
+	var infoSpan = document.getElementById(printableIDPrefix+"info");
 	infoSpan.innerHTML = ("<h3 class=\""+className+"\">" + escapeHtml(result.testName) + " - "+ result.testStartString + "</h3>");
 	infoSpan.innerHTML += "<b>Run by</b>: "+escapeHtml(result.testRunBy)+"&nbsp;&nbsp; <b>Description</b>: "+ escapeHtml(result.description)+"<br><br><b>Test Commits:</b><br>";
 	if(result.commits==undefined){
@@ -347,7 +360,7 @@ function listResult(result) {
 	}
 	infoSpan.innerHTML +="<hr>";
 
-	var resultsSpan = document.getElementById("results");
+	var resultsSpan = document.getElementById(printableIDPrefix+"results");
 	for (var i = 0; i < result.results.length; i++) {
 		// tests in groups have a descriptive name
 		if(result.results[i].commit==undefined){
@@ -382,7 +395,7 @@ function listResult(result) {
 		resultsSpan.appendChild(document.createElement("br"));
 
 		var archiveName = result.results[i].archiveName;
-		if(archiveName!=undefined && archiveName!=""){
+		if(!printable && archiveName!=undefined && archiveName!=""){
 			var btn = document.createElement("button");
 			btn.id="downloadArchiveBtn_"+i;
 			btn.classList.add("btn");
@@ -399,22 +412,31 @@ function listResult(result) {
 			resultsSpan.appendChild(document.createElement("br"));
 		}
 
-		b = document.createElement("b");
-		b.textContent="Output: ";
-		resultsSpan.appendChild(b);
-		res = document.createElement("span");
-		res.innerHTML=escapeHtml(result.results[i].output).replace(/\n/g, "<br />");
-		resultsSpan.appendChild(res);
-		resultsSpan.appendChild(document.createElement("br"));
+		if(!printable){
+			var accordion = createAccordion("Output",result.results[i].output);
+			resultsSpan.appendChild(accordion);
+			resultsSpan.appendChild(document.createElement("br"));
+		
+			accordion = createAccordion("Error Output",result.results[i].errorOutput);
+			resultsSpan.appendChild(accordion);
+			resultsSpan.appendChild(document.createElement("br"));
+		}else{
+			b = document.createElement("b");
+			b.textContent="Output: ";
+			resultsSpan.appendChild(b);
+			res = document.createElement("span");
+			res.innerHTML=escapeHtml(result.results[i].output).replace(/\n/g, "<br />");
+			resultsSpan.appendChild(res);
+			resultsSpan.appendChild(document.createElement("br"));
 
-		b = document.createElement("b");
-		b.textContent="Error Output: ";
-		resultsSpan.appendChild(b);
-		res = document.createElement("span");
-		res.innerHTML=escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />");
-		resultsSpan.appendChild(res);
-		resultsSpan.appendChild(document.createElement("br"));
-
+			b = document.createElement("b");
+			b.textContent="Error Output: ";
+			resultsSpan.appendChild(b);
+			res = document.createElement("span");
+			res.innerHTML=escapeHtml(result.results[i].errorOutput).replace(/\n/g, "<br />");
+			resultsSpan.appendChild(res);
+			resultsSpan.appendChild(document.createElement("br"));
+		}
 		
 		b = document.createElement("b");
 		b.textContent="Runtime: ";
@@ -423,7 +445,7 @@ function listResult(result) {
 		res.innerHTML=escapeHtml(escapeHtml(result.results[i].runTimeInMS) + " ms");
 		resultsSpan.appendChild(res);
 
-		if(archiveName!=null && archiveName!=""){
+		if(!printable && archiveName!=null && archiveName!=""){
 			document.getElementById("downloadArchiveBtn_"+i).index = i;
 			document.getElementById("downloadArchiveBtn_"+i).onclick = function(){
 				document.getElementById("loader").style.display="";
@@ -450,6 +472,40 @@ function viewingGroup(){
 		return true;
 	}
 	return false;
+}
+
+function createAccordion(title,content){
+	var uuid = uuidv4();
+	var accDiv = document.createElement("div");
+	accDiv.id="accordion_"+uuid;
+	var cardDiv = document.createElement("div");
+	cardDiv.classList.add("card");
+	var cardHeadDiv = document.createElement("div");
+	cardHeadDiv.classList.add("card-header");
+	var cardh5 = document.createElement("h5");
+	cardh5.classList.add("mb-0");
+	var collapseCardBtn = document.createElement("button");
+	collapseCardBtn.classList.add("btn");
+	collapseCardBtn.classList.add("btn-link");
+	collapseCardBtn.classList.add("collapsed");
+	collapseCardBtn.setAttribute("data-toggle","collapse");
+	collapseCardBtn.setAttribute("data-target","#cardCollapse_"+uuid);
+	collapseCardBtn.textContent = title;
+	accDiv.appendChild(cardDiv);
+	cardDiv.appendChild(cardHeadDiv);
+	cardHeadDiv.appendChild(cardh5);
+	cardh5.appendChild(collapseCardBtn);
+	
+	var collapseDiv = document.createElement("div");
+	collapseDiv.id="cardCollapse_"+uuid;
+	collapseDiv.setAttribute("data-parent","#accordion_"+uuid);
+	collapseDiv.classList.add("collapse");
+	var cardBodyDiv = document.createElement("div");
+	cardBodyDiv.classList.add("card-body");
+	cardBodyDiv.innerHTML=escapeHtml(content).replace(/\n/g, "<br />");
+	collapseDiv.appendChild(cardBodyDiv);
+	cardDiv.appendChild(collapseDiv);
+	return accDiv;
 }
 
 function listResults(results,paramName) {

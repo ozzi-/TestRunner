@@ -34,7 +34,11 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth, uplo
 	request.ontimeout = function() {
 		if(!window.errorReported){
 			window.errorReported=true;
-			alert("The request for " + url + " timed out.");
+			Swal.fire({
+				title: 'Error',
+				text: "The request for " + url + " timed out.",
+				icon: 'error'
+			});
 		}
 	};
 	request.onreadystatechange = function() {
@@ -46,7 +50,11 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth, uplo
 				} catch (e) {
 					if(!window.errorReported){
 						window.errorReported=true;
-						alert("Unknown error - could not run callback");
+						Swal.fire({
+							title: 'Internal Error',
+							text: "Could not run callback",
+							icon: 'error'
+						});
 						console.log(e);
 					}
 				}
@@ -61,13 +69,25 @@ function doRequestBody(method, data, type, url, callback, params, sendAuth, uplo
 						window.errorReported=true;
 						console.log(e);
 						if(isJsonString(e.message)){
-							alert("Error ("+request.status+"): "+e.message);							
+							Swal.fire({
+								title: 'Error',
+								text: "Error ("+request.status+"): "+e.message,
+								icon: 'error'
+							});
 						}else{
 							if(request.responseText=="NOK"){
 								window.errorReported=false;
-								alert("Invalind input received ("+request.status+"): "+request.responseText);	
+								Swal.fire({
+									title: 'Invalid Input',
+									text: request.responseText+" ("+request.status+")",
+									icon: 'error'
+								});
 							}else{
-								alert("Unknown error ("+request.status+"): "+request.responseText);
+								Swal.fire({
+									title: 'Unknown Error',
+									text: request.responseText+" ("+request.status+")",
+									icon: 'error'
+								});
 							}
 						}
 					}
@@ -104,7 +124,11 @@ function doRequest(method, url, callback, params, blob) {
 	request.ontimeout = function() {
 		if(!window.errorReported){
 			window.errorReported=true;
-			alert("The request for " + url + " timed out.");
+			Swal.fire({
+				title: 'Error',
+				text: "The request for " + url + " timed out.",
+				icon: 'error'
+			});
 		}
 	};
 	
@@ -132,7 +156,11 @@ function doRequest(method, url, callback, params, blob) {
 						return;
 					}else{
 						response = JSON.parse(request.responseText);
-						alert("Error: " + response.error);						
+						Swal.fire({
+							title: 'Error',
+							text: response.error,
+							icon: 'error'
+						});
 					}
 				} catch (e) {
 					if(request.status==404){
@@ -141,9 +169,19 @@ function doRequest(method, url, callback, params, blob) {
 						if(!window.errorReported){
 							window.errorReported=true;
 							if(request.responseText==""){
-								alert("Lost connection to backend (Empty Response)");
+								if(!url.startsWith("../tr/runningcount")){
+									Swal.fire({
+										title: 'Network error',
+										text: "Lost connection to backend (Empty Response)",
+										icon: 'error'
+									});
+								}
 							}else{
-								alert("Unknown error - Exception: "+e.message+" ("+request.status+")");	
+								Swal.fire({
+									title: 'Unknown error',
+									text: "Exception: "+e.message+" ("+request.status+")",
+									icon: 'error'
+								});
 							}
 						}
 					}
@@ -173,12 +211,27 @@ function doRequest(method, url, callback, params, blob) {
 
 function crudHandle(response,successMsg,successAction){
 	if(response.status!=200){
-		alert(JSON.parse(response.responseText).error);
+		Swal.fire({
+			title: 'Error',
+			text: JSON.parse(response.responseText).error,
+			icon: 'error'
+		});
 	}else{
-		if(successMsg!==undefined){			
-			alert(successMsg);
+		var swalFired=false;
+		if(successMsg!==undefined){		
+			swalFired=true;
+			Swal.fire({
+					title: 'Success',
+					text: successMsg,
+					icon: 'success',
+					confirmButtonColor: '#3085d6'
+			}).then(function() {
+				if(successAction!==undefined){
+					successAction();			
+				}
+			});
 		}
-		if(successAction!==undefined){
+		if(!swalFired && successAction!==undefined){
 			successAction();			
 		}
 	}
@@ -477,6 +530,13 @@ function isJsonString(str) {
 		return false;
 	}
 	return true;
+}
+
+function uuidv4() {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
 }
 
 function timeConversion(millisec) {

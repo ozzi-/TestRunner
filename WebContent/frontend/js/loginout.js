@@ -17,7 +17,11 @@ function doLogin(){
 
 function processLoginResult(response, toPage){
 	if(response.status!=200){
-		alert(response.responseText);
+		Swal.fire({
+			title: 'Login Failed',
+			text: response.responseText,
+			icon: 'warning'
+		});
 		document.getElementById("password").value="";
 	}else{
 		var session = JSON.parse(response.responseText);
