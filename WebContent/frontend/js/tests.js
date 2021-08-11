@@ -451,7 +451,15 @@ function listResultInternal(result, printable) {
 				document.getElementById("loader").style.display="";
 				console.log(result);
 				var groupPrefix = viewingGroup()?"/group":"";
-				doRequest("GET", "../tr/archive"+groupPrefix+"?name="+encodeURIComponent(result.testName)+"&handle="+encodeURIComponent(result.testStartTimestamp)+"&archiveID="+encodeURIComponent(this.archiveID), loadArchiveBlobBtn, [this.hrefID,this.archiveName], true);
+				if(this.archiveID==undefined){
+					Swal.fire({
+						title: 'No Archive ID found',
+						text: "Could not load archive",
+						icon: 'warning'
+					});
+				}else{
+					doRequest("GET", "../tr/archive"+groupPrefix+"?name="+encodeURIComponent(result.testName)+"&handle="+encodeURIComponent(result.testStartTimestamp)+"&archiveID="+encodeURIComponent(this.archiveID), loadArchiveBlobBtn, [this.hrefID,this.archiveName], true);					
+				}
 			}
 		}
 	}
