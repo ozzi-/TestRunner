@@ -1,18 +1,22 @@
 package service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -91,6 +95,29 @@ public class TRService {
 		String path = PathFinder.getSpecificTestGroupResultPath(groupName, handle, false);
 		return TRHelper.getResultInternal(path);
 	}
+	
+	@LogRequest
+	@Authenticate("READ")
+	@GET
+	@Path("/archive")
+	@ApiOperation(value = "[READ] Serves a specific archive file as APPLICATION_OCTET_STREAM")
+	// we are using a query param as it contains / and or \
+	public Response getArchive(@Context HttpHeaders headers, @QueryParam("name") String name, @QueryParam("handle") String handle,  @QueryParam("archiveID") int archiveID) throws Exception {
+		String archivePath = PathFinder.getSpecificTestResultArchivePath(name, handle, archiveID, false);
+		return serveArchiveFile(archivePath);
+	}
+
+	@LogRequest
+	@Authenticate("READ")
+	@GET
+	@Path("/archive/group")
+	@ApiOperation(value = "[READ] Serves a specific group archive file as APPLICATION_OCTET_STREAM")
+	// we are using a query param as it contains / and or \
+	public Response getGroupArchive(@Context HttpHeaders headers, @QueryParam("name") String name, @QueryParam("handle") String handle,  @QueryParam("archiveID") int archiveID) throws Exception {
+		String archivePath = PathFinder.getSpecificTestGroupResultArchivePath(name, handle, archiveID, false);
+		return serveArchiveFile(archivePath);
+	}
+
 	
 	@LogRequest
 	@Authenticate("READ")
@@ -260,5 +287,21 @@ public class TRService {
 			groupsArray.add(tests);
 		}
 		return Response.status(200).entity(groupsArray.toString()).type(MediaType.APPLICATION_JSON_TYPE).build();
+	}
+	
+	private Response serveArchiveFile(String archivePath) throws Exception, IOException {
+		if (!PathFinder.isPathSafe(archivePath, PathFinder.getBasePath()) || !archivePath.endsWith(PathFinder.getArchiveLabel())) {
+			Log.log(Level.WARNING, "Get archive file failed due to unsafe path '" + archivePath + "'");
+			return Response.status(400).entity("NOK").type(MediaType.TEXT_PLAIN).build();
+		}
+		try {
+			File file = new File(archivePath);
+			if(file.exists()) {
+				ResponseBuilder rb = Response.ok(file, MediaType.APPLICATION_OCTET_STREAM);
+				rb.header("Content-Disposition", "attachment;");
+				return rb.build();					
+			}
+		} catch (Exception e) {}
+		return Response.status(404).entity("File not found").type(MediaType.TEXT_PLAIN).build();
 	}
 }

@@ -24,21 +24,30 @@ public class Testing {
 	
 	private Testing() {}
 	
-	public static Results runTest(Test test) {
+	public static Results runTest(Test test, boolean group) {
 		Results results = new Results();
 		results.test = test;
+		int taskCounter=0;
 		for (Task task : test.tasks) {
 			Result result = runTask(task);
 			results.results.add(result);
 			
-			if(task.archivePath!=null) {
+			if(task.archivePath!=null && task.archivePath!="") {
 				try {
-					result.archiveContent = Helpers.readFile(task.archivePath);
+					String archivePath;
+					result.archiveID = taskCounter;
+					if(group) {
+						archivePath = PathFinder.getSpecificTestGroupResultArchivePath(test.name, String.valueOf(test.start), result.archiveID ,false);
+					}else {
+						archivePath = PathFinder.getSpecificTestResultArchivePath(test.name, String.valueOf(test.start), result.archiveID ,false);			
+					}
+					Helpers.copyFile(task.archivePath,archivePath);
 					result.archiveName = new File(task.archivePath).getName();
 				} catch (Exception e) {
 					Log.log(Level.WARNING,"Failed to read archive path "+task.archivePath+" for task "+task.descriptiveName+" in test "+test.name+": "+e.getClass().getName());
 				}
 			}
+			taskCounter++;
 		}
 		return results;
 	}
@@ -48,7 +57,7 @@ public class Testing {
 			@Override
 			public void run() {
 				try {
-					Results results = Testing.runTest(test);
+					Results results = Testing.runTest(test,group);
 					boolean allPassed = true;
 					for (Result result : results.results) {
 						Log.log(Level.FINE,result.toJSONString());

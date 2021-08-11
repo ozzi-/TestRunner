@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -227,5 +228,14 @@ public class Helpers {
 			str[j] = arr.get(j);
 		}
 		return str;
+	}
+
+	public static void copyFile(String from, String to) {
+	    try {
+			FileUtils.copyFile(new File(from), new File(to));
+			Log.log(Level.FINE,"Copied file from "+from+" to "+to);
+		} catch (IOException e) {
+			Log.log(Level.SEVERE, "Error copying file from "+from+" to "+to+": "+e.getMessage()+"-"+e.getClass().getName());
+		}		
 	}
 }

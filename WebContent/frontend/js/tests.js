@@ -381,21 +381,23 @@ function listResult(result) {
 		resultsSpan.appendChild(res);
 		resultsSpan.appendChild(document.createElement("br"));
 
-		
-		if(result.results[i].archiveContent!=undefined){
+		var archiveName = result.results[i].archiveName;
+		if(archiveName!=undefined && archiveName!=""){
 			var btn = document.createElement("button");
 			btn.id="downloadArchiveBtn_"+i;
 			btn.classList.add("btn");
 			btn.classList.add("btn-primary");
 			btn.innerHTML="Show archived content";
+			btn.archiveName=archiveName;
+			btn.archiveID=result.results[i].archiveID;
 			resultsSpan.appendChild(btn);
 			
 			var href = document.createElement("a");
 			href.id="downloadArchiveHref_"+i;
+			btn.hrefID=href.id;
 			resultsSpan.appendChild(href);
 			resultsSpan.appendChild(document.createElement("br"));
 		}
-
 
 		b = document.createElement("b");
 		b.textContent="Output: ";
@@ -420,22 +422,34 @@ function listResult(result) {
 		res = document.createElement("span");
 		res.innerHTML=escapeHtml(escapeHtml(result.results[i].runTimeInMS) + " ms");
 		resultsSpan.appendChild(res);
-		
-		if(result.results[i].archiveContent!=null){
+
+		if(archiveName!=null && archiveName!=""){
 			document.getElementById("downloadArchiveBtn_"+i).index = i;
 			document.getElementById("downloadArchiveBtn_"+i).onclick = function(){
-				var myblob = new Blob([result.results[this.index].archiveContent], {
-					type: 'text/plain'
-				});
-				var dataUri = window.URL.createObjectURL(myblob);
-				var anchor = document.getElementById("downloadArchiveHref_"+this.index);
-				anchor.setAttribute('href', dataUri);
-				anchor.setAttribute('download', result.results[this.index].archiveName);
-				document.getElementById("loader").classList.add("display-none");
-				anchor.click();
+				document.getElementById("loader").style.display="";
+				console.log(result);
+				var groupPrefix = viewingGroup()?"/group":"";
+				doRequest("GET", "../tr/archive"+groupPrefix+"?name="+encodeURIComponent(result.testName)+"&handle="+encodeURIComponent(result.testStartTimestamp)+"&archiveID="+encodeURIComponent(this.archiveID), loadArchiveBlobBtn, [this.hrefID,this.archiveName], true);
 			}
 		}
 	}
+}
+
+function  loadArchiveBlobBtn(blob,hrefID,archiveName){
+	var dataUri = window.URL.createObjectURL(blob);
+    var anchor = document.getElementById(hrefID);
+    anchor.setAttribute('href', dataUri);
+    anchor.setAttribute('download', archiveName);
+    document.getElementById("loader").classList.add("display-none");
+    anchor.click();
+}
+
+function viewingGroup(){
+	var name = getQueryParams(document.location.search).name;
+	if(name === undefined || name == "undefined"){
+		return true;
+	}
+	return false;
 }
 
 function listResults(results,paramName) {

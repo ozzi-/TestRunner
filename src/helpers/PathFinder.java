@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 public class PathFinder {
 	private static String dataLabel = ".data";
+	private static String archiveLabel = ".archive";
 	private static String testLabel = ".test";
 	private static String groupLabel = ".group";
 	private static String stateLabel = ".running";
@@ -20,6 +21,9 @@ public class PathFinder {
 
 	public static String getDataLabel() {
 		return dataLabel;
+	}
+	public static String getArchiveLabel() {
+		return archiveLabel;
 	}
 	public static String getTestLabel() {
 		return testLabel;
@@ -142,6 +146,19 @@ public class PathFinder {
 	}
 	
 	/**
+	 * @param archiveID 
+	 * @return "C:\Users\TR\Desktop\results\[name]\[handle].archive"
+	 * @throws Exception 
+	 */
+	public static String getSpecificTestResultArchivePath(String testName, String handle, int archiveID, boolean createPath) throws Exception {
+		String path = getTestResultsPath(testName);
+		if (createPath) {
+			createFolderPath(path);
+		}
+		return path + handle +"_"+ archiveID + archiveLabel;
+	}
+	
+	/**
 	 * @return "C:\Users\TR\Desktop\results\groups\[name]\[handle].data"
 	 * @throws Exception 
 	 */
@@ -151,6 +168,20 @@ public class PathFinder {
 			createFolderPath(path);
 		}
 		return path + handle + dataLabel;
+	}
+	
+	
+	/**
+	 * @param archiveID 
+	 * @return "C:\Users\TR\Desktop\results\groups[name]\[handle].archive"
+	 * @throws Exception 
+	 */
+	public static String getSpecificTestGroupResultArchivePath(String testName, String handle, int archiveID, boolean createPath) throws Exception {
+		String path = getGroupTestResultsPath(testName);
+		if (createPath) {
+			createFolderPath(path);
+		}
+		return path + handle + "_" + archiveID + archiveLabel;
 	}
 
 	/**
