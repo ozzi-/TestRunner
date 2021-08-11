@@ -449,7 +449,6 @@ function listResultInternal(result, printable) {
 			document.getElementById("downloadArchiveBtn_"+i).index = i;
 			document.getElementById("downloadArchiveBtn_"+i).onclick = function(){
 				document.getElementById("loader").style.display="";
-				console.log(result);
 				var groupPrefix = viewingGroup()?"/group":"";
 				if(this.archiveID==undefined){
 					Swal.fire({
@@ -457,6 +456,7 @@ function listResultInternal(result, printable) {
 						text: "Could not load archive",
 						icon: 'warning'
 					});
+					document.getElementById("loader").classList.add("display-none");
 				}else{
 					doRequest("GET", "../tr/archive"+groupPrefix+"?name="+encodeURIComponent(result.testName)+"&handle="+encodeURIComponent(result.testStartTimestamp)+"&archiveID="+encodeURIComponent(this.archiveID), loadArchiveBlobBtn, [this.hrefID,this.archiveName], true);					
 				}
