@@ -1,4 +1,5 @@
 'use strict';
+console.log("loaded lists");
 
 function listGroups(groups){
 	var groupCount = groups.length;

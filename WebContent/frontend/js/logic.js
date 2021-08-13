@@ -3,9 +3,13 @@
 var page = getQueryParams(document.location.search).page;
 if(page === undefined || page == "undefined" || page == "index" ){
 	page = "main";
-}
+}	
 page = page.replace(/[^A-Za-z0-9]/g,'');
-doRequest("GET", page+".html", pageLogic, []);
+
+
+function start(){
+	doRequest("GET", page+".html", pageLogic, []);
+}
 
 setTimeout(function() {
 	var loader = document.getElementById("loader");

@@ -1,5 +1,4 @@
 'use strict';
-
 function runTest(res,name,paramName) {
 	runInternal(res, name ,paramName, "tr/status/test");
 }
