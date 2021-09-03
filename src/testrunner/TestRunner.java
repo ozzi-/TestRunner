@@ -13,12 +13,6 @@ import persistence.Persistence;
 
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
-			
-	// TODO show running tasks as list?
-	
-	// TODO different OS -> TestRunner satellite agents 
-	
-	// TODO frontend - collapsed groups will have too low column width
 	
 	@Override
 	public void onReload(Container container) {
