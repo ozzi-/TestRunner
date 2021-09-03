@@ -70,6 +70,7 @@ This means the used success hook is from "2" and the failure hook from "3".
 
 ### Archiving result files
 For every task you can provide a path pointing to an arbitrary file. If the task is run, the file under said path is copied into the result and is thus archived by TestRunner. This is helpful if your task does not print all results to stdout/err but as an example into a HTML report file.
+
 <img src="https://i.imgur.com/u61O317.png" width="320">
 
 ## Test Groups
@@ -207,6 +208,7 @@ After creating the first script, it is time to create a test case.
 <img src="https://i.imgur.com/7ubDQi3.png" width=400>
 
 In the test create form, provide all required fields as well as add one or more tasks (= executing a specific script with parameters):
+
 <img src="https://i.imgur.com/ytXYReT.png" width=400>
 
 You may always edit the test later:
