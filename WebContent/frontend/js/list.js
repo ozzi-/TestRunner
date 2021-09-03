@@ -144,6 +144,7 @@ function listScripts(scripts){
 	    layout:"fitDataFill",
 	    pagination:"local", 
 	    dataTree:true,
+	    dataTreeFilter:false,
 	    dataTreeStartExpanded:true,
 	    paginationSize:10,
 	    columns:[
@@ -164,10 +165,22 @@ function listScripts(scripts){
 		scriptsTable.redraw(true);
 	}
 
+	var filterTree = function (data, filter) {		
+		if(data[filter.field].includes(filter.value)){
+			return true;
+		}
+	    if (data['_children'] && data['_children'].length > 0) {
+	    	for(var i = 0; i < data['_children'].length; i++){
+	    		return filterTree(data['_children'][i], filter);
+	    	}
+	    }
+	    return data[filter.field] == filter.value;
+	};
+	
 	var filterInput = document.getElementById("filterInputScripts");
 	
 	filterInput.addEventListener("keyup", event => {
-		scriptsTable.setFilter("path", "like", document.getElementById("filterInputScripts").value);
+		scriptsTable.setFilter(filterTree, {field:'name', value:document.getElementById("filterInputScripts").value});
 		// TODO why does tabulator.js scroll around like crazy on FF
 		//window.scrollTo(0,document.body.scrollHeight);
 	});
