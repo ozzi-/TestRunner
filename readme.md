@@ -294,6 +294,7 @@ Clicking on a commit will show you the diff:
 <img src="https://i.imgur.com/1pBGJ2F.png" width=400>
 
 When navigating to a specific test, you may see only the changes of the test itself:
+
 <img src="https://i.imgur.com/mCgctYB.png" width=400>
 
 <img src="https://i.imgur.com/tB6YEze.png" width=400>
