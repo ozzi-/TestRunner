@@ -53,6 +53,7 @@ However, there are different reasons why a task can fail:
 If one task failes, the whole test will be marked as failed.
 
 A test where all tasks succeeded, will look as such:
+
 <img src="https://i.imgur.com/iULtQ1A.png" width="550">
 
 ### Hooks
