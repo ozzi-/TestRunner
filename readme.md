@@ -47,15 +47,16 @@ A task defines the path to the exectuable (the actual test). TR will run all tas
 ## Tasks
 A task knows two states, success or failure.
 However, there are different reasons why a task can fail:
-- The task ran longer than the defined timeout and was killed
-- The task returned a non zero exit code
+- The task ran longer than the defined timeout and was stopped
+- The task exited a non zero exit code
 
 If one task failes, the whole test will be marked as failed.
 
+A test where all tasks succeeded, will look as such:
 <img src="https://i.imgur.com/iULtQ1A.png" width="550">
 
 ### Hooks
-Every task may have a success and or failure hook. Those are paths that will be called upon the task failing or succeeding.
+Every task may have a success and/or a failure hook. A hook is a path to a file, that will be executed upon the task failing or succeeding.
 
 Note: When using groups, the last hooks in order will be used. 
 i.E. The group consists of three tests: "1", "2", "3".
@@ -66,10 +67,10 @@ i.E. The group consists of three tests: "1", "2", "3".
 
 "3" defines a failure hook
 
-This means the used success hook is from "2" and the failure hook from "3".
+This means the group success hook is from "2" and the failure hook from "3".
 
 ### Archiving result files
-For every task you can provide a path pointing to an arbitrary file. If the task is run, the file under said path is copied into the result and is thus archived by TestRunner. This is helpful if your task does not print all results to stdout/err but as an example into a HTML report file.
+For every task you can provide a path pointing to an arbitrary file. If the task is done running, the file under said path is copied and linked into the result and therefore archived by TestRunner. This is helpful if your task does not print all results to stdout/err but as an example into a HTML report file.
 
 <img src="https://i.imgur.com/u61O317.png" width="320">
 
@@ -110,11 +111,10 @@ Under Windows, TR will create a folder called "TR" in your %APPDATA% folder. Und
 All configuration is persisted as JSON files. Manual editing of the files is discouraged, please use the web UI or the API.
 
 You can build your own WAR file using maven or you can download the latest binary from the projects GitHub page under the tab "Releases". Then deploy the WAR in your tomcat webapps folder.
-Make sure the user running tomcat can create a folder "TR" under "/var/lib" (or "%APPDATA%" when using windows).
-Now TR should be up and running under localhost:8080/TR/frontend/index.html - When running TR for the first time, a user "admin" with the password "letmein" will be created for you.
+Now TR should be up and running under localhost:8080/TR/frontend/index.html - When running TR for the first time, a user "admin" with the password "letmein" will be created for you - please change the password asap.
 
 ## Example configuration for lighttpd
-I recommend adding a webserver acting as a reverse proxy infront of your tomcat, here an example for lighttpd:
+I recommend adding a webserver acting as a reverse proxy infront of your tomcat. This is a an example configuration for lighttpd:
 ```
 $HTTP["host"] == "testrunner.your.domain.com" {
   proxy.server = ( "" => ( ( "host" => "127.0.0.1", "port" => "8080" ) ) )
@@ -140,11 +140,11 @@ $HTTP["host"] == "testrunner.your.domain.com" {
 ```
 
 ## Logs
-Extensive logs are saved in the basePath/logs folder. The logs are visible too under the web UI for all administrators:
+Extensive logs are saved in the basePath/logs folder. The latest logs are visible too in the web UI for all administrators:
 <img src="https://i.imgur.com/taa9w6q.png" width="550">
 
 # API
-You can find a swagger.json under https://github.com/ozzi-/TestRunner/blob/master/WebContent/swagger.json or when during runtime under http://127.0.0.1:8080/testrunner/api/swagger.json
+You can find the swagger documentation under https://github.com/ozzi-/TestRunner/blob/master/WebContent/swagger.json or during runtime under http://127.0.0.1:8080/testrunner/api/swagger.json
 
 ## Authentication
 Authentication is performed by providing a sessionIdentifier. In order to generate the identifier, perform a login by sending your username & password as a POST to /user/login 
@@ -166,13 +166,12 @@ The response will contain a sessionIdentifier as well as further metadata:
 ```
 Now you can perform requests by providing the X-TR-Session-ID header with the value of the sessionIdentifier.
 
-
 # User Guide
-After deploying TestRunner, you may follow this guide to understand its usage.
-First of all, use the default admin user to login (admin:letmein)
+After deploying TestRunner, you may follow this guide to understand the basic usage.
+First of all, use the default admin user to login (admin:letmein).
 
 ## Admin Settings
-Lets start by changing the admin password as well as creating another user.
+Lets start by changing the admin password as well as creating a second user.
 
 Navigate to the admin settings by clicking on the cogwheel icon in the right upper corner:
 <img src="https://i.imgur.com/DBNgQf9.png">
@@ -302,4 +301,3 @@ When navigating to a specific test, you may see only the changes of the test its
 
 You are able to revet any change of a test or script at any time, using the "Revert to this commit" button
 <img src="https://i.imgur.com/wlMoNMV.png" width=400>
-
