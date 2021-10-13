@@ -111,7 +111,7 @@ The role "a" ADMIN can additionally administer users.
 Under Windows, TR will create a folder called "TR" in your %APPDATA% folder. Under Linux, TR will create a folder called "/var/lib/TR". This is later referenced as "base path".
 All configuration is persisted as JSON files. Manual editing of the files is discouraged, please use the web UI or the API.
 
-You can build your own WAR file using maven or you can download the latest binary from the projects GitHub page under the tab "Releases". Then deploy the WAR in your tomcat webapps folder.
+You can build your own WAR file using maven or you can download the latest binary from the projects GitHub page under the tab "Releases". Then deploy the WAR in your Tomcat (v10+) webapps folder.
 Now TR should be up and running under localhost:8080/TR/frontend/index.html - When running TR for the first time, a user "admin" with the password "letmein" will be created for you - please change the password asap.
 
 ## Example configuration for lighttpd
