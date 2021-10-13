@@ -2,13 +2,13 @@ package errorhandling;
 
 import java.util.logging.Level;
 
-import javax.annotation.Priority;
-import javax.ws.rs.NotSupportedException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-
 import helpers.Log;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.NotSupportedException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
 @Provider
 @Priority(1)
 public class UnsupportedMediaTypeMapper implements ExceptionMapper<NotSupportedException> {

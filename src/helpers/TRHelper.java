@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

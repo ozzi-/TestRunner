@@ -3,19 +3,6 @@ package service;
 import java.util.List;
 import java.util.logging.Level;
 
-import javax.inject.Singleton;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.json.JSONObject;
 
 import com.google.gson.JsonArray;
@@ -28,10 +15,18 @@ import auth.Roles;
 import auth.SessionManagement;
 import auth.UserManagement;
 import helpers.Log;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import pojo.Login;
 import pojo.NewUser;
 import pojo.Password;
@@ -39,16 +34,16 @@ import pojo.Session;
 import pojo.User;
 
 @Singleton
-@Api("/user")
+//@Api("/user")
 @Path("/user")
 public class UserService {
 	
 	@LogRequest
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation( response = Session.class, value = "[NONE] If successful, returns a session", produces="application/json")
+	//@ApiOperation( response = Session.class, value = "[NONE] If successful, returns a session", produces="application/json")
 	@Path("/login")
-	@ApiResponses(value = { @ApiResponse(code = 401, message = "Username or Password wrong") }) 
+	//@ApiResponses(value = { @ApiResponse(code = 401, message = "Username or Password wrong") }) 
 	public Response doLogin(Login login) throws Exception {
 		User user = new User();
 		user.setUsername(login.getUsername());
@@ -65,7 +60,7 @@ public class UserService {
 	@Authenticate("READ")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation( value = "[READ] Invalidates current session")
+	//@ApiOperation( value = "[READ] Invalidates current session")
 	@Path("/logout")
 	public Response doLogout(@Context HttpHeaders headers) throws Exception {
 		if(headers!=null) {
@@ -87,7 +82,7 @@ public class UserService {
 	@Authenticate("ADMIN")
 	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "[ADMIN] Deletes a user", produces="application/json")
+	//@ApiOperation(value = "[ADMIN] Deletes a user", produces="application/json")
 	@Path("/{user}")
 	public Response deleteUser(@Context HttpHeaders headers, @PathParam("user") String userNameToDelete) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
@@ -100,7 +95,7 @@ public class UserService {
 	@Authenticate("READ")
 	@GET
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation( response = Login.class , responseContainer="List", value = "[READ] Get all users", produces="application/json")
+	//@ApiOperation( response = Login.class , responseContainer="List", value = "[READ] Get all users", produces="application/json")
 	public Response getUsers(@Context HttpHeaders headers) throws Exception {
 		JsonArray usersJA = new JsonArray();
 		List<User> users = helpers.Settings.getSingleton().getUsers();
@@ -118,7 +113,7 @@ public class UserService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/{user}/password")
-	@ApiOperation( response = Password.class, value = "[ADMIN] Set password of user")
+	//@ApiOperation( response = Password.class, value = "[ADMIN] Set password of user")
 	public Response changePasswordForUser(@Context HttpHeaders headers, Password password, @PathParam("user") String userNameToChangePW) throws Exception {		
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 				
@@ -135,7 +130,7 @@ public class UserService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/{user}/role")
-	@ApiOperation( response = Password.class, value = "[ADMIN] Set role of user")
+	//@ApiOperation( response = Password.class, value = "[ADMIN] Set role of user")
 	public Response changeRoleForUser(@Context HttpHeaders headers, String body, @PathParam("user") String userNameToChangeRole) throws Exception {		
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		// TODO use pojo instead of parsing body
@@ -157,7 +152,7 @@ public class UserService {
 	@DELETE
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/{user}/session")
-	@ApiOperation( response = Password.class, value = "[ADMIN] Set password of user")
+	//@ApiOperation( response = Password.class, value = "[ADMIN] Set password of user")
 	public Response deleteSessionOfUser(@Context HttpHeaders headers,  @PathParam("user") String userNameOfSessionDel) throws Exception {		
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		Log.log(Level.INFO, "'"+userName+"' is killing all sessions of '"+userNameOfSessionDel+"'");
@@ -169,7 +164,7 @@ public class UserService {
 	@Authenticate("ADMIN")
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "[ADMIN] Creates a new user", produces="application/json")
+	//@ApiOperation(value = "[ADMIN] Creates a new user", produces="application/json")
 	public Response createUser(@Context HttpHeaders headers, NewUser user) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -201,7 +196,7 @@ public class UserService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/password")
-	@ApiOperation(value = "[READ] Changes the password of the current sessions user", produces="application/json")
+	//@ApiOperation(value = "[READ] Changes the password of the current sessions user", produces="application/json")
 	public Response changePassword(@Context HttpHeaders headers, Password password) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		
@@ -218,7 +213,7 @@ public class UserService {
 	@LogRequest
 	@GET
 	@Path("/reload")
-	@ApiOperation(value = "[ADMIN] Reloads the users from storage")
+	//@ApiOperation(value = "[ADMIN] Reloads the users from storage")
 	public Response reload(@Context HttpHeaders headers) throws Exception {
 		try {
 			UserManagement.loadUsers();

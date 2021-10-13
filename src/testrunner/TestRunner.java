@@ -11,15 +11,14 @@ import helpers.Log;
 import helpers.PathFinder;
 import persistence.Persistence;
 
-
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
-			
+
 	// TODO show running tasks as list?
-	
-	// TODO different OS -> TestRunner satellite agents 
-	
+
+	// TODO different OS -> TestRunner satellite agents
+
 	// TODO frontend - collapsed groups will have too low column width
-	
+
 	@Override
 	public void onReload(Container container) {
 		Log.log(Level.INFO, "Test Runner - onReload received");
@@ -40,22 +39,24 @@ public class TestRunner extends ResourceConfig implements ContainerLifecycleList
 		try {
 			String logBasePath = PathFinder.getLogPath();
 			PathFinder.createFolderPath(logBasePath);
-			Log.setup(logBasePath+"testrunner.log");
-			Log.log(Level.INFO, "Starting Test Runner - "+version+" - meep meep - base path is \""+PathFinder.getBasePath()+"\"");
-			
+			Log.setup(logBasePath + "testrunner.log");
+			Log.log(Level.INFO, "Starting Test Runner - " + version + " - meep meep - base path is \""
+					+ PathFinder.getBasePath() + "\"");
+
 			Persistence.gitInit();
 			UserManagement.loadUsers();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		try {
 			Persistence.checkFilePermissions();
 		} catch (Exception e) {
-			Log.log(Level.SEVERE, "Exception encountered while checking file permissions: "+e.getMessage()+" - "+e.getCause());
+			Log.log(Level.SEVERE,
+					"Exception encountered while checking file permissions: " + e.getMessage() + " - " + e.getCause());
 			e.printStackTrace();
 		}
-		
+
 		packages("services");
 	}
 }

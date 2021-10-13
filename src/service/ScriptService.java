@@ -12,20 +12,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Singleton;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -41,21 +27,31 @@ import auth.AuthenticationFilter;
 import helpers.Log;
 import helpers.PathFinder;
 import helpers.Settings;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 import persistence.Persistence;
 
 
 @Singleton
-@Api("/script")
+//@Api("/script")
 @Path("/script")
 public class ScriptService {
 	
 	@LogRequest
 	@Authenticate("READ")
 	@GET
-	@ApiOperation(value = "[READ] Returns all scripts")
+	//@ApiOperation(value = "[READ] Returns all scripts")
 	public Response getScripts(@Context HttpHeaders headers) throws Exception {
 		String scriptsPathStrng = PathFinder.getScriptsFolder();
 		int scriptsPathLength = scriptsPathStrng.length();
@@ -78,7 +74,7 @@ public class ScriptService {
 	@Authenticate("READWRITEEXECUTE")
 	@GET
 	@Path("/download")
-	@ApiOperation(value = "[READWRITEEXECUTE] Serves a specific script as TEXT_PLAIN or APPLICATION_OCTET_STREAM")
+	//@ApiOperation(value = "[READWRITEEXECUTE] Serves a specific script as TEXT_PLAIN or APPLICATION_OCTET_STREAM")
 	// we are using a query param as it contains / and or \
 	public Response getScript(@Context HttpHeaders headers, @QueryParam("name") String path) throws Exception {
 		String scriptsPathStrng = PathFinder.getScriptsFolder() + path;
@@ -113,8 +109,8 @@ public class ScriptService {
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Path("/mpfd")
-	@ApiOperation(value = "[READWRITEEXECUTE] Uploads a multipart form document script")
-    @ApiImplicitParam(name = "X-File-Path", value = "path/to/binary", paramType = "header")
+	//@ApiOperation(value = "[READWRITEEXECUTE] Uploads a multipart form document script")
+    //@ApiImplicitParam(name = "X-File-Path", value = "path/to/binary", paramType = "header")
 	public Response uploadScriptMPFD(@Context HttpHeaders headers, @FormDataParam("file") InputStream fileInputStream) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -150,7 +146,7 @@ public class ScriptService {
 	@Authenticate("READ")
 	@GET
 	@Path("/folder")
-	@ApiOperation( value = "[READ] Return the script folder contents")
+	//@ApiOperation( value = "[READ] Return the script folder contents")
 	public Response getFolders(@Context HttpHeaders headers) throws Exception {
 		File scriptsFolder = new File(PathFinder.getScriptsFolder());
 		File[] scriptFolderFiles = scriptsFolder.listFiles();
@@ -211,7 +207,7 @@ public class ScriptService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Path("/folder/{foldername}")
-	@ApiOperation(value = "[READWRITEEXECUTE] Create a script folder")
+	//@ApiOperation(value = "[READWRITEEXECUTE] Create a script folder")
 	public Response createScriptFolder(@PathParam("foldername") String folderName, @Context HttpHeaders headers, String body) throws Exception {
 		
 		JSONObject bodyJO;
@@ -247,7 +243,7 @@ public class ScriptService {
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
 	@Path("/folder")
-	@ApiOperation(value = "[READWRITEEXECUTE] Delete a script folder")
+	//@ApiOperation(value = "[READWRITEEXECUTE] Delete a script folder")
 	public Response deleteScriptFolder(@Context HttpHeaders headers, String body) throws Exception {
 		
 		JSONObject bodyJO;
@@ -277,8 +273,8 @@ public class ScriptService {
 	@Authenticate("READWRITEEXECUTE")
 	@POST
 	@Consumes(MediaType.TEXT_PLAIN)
-	@ApiOperation(value = "[READWRITEEXECUTE] Uploads a plain text document script")
-    @ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
+	//@ApiOperation(value = "[READWRITEEXECUTE] Uploads a plain text document script")
+    //@ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
 	public Response uploadScript(@Context HttpHeaders headers, String body) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		try {
@@ -313,8 +309,8 @@ public class ScriptService {
 	@LogRequest
 	@Authenticate("READWRITEEXECUTE")
 	@DELETE
-	@ApiOperation(value = "[READWRITEEXECUTE] Deletes a script")
-	@ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
+	//@ApiOperation(value = "[READWRITEEXECUTE] Deletes a script")
+	//@ApiImplicitParam(name = "X-File-Path", value = "path/to/script.sh", paramType = "header")
 	public Response deleteScript(@Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -342,7 +338,7 @@ public class ScriptService {
 	@Authenticate("READWRITEEXECUTE")
 	@GET
 	@Path("/type")
-	@ApiOperation(value = "[READWRITEEXECUTE] Returns script type, either 'text' or 'binary'")
+	//@ApiOperation(value = "[READWRITEEXECUTE] Returns script type, either 'text' or 'binary'")
 	public Response getScriptType(@Context HttpHeaders headers, @QueryParam("name") String path) throws Exception {
 	
 		String scriptsPathStrng = PathFinder.getScriptsFolder();		

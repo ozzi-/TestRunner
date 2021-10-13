@@ -2,26 +2,23 @@ package service;
 
 import java.util.regex.Pattern;
 
-import javax.inject.Singleton;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.google.gson.JsonObject;
 
 import annotations.Authenticate;
 import annotations.LogRequest;
 import auth.AuthenticationFilter;
 import helpers.TRHelper;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Singleton
-@Api("/run")
+//@Api("/run")
 @Path("/run")
 public class RunService {
 	
@@ -31,7 +28,7 @@ public class RunService {
 	@Authenticate("READEXECUTE")
 	@POST
 	@Path("/test/{testname}/{tag}/{args}")
-	@ApiOperation( value = "[READEXECUTE] Run a test with tags and additional arguments")
+	//@ApiOperation( value = "[READEXECUTE] Run a test with tags and additional arguments")
 	public Response runTestByNameCustom(@PathParam("testname") String testName , @PathParam("tag") String tag, @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		if(!Pattern.matches(tagValidRegexp, tag)) {
@@ -45,7 +42,7 @@ public class RunService {
 	@Authenticate("READEXECUTE")
 	@POST
 	@Path("/test/{testname}/{tag}")
-	@ApiOperation( value = "[READEXECUTE] Run a test with tags")
+	//@ApiOperation( value = "[READEXECUTE] Run a test with tags")
 	public Response runTestByNameTag(@PathParam("testname") String testName , @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		if(!Pattern.matches(tagValidRegexp, tag)) {
@@ -61,7 +58,7 @@ public class RunService {
 	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/test/{testname}")
-	@ApiOperation( value = "[READEXECUTE] Run a test")
+	//@ApiOperation( value = "[READEXECUTE] Run a test")
 	public Response runTestByName(@PathParam("testname") String testName, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -74,7 +71,7 @@ public class RunService {
 	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/group/{groupname}")
-	@ApiOperation( value = "[READEXECUTE] Run a group")
+	//@ApiOperation( value = "[READEXECUTE] Run a group")
 	public Response runTestGroupByName(@PathParam("groupname") String groupName, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 
@@ -86,7 +83,7 @@ public class RunService {
 	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/group/{groupname}/{tag}")
-	@ApiOperation( value = "[READEXECUTE] Run a group with tags")
+	//@ApiOperation( value = "[READEXECUTE] Run a group with tags")
 	public Response runTestGroupByNameTag(@PathParam("groupname") String groupName, @PathParam("tag") String tag, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		if(!Pattern.matches(tagValidRegexp, tag)) {
@@ -101,7 +98,7 @@ public class RunService {
 	@Authenticate("READEXECUTE")	
 	@POST
 	@Path("/group/{groupname}/{tag}/{args}")
-	@ApiOperation( value = "[READEXECUTE] Run a group with tags and additional arguments")
+	//@ApiOperation( value = "[READEXECUTE] Run a group with tags and additional arguments")
 	public Response runTestGroupByNameCustom(@PathParam("groupname") String groupName, @PathParam("tag") String tag,  @PathParam("args") String args, @Context HttpHeaders headers) throws Exception {
 		String userName = AuthenticationFilter.getUsernameOfSession(headers);
 		if(!Pattern.matches(tagValidRegexp, tag)) {

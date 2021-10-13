@@ -2,15 +2,14 @@ package errorhandling;
 
 import java.util.logging.Level;
 
-import javax.annotation.Priority;
-import javax.ws.rs.NotAllowedException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-
 import helpers.Log;
+import jakarta.ws.rs.NotAllowedException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
 @Provider
-@Priority(1)
+@jakarta.annotation.Priority(1)
 
 public class NotAllowedMapper implements ExceptionMapper<NotAllowedException> {
 	@Override
