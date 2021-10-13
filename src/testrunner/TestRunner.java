@@ -13,6 +13,7 @@ import persistence.Persistence;
 
 public class TestRunner extends ResourceConfig implements ContainerLifecycleListener {
 
+
 	@Override
 	public void onReload(Container container) {
 		Log.log(Level.INFO, "Test Runner - onReload received");

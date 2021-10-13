@@ -21,12 +21,11 @@
         		errorhandling.NotAllowedMapper,
         		errorhandling.UncaughtException,
         		errorhandling.UnsupportedMediaTypeMapper
-			</param-value>
+      		</param-value>
 		</init-param>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
-    
- 
+
 	<filter>
 		<filter-name>httpHeaderSecurity</filter-name>
 		<filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
